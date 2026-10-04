@@ -13,3 +13,6 @@ sed -i '/^tty1::/d' "${TARGET_DIR}/etc/inittab"
 # Version ins Image schreiben
 VERSION=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "${BR2_EXTERNAL_CLAUDEGOTCHI_PATH}/../app/claudegotchi/__init__.py")
 echo "claudegotchi ${VERSION}" > "${TARGET_DIR}/etc/claudegotchi-release"
+
+# Init-Skripte ausführbar machen (falls das Dateisystem beim Auschecken die Rechte verliert)
+chmod 0755 "${TARGET_DIR}"/etc/init.d/S*
