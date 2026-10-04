@@ -1,19 +1,20 @@
-"""Zeichen-Schleife: holt die Ansicht vom Gehirn und schickt sie ans Display."""
+"""Draw loop: takes the view from the brain and sends it to the display."""
 import json
 import logging
 import threading
 import time
 from datetime import datetime
 
-from .mood import ANIM_PERIOD, FACES, MESSAGES
+from . import critter
+from .mood import ANIM_PERIOD, MESSAGES
 from .painter import Painter
 
 log = logging.getLogger("claudegotchi")
 
 
 class Renderer(threading.Thread):
-    MIN_INTERVAL = 2.0          # e-Ink nicht öfter als alle 2 s anfassen
-    FULL_EVERY = 40             # nach so vielen Teil-Updates einmal voll (gegen Geisterbilder)
+    MIN_INTERVAL = 2.0          # touch the e-paper at most every 2 s
+    FULL_EVERY = 40             # full refresh after this many partial updates (against ghosting)
     FULL_SECONDS = 30 * 60
 
     def __init__(self, brain, display):
@@ -24,10 +25,9 @@ class Renderer(threading.Thread):
         self.stop_evt = threading.Event()
         self.draw_lock = threading.Lock()
 
-    def face_for(self, mood, now):
-        frames = FACES[mood]
+    def frame_for(self, mood, now):
         period = ANIM_PERIOD.get(mood)
-        return frames[int(now // period) % len(frames)] if period else frames[0]
+        return int(now // period) % critter.frames(mood) if period else 0
 
     def run(self):
         while not self.stop_evt.is_set():
@@ -36,19 +36,19 @@ class Renderer(threading.Thread):
                     if not self.stop_evt.is_set():
                         self.tick()
             except Exception:
-                log.exception("Zeichnen fehlgeschlagen")
+                log.exception("Drawing failed")
             self.stop_evt.wait(1.0)
 
     def tick(self):
         now = time.time()
         view = self.brain.view()
-        face = self.face_for(view["mood"], now)
-        key = (face, view["message"], view["project"], json.dumps(view["counts"], sort_keys=True),
+        frame = self.frame_for(view["mood"], now)
+        key = (view["mood"], frame, view["message"], view["project"], json.dumps(view["counts"], sort_keys=True),
                json.dumps({k: int(v["pct"]) for k, v in view["limits"].items()}, sort_keys=True),
                datetime.now().strftime("%H:%M"), view["sessions"])
         if key == self.last_key or now - self.last_draw < self.MIN_INTERVAL:
             return
-        img = self.painter.render(view, face)
+        img = self.painter.render(view, frame)
         full = (self.last_draw == 0 or self.partials >= self.FULL_EVERY
                 or now - self.last_full > self.FULL_SECONDS)
         self.display.show(img, full)
@@ -58,7 +58,7 @@ class Renderer(threading.Thread):
             self.partials, self.last_full = 0, now
         else:
             self.partials += 1
-        log.info("Anzeige: %s – %s%s", view["mood"], view["message"], " (voll)" if full else "")
+        log.info("Display: %s: %s%s", view["mood"], view["message"], " (full)" if full else "")
 
     def goodbye(self):
         self.stop_evt.set()
@@ -66,10 +66,10 @@ class Renderer(threading.Thread):
                 "project": "", "counts": {}, "sessions": 0, "limits": {}, "tools_today": 0}
         try:
             with self.draw_lock:
-                img = self.painter.render(view, FACES["offline"][0])
+                img = self.painter.render(view)
                 self.display.show(img, True)
                 self.frame = img
                 self.display.close()
         except Exception:
-            log.exception("Abschiedsbild fehlgeschlagen")
+            log.exception("Goodbye frame failed")
 

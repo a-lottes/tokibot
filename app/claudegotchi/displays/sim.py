@@ -1,5 +1,5 @@
 class SimDisplay:
-    """Ohne Hardware: speichert jedes Bild als PNG (zum Testen am Mac/PC)."""
+    """No hardware: optionally saves every frame as a PNG (for testing on a Mac/PC)."""
 
     def __init__(self, path):
         self.path = path

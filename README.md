@@ -1,95 +1,121 @@
-# Claudegotchi (◕‿‿◕)
+# claudegotchi
 
-Ein kleiner E-Ink-Begleiter für Claude Code mit eigenem, schlankem Betriebssystem-Image.
-Er zeigt mit einem Gesicht, was deine Claude-Code-Sessions gerade machen: arbeiten,
-auf dich warten, um Erlaubnis fragen, fertig sein oder ins Limit laufen.
+A small e-ink companion for Claude Code with its own slim operating system image.
+A pixel critter shows what your Claude Code sessions are up to: working, waiting
+for you, asking for permission, done, or running into a rate limit.
 
-Die Idee stammt von Pwnagotchi, das Image ist aber eine eigene Sache. Es wird mit
-Buildroot gebaut, enthält kein Debian und keine WLAN-Hacking-Werkzeuge, nur den
-Claudegotchi-Dienst und das Nötigste drumherum.
+![Every mood of the critter](docs/mockups.png)
+
+The idea comes from Pwnagotchi, but the image is its own thing. It is built with
+Buildroot, has no Debian and no Wi-Fi hacking tools, only the Claudegotchi service
+and the bare minimum around it.
 
 ```
-Claude Code ── Hooks + Statusline ──► claudegotchi_client.py ──HTTP──► Pi: claudegotchi ──► e-Paper
-                                          (USB-Kabel oder WLAN)
+Claude Code ── hooks + status line ──► claudegotchi_client.py ──HTTP──► Pi: claudegotchi ──► e-paper
+                                          (USB cable or Wi-Fi)
 ```
+
+## Moods
+
+| Mood | When |
+|---|---|
+| ready | a new session started |
+| working | prompt sent, tools running |
+| tired | working, but 80 % or more of the 5-hour budget is used |
+| permission | Claude asks for permission |
+| waiting | Claude waits for your input |
+| done | the reply is finished |
+| error | API error (overloaded, logged out, …) |
+| limit | rate limit reached, with the time it resets |
+| idle | nothing going on |
+
+With several sessions (e.g. worktrees), the state that needs you most wins. The
+footer shows how many sessions are working (▶), waiting for you (?) or done (✓),
+plus bars for the 5-hour and 7-day budget.
 
 ## Hardware
 
-* Raspberry Pi Zero 2 W (Standard) oder Pi Zero W
+* Raspberry Pi Zero 2 W (default) or Pi Zero W
 * Waveshare 2.13" e-Paper HAT V4 (250 × 122)
-* Ein USB-Datenkabel zum Mac (Micro-USB am Port **USB**, nicht **PWR**)
+* A USB data cable to your computer (micro-USB on the port labelled **USB**, not **PWR**)
 
 ## Repository
 
 ```
-app/       der Dienst auf dem Gerät (Python, Pillow)
-  claudegotchi/brain.py      fasst alle Sessions zu einer Stimmung zusammen
-  claudegotchi/painter.py    zeichnet Gesicht, Sprechtext, Fußzeile
-  claudegotchi/displays/     Display-Treiber (Simulator, Waveshare 2.13" V4)
-  claudegotchi/config.py     liest claudegotchi.toml
-client/    Hook- und Statusline-Client für den Mac, plus Installer
-os/        Buildroot-Erweiterung (br2-external): Defconfigs, Board-Dateien, Paket
+app/       the service on the device (Python, Pillow)
+  claudegotchi/brain.py      folds all sessions into one mood
+  claudegotchi/critter.py    the pixel critter and its expressions
+  claudegotchi/painter.py    header, critter, speech bubble, status bar
+  claudegotchi/mood.py       all display texts (one place, ready for i18n)
+  claudegotchi/displays/     display drivers (simulator, Waveshare 2.13" V4)
+  claudegotchi/config.py     reads claudegotchi.toml
+  tools/mockups.py           renders docs/mockups.png
+client/    hook and status line client for your computer, plus installer
+os/        Buildroot extension (br2-external): defconfigs, board files, package
 ```
 
-## Ohne Hardware ausprobieren
+## Try it without hardware
 
 ```bash
 python3 -m pip install pillow
 make test
-make sim                       # Vorschau: http://localhost:8765/
+make sim                       # preview: http://localhost:8765/  (other port: make sim PORT=8766)
 CLAUDEGOTCHI_URL=http://localhost:8765 python3 client/claudegotchi_client.py test
+make mockups                   # every mood in docs/mockups.png
 ```
 
-## Image bauen
+Python 3.9 or newer is enough on the computer.
 
-Auf einem Linux-Rechner (Debian/Ubuntu) mit den Buildroot-Abhängigkeiten
+## Build the image
+
+On a Linux machine (Debian/Ubuntu) with the Buildroot dependencies
 (`build-essential bc cpio rsync unzip file wget`):
 
 ```bash
-make zero2w      # oder: make zerow
+make zero2w      # or: make zerow
 ```
 
-Der erste Build lädt Buildroot und alle Quellen herunter und dauert gut eine Stunde.
-Ergebnis: `output/zero2w/images/claudegotchi-zero2w.img.xz`. Auf GitHub baut der
-Workflow `.github/workflows/image.yml` beide Images bei jedem Tag `v*`.
+The first build downloads Buildroot and all sources and takes about an hour.
+Result: `output/zero2w/images/claudegotchi-zero2w.img.xz`. On GitHub, the workflow
+`.github/workflows/image.yml` builds both images for every `v*` tag.
 
-Flashen mit dem Raspberry Pi Imager: *Eigenes Image verwenden* und die `.img.xz` wählen.
+Flash it with Raspberry Pi Imager: *Use custom* and pick the `.img.xz`.
 
-## Einrichten
+## Set up
 
-Nach dem Flashen liegt auf der Boot-Partition (`CLAUDEGOTCHI`) die Datei
-`claudegotchi.toml`. Dort trägst du bei Bedarf WLAN, Token, Drehung und Zeitzone ein.
-Ohne WLAN-Eintrag läuft das Gotchi nur über das USB-Kabel: Der Mac bekommt automatisch
-eine Adresse, das Gotchi ist unter `192.168.77.1` erreichbar.
+After flashing, the boot partition (`CLAUDEGOTCHI`) contains `claudegotchi.toml`.
+Put your Wi-Fi, token, rotation and time zone there if you need them. Without
+Wi-Fi, the gotchi only talks over the USB cable: your computer gets an address
+automatically and the gotchi is reachable at `192.168.77.1`.
 
-Am Mac:
+On your computer:
 
 ```bash
-python3 client/install_mac.py          # Adresse "auto": erst USB, dann claudegotchi.local
+python3 client/install_mac.py          # address "auto": USB first, then claudegotchi.local
 python3 ~/.claude/claudegotchi/claudegotchi_client.py test
 ```
 
-Der Installer trägt Hooks und Statusline in `~/.claude/settings.json` ein, sichert die
-alte Datei und lässt deine bisherigen Hooks und deine Statusline in Ruhe.
-Entfernen: `python3 client/install_mac.py --uninstall`.
+The installer adds hooks and a status line to `~/.claude/settings.json`, backs up
+the old file, and leaves your existing hooks and status line alone.
+Remove it with `python3 client/install_mac.py --uninstall`.
 
-## Was im Image steckt
+## What is in the image
 
-* Root-Dateisystem nur lesbar, `/tmp` und `/run` im RAM. Stromziehen schadet der Karte nicht.
-* BusyBox-Init mit wenigen Skripten (`os/board/claudegotchi/rootfs-overlay/etc/init.d/`):
-  Einstellungen lesen, USB-Gadget, WLAN, dann der Dienst.
-* USB-Gadget als CDC-ECM-Netzwerkkarte mit DHCP-Server für den Mac.
-* avahi für `claudegotchi.local`, NTP im WLAN. Ohne WLAN übernimmt das Gotchi die
-  Uhrzeit vom Mac.
-* Kein SSH im Standard-Image.
+* Read-only root filesystem, `/tmp` and `/run` in RAM. Pulling the plug does not hurt the card.
+* BusyBox init with a few scripts (`os/board/claudegotchi/rootfs-overlay/etc/init.d/`):
+  read settings, USB gadget, Wi-Fi, then the service.
+* USB gadget as a CDC-ECM network adapter with a DHCP server for your computer.
+* avahi for `claudegotchi.local`, NTP on Wi-Fi. Without Wi-Fi the gotchi takes the
+  time from your computer.
+* No SSH in the default image.
 
-## Datenschutz
+## Privacy
 
-Übertragen werden nur Metadaten: Ereignis, Session-ID, Ordnername, Tool-Name und
-Limit-Prozente. Prompts, Code und Antworten verlassen deinen Mac nicht.
+Only metadata is sent: event, session ID, folder name, tool name and limit
+percentages. Prompts, code and replies never leave your computer.
 
-## Stand
+## Status
 
-Version 0.1.0. Die App läuft im Simulator, die Buildroot-Defconfigs sind gegen
-Buildroot 2026.02.3 geprüft. Ein vollständiger Image-Build und der Test auf echter
-Hardware stehen noch aus.
+Version 0.1.0. The app runs in the simulator and the Buildroot defconfigs are
+checked against Buildroot 2026.02.3. A full image build and a test on real
+hardware are still open.

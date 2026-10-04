@@ -1,4 +1,4 @@
-# Claudegotchi – Raspberry Pi Zero W (32 Bit, ARMv6)
+# Claudegotchi: Raspberry Pi Zero W (32-bit, ARMv6)
 BR2_arm=y
 BR2_arm1176jzf_s=y
 BR2_TOOLCHAIN_EXTERNAL=y

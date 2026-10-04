@@ -1,7 +1,7 @@
 #!/bin/sh
-# USB-Gadget: Am Datenport meldet sich der Pi als Netzwerkkarte (CDC-ECM).
-# macOS und Linux brauchen keinen Treiber. Der Rechner bekommt per DHCP eine
-# Adresse, das Gotchi selbst ist unter $USB_ADDRESS erreichbar.
+# USB gadget: on the data port the Pi shows up as a network adapter (CDC-ECM).
+# macOS and Linux need no driver. The computer gets an address via DHCP; the
+# gotchi itself is reachable at $USB_ADDRESS.
 
 . /run/claudegotchi.env 2>/dev/null
 USB_ADDRESS=${USB_ADDRESS:-192.168.77.1}
@@ -12,11 +12,11 @@ start() {
 	modprobe -q libcomposite 2>/dev/null
 	mountpoint -q /sys/kernel/config || mount -t configfs none /sys/kernel/config || exit 1
 	UDC=$(ls /sys/class/udc 2>/dev/null | head -n1)
-	[ -n "$UDC" ] || { echo "USB-Gadget: kein USB-Controller im Gerätemodus"; exit 0; }
+	[ -n "$UDC" ] || { echo "USB gadget: no USB controller in device mode"; exit 0; }
 
 	SERIAL=$(sed -n 's/^Serial[[:space:]]*: *//p' /proc/cpuinfo)
 	SERIAL=${SERIAL:-0000000000000000}
-	# Feste MAC-Adressen aus der Seriennummer, damit der Mac das Gerät wiedererkennt
+	# Stable MAC addresses from the serial number, so the computer recognizes the device
 	TAIL=$(echo "$SERIAL" | tail -c 9 | sed 's/\(..\)\(..\)\(..\)\(..\)/\1:\2:\3:\4/')
 	HOST_MAC="02:c1:$TAIL"
 	DEV_MAC="06:c1:$TAIL"
@@ -50,10 +50,10 @@ lease_file /run/udhcpd.usb0.leases
 option subnet 255.255.255.0
 option lease 86400
 CONF
-	# Bewusst kein "option router": der Mac soll sein Internet nicht über das Gotchi leiten.
+	# Deliberately no "option router": the computer must not route its internet via the gotchi.
 	touch /run/udhcpd.usb0.leases
 	start-stop-daemon -S -q -b -m -p /run/udhcpd.usb0.pid -x /usr/sbin/udhcpd -- -f /run/udhcpd.usb0.conf
-	echo "USB-Gadget: $USB_ADDRESS"
+	echo "USB gadget: $USB_ADDRESS"
 }
 
 stop() {

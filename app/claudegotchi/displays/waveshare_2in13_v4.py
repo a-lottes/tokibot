@@ -1,5 +1,5 @@
 class Waveshare2in13V4:
-    """Waveshare 2.13" V4 (250 × 122) mit Teil-Aktualisierung."""
+    """Waveshare 2.13" V4 (250 × 122) with partial refresh."""
 
     SIZE = (250, 122)
 
@@ -16,7 +16,7 @@ class Waveshare2in13V4:
         buf = self.epd.getbuffer(img)
         if full:
             self.epd.init()
-            self.epd.displayPartBaseImage(buf)   # voller Refresh, setzt Basis für Teil-Updates
+            self.epd.displayPartBaseImage(buf)   # full refresh, sets the base for partial updates
         else:
             self.epd.displayPartial(buf)
 

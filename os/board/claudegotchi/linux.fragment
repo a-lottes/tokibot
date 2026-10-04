@@ -1,4 +1,4 @@
-# USB-Gadget (Netzwerkkarte am Datenport)
+# USB gadget (network adapter on the data port)
 CONFIG_USB_DWC2=y
 CONFIG_USB_DWC2_DUAL_ROLE=y
 CONFIG_USB_GADGET=y
@@ -7,6 +7,6 @@ CONFIG_USB_LIBCOMPOSITE=y
 CONFIG_USB_CONFIGFS=y
 CONFIG_USB_CONFIGFS_ECM=y
 CONFIG_USB_CONFIGFS_NCM=y
-# e-Paper über SPI
+# e-paper via SPI
 CONFIG_SPI_BCM2835=y
 CONFIG_SPI_SPIDEV=y

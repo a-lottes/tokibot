@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Richtet den Claudegotchi-Client in Claude Code ein (oder entfernt ihn wieder).
+"""Sets up the Claudegotchi client in Claude Code (or removes it again).
 
-  python3 install_mac.py                         # Standard: automatisch (USB-Kabel, dann WLAN)
-  python3 install_mac.py --url http://192.168.1.50:8765 --token geheim
+  python3 install_mac.py                         # default: automatic (USB cable, then Wi-Fi)
+  python3 install_mac.py --url http://192.168.1.50:8765 --token secret
   python3 install_mac.py --uninstall
 
-Was passiert:
-  * claudegotchi_client.py wird nach ~/.claude/claudegotchi/ kopiert
-  * ~/.claude/settings.json bekommt die Hooks und die Statusline
-    (vorher wird eine Sicherung settings.json.claudegotchi-backup angelegt)
-  * Eine vorhandene Statusline bleibt erhalten und wird weiter angezeigt
+What happens:
+  * claudegotchi_client.py is copied to ~/.claude/claudegotchi/
+  * ~/.claude/settings.json gets the hooks and the status line
+    (a backup settings.json.claudegotchi-backup is made first)
+  * an existing status line is kept and still shown
 """
 import argparse
 import json
@@ -69,7 +69,7 @@ def install(args):
 
     settings = load_settings()
     if os.path.exists(SETTINGS) and not os.path.exists(SETTINGS + ".claudegotchi-backup"):
-        shutil.copy2(SETTINGS, SETTINGS + ".claudegotchi-backup")   # nur die Original-Version sichern
+        shutil.copy2(SETTINGS, SETTINGS + ".claudegotchi-backup")   # back up the original version only
 
     cfg_path = os.path.join(TARGET_DIR, "claudegotchi.json")
     old_cfg = {}
@@ -77,7 +77,7 @@ def install(args):
         with open(cfg_path) as f:
             old_cfg = json.load(f)
 
-    # Vorhandene Statusline weiterreichen statt überschreiben
+    # Chain an existing status line instead of replacing it
     chain = old_cfg.get("statusline_chain", "")
     sl = settings.get("statusLine") or {}
     if sl.get("command") and MARK not in sl["command"]:
@@ -100,13 +100,13 @@ def install(args):
     settings["statusLine"] = new_sl
     save_settings(settings)
 
-    print(f"✓ Client installiert: {CLIENT}")
-    print(f"✓ Hooks + Statusline in {SETTINGS} eingetragen (Sicherung: settings.json.claudegotchi-backup)")
+    print(f"✓ Client installed: {CLIENT}")
+    print(f"✓ Hooks and status line added to {SETTINGS} (backup: settings.json.claudegotchi-backup)")
     if chain:
-        print(f"✓ Deine bisherige Statusline wird weiter angezeigt: {chain}")
-    print(f"→ Gotchi-Adresse: {url}")
+        print(f"✓ Your existing status line is still shown: {chain}")
+    print(f"→ Gotchi address: {url}")
     print(f'→ Test:  python3 "{CLIENT}" test')
-    print("→ Laufende Claude-Code-Sessions einmal neu starten, damit die Hooks greifen.")
+    print("→ Restart running Claude Code sessions once so the hooks take effect.")
 
 
 def uninstall():
@@ -125,13 +125,13 @@ def uninstall():
             settings.pop("statusLine", None)
     save_settings(settings)
     shutil.rmtree(TARGET_DIR, ignore_errors=True)
-    print("✓ Claudegotchi aus Claude Code entfernt" + (f" – Statusline zurück auf: {chain}" if chain else ""))
+    print("✓ Claudegotchi removed from Claude Code" + (f"; status line restored to: {chain}" if chain else ""))
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--url", default=None, help=f"Adresse des Gotchi (Standard: {DEFAULT_URL})")
-    ap.add_argument("--token", default=None, help="optionaler Token, muss zum Gotchi passen")
+    ap.add_argument("--url", default=None, help=f"address of the gotchi (default: {DEFAULT_URL})")
+    ap.add_argument("--token", default=None, help="optional token, must match the gotchi")
     ap.add_argument("--uninstall", action="store_true")
     args = ap.parse_args()
     if args.uninstall:

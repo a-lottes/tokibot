@@ -1,18 +1,18 @@
 #!/bin/sh
-# Root-Dateisystem bleibt nur lesbar. Die Boot-Partition (mit claudegotchi.toml)
-# wird nach /boot eingebunden, ebenfalls nur lesbar.
+# The root filesystem stays read-only. The boot partition (with claudegotchi.toml)
+# is mounted at /boot, also read-only.
 set -eu
 
 mkdir -p "${TARGET_DIR}/boot"
 grep -q '[[:space:]]/boot[[:space:]]' "${TARGET_DIR}/etc/fstab" || \
 	echo '/dev/mmcblk0p1	/boot		vfat	ro,noatime	0	0' >> "${TARGET_DIR}/etc/fstab"
 
-# Kein Login auf dem HDMI-Ausgang nötig; die serielle Konsole bleibt.
+# No login on the HDMI output; the serial console stays.
 sed -i '/^tty1::/d' "${TARGET_DIR}/etc/inittab"
 
-# Version ins Image schreiben
+# Write the version into the image
 VERSION=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "${BR2_EXTERNAL_CLAUDEGOTCHI_PATH}/../app/claudegotchi/__init__.py")
 echo "claudegotchi ${VERSION}" > "${TARGET_DIR}/etc/claudegotchi-release"
 
-# Init-Skripte ausführbar machen (falls das Dateisystem beim Auschecken die Rechte verliert)
+# Make the init scripts executable (in case the checkout lost the permissions)
 chmod 0755 "${TARGET_DIR}"/etc/init.d/S*

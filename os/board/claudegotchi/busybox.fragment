@@ -1,4 +1,4 @@
-# DHCP-Server für den Mac am USB-Kabel, NTP für die Uhrzeit im WLAN
+# DHCP server for the computer on the USB cable, NTP for the time on Wi-Fi
 CONFIG_UDHCPD=y
 CONFIG_FEATURE_UDHCPD_WRITE_LEASES_EARLY=y
 CONFIG_NTPD=y

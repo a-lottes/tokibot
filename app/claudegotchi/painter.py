@@ -1,17 +1,25 @@
-"""Zeichnet eine Ansicht (Gesicht, Sprechtext, Fußzeile) als 1-Bit-Bild."""
+"""Draws a view (critter, speech bubble, status bar) as a 1-bit image."""
 import logging
 import os
 from datetime import datetime
 
 from PIL import Image, ImageDraw, ImageFont
 
+from . import critter
+from .mood import LABELS
+
 W, H = 250, 122
 log = logging.getLogger("claudegotchi")
 
-# Die benötigten DejaVu-Schriften liegen dem Paket bei (fonts/), damit Gesichter wie
-# (◕‿‿◕) auf dem Gerät und am Mac gleich aussehen.
+# The DejaVu fonts ship with the package (fonts/), so the display looks the same
+# on the device and in the simulator on a Mac.
 FONT_DIRS = [os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts"),
              "/usr/share/fonts/truetype/dejavu/", "/usr/share/fonts/dejavu/"]
+
+HEADER_H = 15
+FOOTER_Y = 106
+BUBBLE = (110, 20, W - 3, FOOTER_Y - 5)       # speech bubble box
+CRITTER_XY = (14, 44)
 
 
 def load_font(name, size):
@@ -19,17 +27,17 @@ def load_font(name, size):
         p = os.path.join(d, name)
         if os.path.exists(p):
             return ImageFont.truetype(p, size)
-    log.warning("Schrift %s nicht gefunden – nutze Standardschrift", name)
+    log.warning("Font %s not found, using the default font", name)
     return ImageFont.load_default()
 
 
 class Painter:
     def __init__(self):
-        self.f_face = load_font("DejaVuSansMono-Bold.ttf", 30)
-        self.f_title = load_font("DejaVuSansMono-Bold.ttf", 11)
+        self.f_brand = load_font("DejaVuSansMono-Bold.ttf", 11)
         self.f_text = load_font("DejaVuSans.ttf", 11)
         self.f_proj = load_font("DejaVuSans-Bold.ttf", 11)
         self.f_small = load_font("DejaVuSans.ttf", 10)
+        self.f_small_bold = load_font("DejaVuSans-Bold.ttf", 10)
 
     def wrap(self, text, font, width):
         lines, line = [], ""
@@ -40,7 +48,7 @@ class Painter:
             else:
                 if line:
                     lines.append(line)
-                while font.getlength(word) > width:   # überlange Wörter hart umbrechen
+                while font.getlength(word) > width:   # hard-break words that are too long
                     cut = len(word)
                     while cut > 1 and font.getlength(word[:cut]) > width:
                         cut -= 1
@@ -59,48 +67,57 @@ class Painter:
             text = text[:-1]
         return text + "…"
 
-    def render(self, view, face):
-        img = Image.new("1", (W, H), 255)
-        d = ImageDraw.Draw(img)
-
-        # Kopfzeile
-        d.text((3, 1), "Claudegotchi", font=self.f_title, fill=0)
+    def header(self, d, view):
+        d.rectangle((0, 0, W - 1, HEADER_H - 1), fill=0)
+        d.text((4, 1), "claudegotchi", font=self.f_brand, fill=255)
         clock = datetime.now().strftime("%H:%M")
-        d.text((W - 3 - self.f_title.getlength(clock), 1), clock, font=self.f_title, fill=0)
-        if view["sessions"]:
-            sess = f"{view['sessions']} Session" + ("s" if view["sessions"] != 1 else "")
-            d.text(((W - self.f_small.getlength(sess)) / 2, 2), sess, font=self.f_small, fill=0)
-        d.line((0, 15, W, 15), fill=0)
+        d.text((W - 4 - self.f_brand.getlength(clock), 1), clock, font=self.f_brand, fill=255)
+        n = view["sessions"]
+        if n:
+            label = f"{n} {LABELS['session'] if n == 1 else LABELS['sessions']}"
+            x = (W - self.f_small.getlength(label)) / 2 + 18
+            d.text((x, 2), label, font=self.f_small, fill=255)
 
-        # Gesicht links
-        l, t, r, b = d.textbbox((0, 0), "(◕‿‿◕)", font=self.f_face)   # feste Referenz → kein Hüpfen
-        fw = self.f_face.getlength(face)
-        d.text(((122 - fw) / 2, 16 + (89 - (b - t)) / 2 - t), face, font=self.f_face, fill=0)
-
-        # Sprechtext rechts
-        x0, y = 124, 21
+    def bubble(self, d, view):
+        x0, y0, x1, y1 = BUBBLE
+        d.rounded_rectangle(BUBBLE, radius=7, outline=0, width=2, fill=255)
+        # tail pointing at the critter
+        ty = 62
+        d.polygon([(x0 + 1, ty - 6), (x0 + 1, ty + 4), (x0 - 9, ty + 4)], fill=255)
+        d.line([(x0, ty - 6), (x0 - 9, ty + 4), (x0, ty + 4)], fill=0, width=2)
+        x, y, width = x0 + 7, y0 + 5, x1 - x0 - 13
+        lines_left = 5
         if view["project"]:
-            proj = self.ellipsize(view["project"], self.f_proj, W - x0 - 3)
-            d.text((x0, y), proj, font=self.f_proj, fill=0)
+            d.text((x, y), self.ellipsize(view["project"], self.f_proj, width),
+                   font=self.f_proj, fill=0)
             y += 15
-        for line in self.wrap(view["message"], self.f_text, W - x0 - 3)[:5 if not view["project"] else 4]:
-            d.text((x0, y), line, font=self.f_text, fill=0)
+            lines_left = 4
+        for line in self.wrap(view["message"], self.f_text, width)[:lines_left]:
+            d.text((x, y), line, font=self.f_text, fill=0)
             y += 14
 
-        # Fußzeile: Session-Zähler links, Limits rechts
-        d.line((0, 105, W, 105), fill=0)
+    def footer(self, d, view):
+        d.line((0, FOOTER_Y, W, FOOTER_Y), fill=0)
         c = view["counts"]
-        parts = []
+        chips = []
         if c.get("working"):
-            parts.append(f"⚙{c['working']}")
+            chips.append(("▶", c["working"]))
         waiting = c.get("waiting", 0) + c.get("permission", 0)
         if waiting:
-            parts.append(f"?{waiting}")
+            chips.append(("?", waiting))
         if c.get("done"):
-            parts.append(f"✓{c['done']}")
-        n = view["tools_today"]
-        left = " ".join(parts) or f"{n} Tool{'' if n == 1 else 's'} heute"
-        d.text((3, 108), left, font=self.f_small, fill=0)
+            chips.append(("✓", c["done"]))
+        x = 3
+        if chips:
+            for icon, n in chips:
+                label = f"{icon}{n}"
+                w = self.f_small_bold.getlength(label) + 8
+                d.rounded_rectangle((x, FOOTER_Y + 3, x + w, FOOTER_Y + 14), radius=5, fill=0)
+                d.text((x + 4, FOOTER_Y + 3), label, font=self.f_small_bold, fill=255)
+                x += w + 4
+        else:
+            d.text((x, FOOTER_Y + 3), LABELS["tools_today"].format(n=view["tools_today"]),
+                   font=self.f_small, fill=0)
 
         x = W - 3
         for key, label in (("seven_day", "7d"), ("five_hour", "5h")):
@@ -110,12 +127,22 @@ class Painter:
             pct = max(0, min(100, w["pct"]))
             txt = f"{int(round(pct))}%"
             x -= self.f_small.getlength(txt)
-            d.text((x, 108), txt, font=self.f_small, fill=0)
-            x -= 30
-            d.rectangle((x, 110, x + 26, 117), outline=0)
-            d.rectangle((x + 1, 111, x + 1 + int(24 * pct / 100), 116), fill=0)
-            x -= self.f_small.getlength(label) + 2
-            d.text((x, 108), label, font=self.f_small, fill=0)
+            d.text((x, FOOTER_Y + 3), txt, font=self.f_small, fill=0)
+            x -= 32
+            d.rounded_rectangle((x, FOOTER_Y + 5, x + 28, FOOTER_Y + 12), radius=3, outline=0)
+            fill = int(26 * pct / 100)
+            if fill >= 2:
+                d.rounded_rectangle((x + 1, FOOTER_Y + 6, x + 1 + fill, FOOTER_Y + 11),
+                                    radius=2, fill=0)
+            x -= self.f_small_bold.getlength(label) + 2
+            d.text((x, FOOTER_Y + 3), label, font=self.f_small_bold, fill=0)
             x -= 8
-        return img
 
+    def render(self, view, frame=0):
+        img = Image.new("1", (W, H), 255)
+        d = ImageDraw.Draw(img)
+        self.header(d, view)
+        critter.draw(d, *CRITTER_XY, view["mood"], frame)
+        self.bubble(d, view)
+        self.footer(d, view)
+        return img

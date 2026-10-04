@@ -1,7 +1,7 @@
-"""Einstellungen aus claudegotchi.toml (auf dem Gerät: Boot-Partition, /boot/claudegotchi.toml).
+"""Settings from claudegotchi.toml (on the device: boot partition, /boot/claudegotchi.toml).
 
-  python3 -m claudegotchi.config shell [datei]   – Werte als Shell-Variablen ausgeben
-                                                   (für die Init-Skripte des Images)
+  python3 -m claudegotchi.config shell [file]   print the values as shell variables
+                                                 (used by the image's init scripts)
 """
 import copy
 import json
@@ -12,7 +12,7 @@ import sys
 
 try:
     import tomllib
-except ImportError:          # Python < 3.11 (z. B. das System-Python auf dem Mac)
+except ImportError:          # Python < 3.11 (e.g. the system Python on a Mac)
     tomllib = None
 
 DEFAULT_PATH = "/boot/claudegotchi.toml"
@@ -28,10 +28,10 @@ DEFAULTS = {
 def _value(raw):
     raw = raw.strip()
     m = re.match(r'"((?:[^"\\]|\\.)*)"', raw)
-    if m:                                  # "text": Escapes wie in JSON
+    if m:                                  # "text": escapes as in JSON
         return json.loads(m.group(0))
     m = re.match(r"'([^']*)'", raw)
-    if m:                                  # 'text': wörtlich
+    if m:                                  # 'text': literal
         return m.group(1)
     raw = raw.split("#", 1)[0].strip()
     if raw in ("true", "false"):
@@ -43,8 +43,8 @@ def _value(raw):
 
 
 def _parse_simple_toml(text):
-    """Ersatz für tomllib unter Python < 3.11. Reicht für claudegotchi.toml:
-    [abschnitte] und key = "text" | 'text' | zahl | true/false."""
+    """Stand-in for tomllib on Python < 3.11. Enough for claudegotchi.toml:
+    [sections] and key = "text" | 'text' | number | true/false."""
     data, current = {}, None
     for n, line in enumerate(text.splitlines(), 1):
         line = line.strip()
@@ -54,7 +54,7 @@ def _parse_simple_toml(text):
             current = data.setdefault(line.split("#", 1)[0].strip()[1:-1].strip(), {})
             continue
         if "=" not in line:
-            raise ValueError(f"Zeile {n}: unverständlich: {line}")
+            raise ValueError(f"line {n}: cannot parse: {line}")
         key, raw = line.split("=", 1)
         (current if current is not None else data)[key.strip()] = _value(raw)
     return data

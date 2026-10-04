@@ -1,2 +1,2 @@
-"""Claudegotchi – ein E-Ink-Begleiter, der zeigt, wie es deinen Claude-Code-Sessions geht."""
+"""Claudegotchi: an e-ink companion that shows how your Claude Code sessions are doing."""
 __version__ = "0.1.0"

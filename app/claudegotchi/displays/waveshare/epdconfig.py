@@ -1,14 +1,14 @@
-"""Schlanke Hardware-Schicht für die Waveshare-Treiber.
+"""Slim hardware layer for the Waveshare drivers.
 
-Ersetzt Waveshares epdconfig.py (das gpiozero bzw. Jetson-/Sunrise-Code mitbringt)
-durch das Nötigste für den Raspberry Pi: spidev für SPI, RPi.GPIO für die Pins.
-Die Funktionsnamen entsprechen dem Original, damit epd2in13_V4.py unverändert bleibt.
+Replaces Waveshare's epdconfig.py (which pulls in gpiozero and Jetson/Sunrise code)
+with the bare minimum for the Raspberry Pi: spidev for SPI, RPi.GPIO for the pins.
+The function names match the original so epd2in13_V4.py stays unchanged.
 """
 import time
 
 RST_PIN = 17
 DC_PIN = 25
-CS_PIN = 8          # wird von spidev selbst bedient
+CS_PIN = 8          # driven by spidev itself
 BUSY_PIN = 24
 PWR_PIN = 18
 

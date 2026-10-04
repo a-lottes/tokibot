@@ -53,9 +53,9 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual(data["wifi"]["ssid"], "")
 
     def test_fallback_parser_handles_quotes_and_comments(self):
-        text = '[wifi]\nssid = "Mein \\"WLAN\\"" # Kommentar\npsk = \'a#b\'\n'
+        text = '[wifi]\nssid = "My \\"Wi-Fi\\"" # comment\npsk = \'a#b\'\n'
         data = _parse_simple_toml(text)
-        self.assertEqual(data["wifi"], {"ssid": 'Mein "WLAN"', "psk": "a#b"})
+        self.assertEqual(data["wifi"], {"ssid": 'My "Wi-Fi"', "psk": "a#b"})
 
 
 if __name__ == "__main__":

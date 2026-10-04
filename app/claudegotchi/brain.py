@@ -1,10 +1,10 @@
-"""Das Gehirn: fasst alle Claude-Code-Sessions zu einer Stimmung zusammen."""
+"""The brain: folds all Claude Code sessions into a single mood."""
 import random
 import threading
 import time
 from datetime import datetime
 
-from .mood import (DONE_DECAY, ERROR_LABELS, LIMIT_FALLBACK, LIMIT_WARN_PCT, MESSAGES,
+from .mood import (DONE_DECAY, ERROR_LABELS, FILL_DEFAULTS, LIMIT_FALLBACK, LIMIT_WARN_PCT, MESSAGES,
                    PERMISSION_DECAY, PRIORITY, SESSION_FORGET, WAITING_NOTIFICATIONS,
                    WORKING_EVENTS, WORKING_STALE)
 
@@ -19,7 +19,7 @@ class Brain:
 
     def handle_hook(self, ev):
         name = ev.get("hook_event_name", "")
-        sid = str(ev.get("session_id") or "unbekannt")
+        sid = str(ev.get("session_id") or "unknown")
         ts = float(ev.get("ts") or time.time())
         now = time.time()
         with self.lock:
@@ -29,7 +29,7 @@ class Brain:
             s = self.sessions.setdefault(sid, {
                 "state": "ready", "since": now, "updated": now, "ts": 0.0,
                 "project": "", "tool": "", "error": ""})
-            # Hooks laufen asynchron → Events können überholen. Ältere ignorieren.
+            # Hooks run asynchronously, so events can overtake each other. Ignore older ones.
             if ts < s["ts"]:
                 return
             s["ts"] = ts
@@ -88,7 +88,7 @@ class Brain:
         self.tools_today += 1
 
     def _limit_reset(self, now):
-        """Zeitpunkt, bis zu dem ein volles Fenster blockiert (oder None)."""
+        """Time until which a full rate-limit window blocks work (or None)."""
         resets = [w["reset"] for w in self.limits.values()
                   if w["pct"] >= 100 and w["reset"] > now]
         return max(resets) if resets else None
@@ -135,10 +135,10 @@ class Brain:
 
         reset = limit_reset or (limits.get("five_hour", {}).get("reset") if state == "limit" else None)
         fill = {
-            "tool": s.get("tool") or "etwas",
-            "error": s.get("error") or "?",
-            "pct": int(pct5) if pct5 is not None else "?",
-            "reset": datetime.fromtimestamp(reset).strftime("%H:%M") if reset else "zum Reset",
+            "tool": s.get("tool") or FILL_DEFAULTS["tool"],
+            "error": s.get("error") or FILL_DEFAULTS["error"],
+            "pct": int(pct5) if pct5 is not None else FILL_DEFAULTS["pct"],
+            "reset": datetime.fromtimestamp(reset).strftime("%H:%M") if reset else FILL_DEFAULTS["reset"],
         }
         key = mood
         if mood == "working" and s.get("tool") and (int(now // 20) % 2):

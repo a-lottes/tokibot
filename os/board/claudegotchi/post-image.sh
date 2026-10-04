@@ -1,6 +1,6 @@
 #!/bin/bash
-# Baut sdcard.img aus Boot-Partition und Root-Dateisystem und packt es für den
-# Raspberry Pi Imager als .img.xz.
+# Builds sdcard.img from the boot partition and the root filesystem and packs it
+# as .img.xz for Raspberry Pi Imager.
 set -e
 
 BOARD_DIR="$(dirname "$0")"
@@ -29,4 +29,4 @@ genimage \
 NAME="claudegotchi-${2:-image}.img"
 cp "${BINARIES_DIR}/sdcard.img" "${BINARIES_DIR}/${NAME}"
 xz -T0 -f "${BINARIES_DIR}/${NAME}"
-echo "Fertig: ${BINARIES_DIR}/${NAME}.xz"
+echo "Done: ${BINARIES_DIR}/${NAME}.xz"

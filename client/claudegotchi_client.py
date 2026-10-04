@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Claudegotchi-Client für Claude Code (Mac/Linux).
+"""Claudegotchi client for Claude Code (Mac/Linux).
 
-  claudegotchi_client.py hook        – als Claude-Code-Hook: Event ans Gotchi melden
-  claudegotchi_client.py statusline  – als Statusline: Limits melden + Statuszeile ausgeben
-  claudegotchi_client.py test        – Testsequenz an das Gotchi schicken
+  claudegotchi_client.py hook        as a Claude Code hook: report the event to the gotchi
+  claudegotchi_client.py statusline  as the status line: report limits and print a status line
+  claudegotchi_client.py test        send a test sequence to the gotchi
 
-Sendet nur Metadaten (Event-Name, Session-ID, Projektordner-Name, Tool-Name,
-Benachrichtigungs-/Fehlertyp, Limit-Prozente) – niemals Prompts, Code oder Antworten.
-Blockiert Claude Code nie: Das Senden läuft in einem abgekoppelten Hintergrundprozess.
+Sends metadata only (event name, session ID, project folder name, tool name,
+notification/error type, limit percentages), never prompts, code or replies.
+Never blocks Claude Code: sending happens in a detached background process.
 """
 import json
 import os
@@ -21,7 +21,7 @@ KEEP = ("hook_event_name", "session_id", "notification_type", "error_type",
         "tool_name", "source", "reason")
 
 
-# "auto": erst das USB-Kabel probieren, dann das WLAN.
+# "auto": try the USB cable first, then Wi-Fi.
 AUTO_URLS = ["http://192.168.77.1:8765", "http://claudegotchi.local:8765"]
 LAST_URL = os.path.join(HERE, "last_url")
 
@@ -45,7 +45,7 @@ def candidates(cfg):
     try:
         with open(LAST_URL) as f:
             last = f.read().strip()
-        if last in urls:                       # zuletzt erfolgreiche Adresse zuerst
+        if last in urls:                       # last working address first
             urls.remove(last)
             urls.insert(0, last)
     except OSError:
@@ -77,13 +77,13 @@ def post(cfg, path, payload, timeout=3):
 
 
 def post_detached(cfg, path, payload):
-    """Abkoppeln und im Hintergrund senden – der Aufrufer kehrt sofort zurück."""
+    """Detach and send in the background; the caller returns immediately."""
     sys.stdout.flush()
     sys.stderr.flush()
     try:
         if os.fork():
             return
-    except (OSError, AttributeError):          # kein fork (z.B. Windows): kurz und knapp senden
+    except (OSError, AttributeError):          # no fork (e.g. Windows): send with a short timeout
         try:
             post(cfg, path, payload, timeout=0.5)
         except Exception:
@@ -120,7 +120,7 @@ def cmd_statusline(cfg):
         data = {}
     rl = data.get("rate_limits")
 
-    # 1) Statuszeile ausgeben: entweder deine bisherige oder eine kleine eigene
+    # 1) Print the status line: either your existing one or a small one of our own
     out = ""
     if cfg.get("statusline_chain"):
         try:
@@ -137,25 +137,25 @@ def cmd_statusline(cfg):
         out = "(◕‿‿◕) " + " · ".join(parts)
     print(out)
 
-    # 2) Limits ans Gotchi melden
+    # 2) Report the limits to the gotchi
     if rl:
         post_detached(cfg, "/limits", {"rate_limits": rl, "ts": time.time()})
 
 
 def cmd_test(cfg):
-    """Spielt einen kleinen Ablauf durch, damit du jede Stimmung siehst."""
+    """Plays a short sequence so you can see every mood."""
     sid = "test-session"
     steps = [
-        ({"hook_event_name": "SessionStart"}, "Hallo"),
-        ({"hook_event_name": "UserPromptSubmit"}, "arbeitet"),
-        ({"hook_event_name": "PreToolUse", "tool_name": "Bash"}, "arbeitet mit Tool"),
+        ({"hook_event_name": "SessionStart"}, "hello"),
+        ({"hook_event_name": "UserPromptSubmit"}, "working"),
+        ({"hook_event_name": "PreToolUse", "tool_name": "Bash"}, "working with a tool"),
         ({"hook_event_name": "Notification", "notification_type": "permission_prompt",
-          "tool_name": "Bash"}, "fragt um Erlaubnis"),
-        ({"hook_event_name": "PostToolUse", "tool_name": "Bash"}, "arbeitet weiter"),
-        ({"hook_event_name": "Stop"}, "fertig"),
-        ({"hook_event_name": "Notification", "notification_type": "idle_prompt"}, "wartet auf dich"),
-        ({"hook_event_name": "StopFailure", "error_type": "rate_limit"}, "Limit erreicht"),
-        ({"hook_event_name": "SessionEnd"}, "Session beendet"),
+          "tool_name": "Bash"}, "asking for permission"),
+        ({"hook_event_name": "PostToolUse", "tool_name": "Bash"}, "working again"),
+        ({"hook_event_name": "Stop"}, "done"),
+        ({"hook_event_name": "Notification", "notification_type": "idle_prompt"}, "waiting for you"),
+        ({"hook_event_name": "StopFailure", "error_type": "rate_limit"}, "limit reached"),
+        ({"hook_event_name": "SessionEnd"}, "session ended"),
     ]
     for ev, label in steps:
         ev.update(session_id=sid, project="claudegotchi-test", ts=time.time())
@@ -163,7 +163,7 @@ def cmd_test(cfg):
             url = post(cfg, "/hook", ev)
             print(f"✓ {label}  ({url})")
         except Exception as e:
-            print(f"✗ {label}: {e} – erreichbar unter {', '.join(candidates(cfg))}?")
+            print(f"✗ {label}: {e} (is it reachable at {', '.join(candidates(cfg))}?)")
             return 1
         time.sleep(6)
     return 0

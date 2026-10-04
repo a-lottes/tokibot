@@ -1,6 +1,6 @@
 #!/bin/sh
-# WLAN aus /boot/claudegotchi.toml. Ohne SSID bleibt das WLAN aus.
-# Mit WLAN holt sich das Gotchi die Uhrzeit per NTP.
+# Wi-Fi from /boot/claudegotchi.toml. Without an SSID, Wi-Fi stays off.
+# With Wi-Fi, the gotchi gets the time via NTP.
 
 . /run/claudegotchi.env 2>/dev/null
 
@@ -15,11 +15,11 @@ start() {
 		echo "}"
 	} > /run/wpa_supplicant.conf
 	chmod 600 /run/wpa_supplicant.conf
-	ip link set wlan0 up 2>/dev/null || { echo "WLAN: kein wlan0"; exit 0; }
+	ip link set wlan0 up 2>/dev/null || { echo "Wi-Fi: no wlan0"; exit 0; }
 	wpa_supplicant -B -i wlan0 -c /run/wpa_supplicant.conf -P /run/wpa_supplicant.pid
 	udhcpc -b -i wlan0 -p /run/udhcpc.wlan0.pid -x hostname:"$(hostname)" >/dev/null 2>&1
 	start-stop-daemon -S -q -b -m -p /run/ntpd.pid -x /usr/sbin/ntpd -- -n -p pool.ntp.org
-	echo "WLAN: verbinde mit $WIFI_SSID"
+	echo "Wi-Fi: connecting to $WIFI_SSID"
 }
 
 stop() {

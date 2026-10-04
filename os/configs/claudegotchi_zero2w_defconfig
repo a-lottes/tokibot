@@ -1,4 +1,4 @@
-# Claudegotchi – Raspberry Pi Zero 2 W (64 Bit)
+# Claudegotchi: Raspberry Pi Zero 2 W (64-bit)
 BR2_aarch64=y
 BR2_ARM_FPU_VFPV4=y
 BR2_TOOLCHAIN_EXTERNAL=y

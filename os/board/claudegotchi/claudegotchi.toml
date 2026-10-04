@@ -1,28 +1,28 @@
-# Claudegotchi – Einstellungen
+# Claudegotchi settings
 #
-# Diese Datei liegt auf der Boot-Partition der SD-Karte. Du kannst sie am Mac
-# direkt bearbeiten (Laufwerk "bootfs"/"BOOT"), dann die Karte zurück in den Pi.
+# This file lives on the SD card's boot partition. You can edit it directly on
+# your Mac (drive "CLAUDEGOTCHI"), then put the card back into the Pi.
 
 [device]
-# Display-Treiber: "waveshare_2in13_v4"
+# Display driver: "waveshare_2in13_v4"
 display = "waveshare_2in13_v4"
-# 180, falls das Bild auf dem Kopf steht
+# 180 if the picture is upside down
 rotate = 0
 timezone = "Europe/Berlin"
 
 [server]
 port = 8765
-# Optional: nur Clients mit diesem Token werden angenommen
+# Optional: only accept clients that send this token
 token = ""
 
 [usb]
-# Am USB-Datenport des Pi (nicht "PWR") meldet sich das Gotchi als Netzwerkkarte.
-# Der Mac bekommt automatisch eine Adresse, das Gotchi ist unter 192.168.77.1 erreichbar.
+# On the Pi's USB data port (not "PWR") the gotchi shows up as a network adapter.
+# Your computer gets an address automatically; the gotchi is reachable at 192.168.77.1.
 enabled = true
 address = "192.168.77.1"
 
 [wifi]
-# Leer lassen, wenn das Gotchi nur am USB-Kabel hängt.
+# Leave empty if the gotchi only hangs off the USB cable.
 ssid = ""
 psk = ""
 country = "DE"

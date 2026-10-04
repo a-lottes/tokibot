@@ -1,9 +1,9 @@
-"""HTTP-Server und Programmstart.
+"""HTTP server and program entry point.
 
-Endpunkte:
-  POST /hook    – Hook-Event (vom claudegotchi_client.py)
-  POST /limits  – rate_limits aus der Statusline
-  GET  /        – Live-Vorschau im Browser
+Endpoints:
+  POST /hook    hook event (from claudegotchi_client.py)
+  POST /limits  rate_limits from the status line
+  GET  /        live preview in the browser
   GET  /frame.png, GET /state
 """
 import argparse
@@ -31,8 +31,8 @@ PREVIEW_HTML = b"""<!doctype html><meta charset=utf-8><title>Claudegotchi</title
 img{image-rendering:pixelated;width:750px;max-width:95vw;border:12px solid #222;border-radius:10px;background:#fff}</style>
 <img id=f src=/frame.png><script>setInterval(()=>f.src='/frame.png?'+Date.now(),2000)</script>"""
 
-# Der Pi hat keine Echtzeituhr. Hängt er nur am USB-Kabel (kein NTP), übernehmen wir
-# die Uhrzeit aus dem Zeitstempel, den der Client mitschickt.
+# The Pi has no real-time clock. When it only hangs off the USB cable (no NTP), we take
+# the time from the timestamp the client sends along.
 CLOCK_SANE_AFTER = 1_735_689_600     # 2025-01-01
 
 
@@ -44,7 +44,7 @@ def maybe_set_clock(ts):
     if time.time() < CLOCK_SANE_AFTER < ts:
         try:
             time.clock_settime(time.CLOCK_REALTIME, ts)
-            log.info("Uhrzeit vom Mac übernommen")
+            log.info("Clock set from the client's timestamp")
         except (OSError, AttributeError):
             pass
 
@@ -101,11 +101,11 @@ def make_handler(brain, renderer, token, set_clock):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="claudegotchi",
-                                 description="Claudegotchi – E-Ink-Begleiter für Claude Code")
-    ap.add_argument("--config", default=None, help=f"Einstellungen (Standard: {config.DEFAULT_PATH})")
+                                 description="Claudegotchi: an e-ink companion for Claude Code")
+    ap.add_argument("--config", default=None, help=f"settings file (default: {config.DEFAULT_PATH})")
     ap.add_argument("--port", type=int, default=None)
-    ap.add_argument("--sim", action="store_true", help="ohne e-Paper, nur Browser-Vorschau")
-    ap.add_argument("--png", default="", help="im Sim-Modus jedes Bild hierhin speichern")
+    ap.add_argument("--sim", action="store_true", help="no e-paper, browser preview only")
+    ap.add_argument("--png", default="", help="in sim mode, save every frame to this file")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
@@ -125,19 +125,19 @@ def main(argv=None):
     except OSError as e:
         if e.errno != errno.EADDRINUSE:
             raise
-        log.error("Port %d ist schon belegt. Läuft noch ein anderes Gotchi? "
-                  "Beenden oder mit --port einen anderen Port wählen.", port)
+        log.error("Port %d is already in use. Is another server running? "
+                  "Stop it or pick another port with --port.", port)
         renderer.stop_evt.set()
         return 1
     server.daemon_threads = True
 
     def shutdown(*_):
-        log.info("Tschüss!")
+        log.info("Bye!")
         threading.Thread(target=server.shutdown, daemon=True).start()
 
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
-    log.info("Claudegotchi lauscht auf http://%s:%d", srv["host"], port)
+    log.info("Claudegotchi listening on http://%s:%d", srv["host"], port)
     server.serve_forever()
     renderer.goodbye()
     return 0
