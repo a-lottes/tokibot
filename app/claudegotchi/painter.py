@@ -8,8 +8,10 @@ from PIL import Image, ImageDraw, ImageFont
 W, H = 250, 122
 log = logging.getLogger("claudegotchi")
 
-FONT_DIRS = ["/usr/share/fonts/truetype/dejavu/", "/usr/share/fonts/dejavu/",
-             "/Library/Fonts/", os.path.expanduser("~/Library/Fonts/")]
+# Die benötigten DejaVu-Schriften liegen dem Paket bei (fonts/), damit Gesichter wie
+# (◕‿‿◕) auf dem Gerät und am Mac gleich aussehen.
+FONT_DIRS = [os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts"),
+             "/usr/share/fonts/truetype/dejavu/", "/usr/share/fonts/dejavu/"]
 
 
 def load_font(name, size):

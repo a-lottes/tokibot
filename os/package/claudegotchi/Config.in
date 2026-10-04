@@ -6,7 +6,6 @@ config BR2_PACKAGE_CLAUDEGOTCHI
 	select BR2_PACKAGE_FREETYPE
 	select BR2_PACKAGE_PYTHON_SPIDEV
 	select BR2_PACKAGE_PYTHON_RPI_GPIO
-	select BR2_PACKAGE_DEJAVU
 	help
 	  Der Claudegotchi-Dienst: nimmt Hook-Events von Claude Code
 	  entgegen und zeigt die Stimmung auf dem e-Paper.

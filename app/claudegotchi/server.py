@@ -7,6 +7,7 @@ Endpunkte:
   GET  /frame.png, GET /state
 """
 import argparse
+import errno
 import json
 import logging
 import signal
@@ -119,7 +120,15 @@ def main(argv=None):
     renderer = Renderer(brain, display)
     renderer.start()
     handler = make_handler(brain, renderer, srv["token"], set_clock=not args.sim)
-    server = ThreadingHTTPServer((srv["host"], port), handler)
+    try:
+        server = ThreadingHTTPServer((srv["host"], port), handler)
+    except OSError as e:
+        if e.errno != errno.EADDRINUSE:
+            raise
+        log.error("Port %d ist schon belegt. Läuft noch ein anderes Gotchi? "
+                  "Beenden oder mit --port einen anderen Port wählen.", port)
+        renderer.stop_evt.set()
+        return 1
     server.daemon_threads = True
 
     def shutdown(*_):
