@@ -1,0 +1,31 @@
+#!/bin/sh
+# Claudegotchi-Dienst starten und beim Herunterfahren sauber beenden
+# (dann bleibt ein Schlafgesicht auf dem e-Paper stehen).
+
+PIDFILE=/run/claudegotchi.pid
+LOG=/var/log/claudegotchi.log
+CONFIG=/boot/claudegotchi.toml
+
+start() {
+	printf "Starte Claudegotchi: "
+	[ -f /run/claudegotchi.env ] && . /run/claudegotchi.env
+	[ -n "$TIMEZONE" ] && [ -e "/usr/share/zoneinfo/$TIMEZONE" ] && export TZ=":/usr/share/zoneinfo/$TIMEZONE"
+	start-stop-daemon -S -q -b -m -p "$PIDFILE" -x /bin/sh -- \
+		-c "exec /usr/bin/python3 -m claudegotchi --config $CONFIG >>$LOG 2>&1"
+	[ $? = 0 ] && echo "OK" || echo "FEHLER"
+}
+
+stop() {
+	printf "Stoppe Claudegotchi: "
+	# Bis zu 20 s warten, damit das Abschiedsbild noch gezeichnet wird.
+	start-stop-daemon -K -q -p "$PIDFILE" -s TERM -R 20
+	rm -f "$PIDFILE"
+	echo "OK"
+}
+
+case "$1" in
+	start) start ;;
+	stop) stop ;;
+	restart|reload) stop; start ;;
+	*) echo "Aufruf: $0 {start|stop|restart}"; exit 1 ;;
+esac

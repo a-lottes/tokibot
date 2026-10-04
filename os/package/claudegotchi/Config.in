@@ -1,0 +1,12 @@
+config BR2_PACKAGE_CLAUDEGOTCHI
+	bool "claudegotchi"
+	depends on BR2_PACKAGE_PYTHON3
+	depends on BR2_INSTALL_LIBSTDCPP # python-pillow
+	select BR2_PACKAGE_PYTHON_PILLOW
+	select BR2_PACKAGE_FREETYPE
+	select BR2_PACKAGE_PYTHON_SPIDEV
+	select BR2_PACKAGE_PYTHON_RPI_GPIO
+	select BR2_PACKAGE_DEJAVU
+	help
+	  Der Claudegotchi-Dienst: nimmt Hook-Events von Claude Code
+	  entgegen und zeigt die Stimmung auf dem e-Paper.

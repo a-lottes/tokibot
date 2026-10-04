@@ -1,0 +1,44 @@
+name: Image bauen
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow
+      - run: make test
+
+  image:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      matrix:
+        target: [zero2w, zerow]
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cpio rsync bc unzip file
+      - uses: actions/cache@v4
+        with:
+          path: |
+            .buildroot/dl
+            ~/.buildroot-ccache
+          key: br-${{ matrix.target }}-${{ hashFiles('os/configs/*') }}
+          restore-keys: br-${{ matrix.target }}-
+      - run: make ${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: claudegotchi-${{ matrix.target }}
+          path: output/${{ matrix.target }}/images/claudegotchi-${{ matrix.target }}.img.xz
+      - if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: output/${{ matrix.target }}/images/claudegotchi-${{ matrix.target }}.img.xz

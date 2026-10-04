@@ -1,0 +1,19 @@
+# Claudegotchi – Raspberry Pi Zero 2 W (64 Bit)
+start_file=start_cd.elf
+fixup_file=fixup_cd.dat
+kernel=Image
+arm_64bit=1
+
+# Kein Bildschirm, keine Kamera: so wenig Grafikspeicher wie möglich
+gpu_mem=16
+disable_splash=1
+boot_delay=0
+camera_auto_detect=0
+display_auto_detect=0
+
+# e-Paper hängt am SPI
+dtparam=spi=on
+# USB-Datenport als Gerät (Netzwerkkarte zum Mac)
+dtoverlay=dwc2,dr_mode=peripheral
+
+enable_uart=1

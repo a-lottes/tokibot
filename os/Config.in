@@ -1,0 +1,1 @@
+source "$BR2_EXTERNAL_CLAUDEGOTCHI_PATH/package/claudegotchi/Config.in"

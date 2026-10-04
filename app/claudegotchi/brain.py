@@ -1,0 +1,156 @@
+"""Das Gehirn: fasst alle Claude-Code-Sessions zu einer Stimmung zusammen."""
+import random
+import threading
+import time
+from datetime import datetime
+
+from .mood import (DONE_DECAY, ERROR_LABELS, LIMIT_FALLBACK, LIMIT_WARN_PCT, MESSAGES,
+                   PERMISSION_DECAY, PRIORITY, SESSION_FORGET, WAITING_NOTIFICATIONS,
+                   WORKING_EVENTS, WORKING_STALE)
+
+
+class Brain:
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.sessions = {}
+        self.limits = {}          # {"five_hour": {"pct":.., "reset":..}, ...}
+        self.tools_today = 0
+        self.day = datetime.now().date()
+
+    def handle_hook(self, ev):
+        name = ev.get("hook_event_name", "")
+        sid = str(ev.get("session_id") or "unbekannt")
+        ts = float(ev.get("ts") or time.time())
+        now = time.time()
+        with self.lock:
+            if name == "SessionEnd":
+                self.sessions.pop(sid, None)
+                return
+            s = self.sessions.setdefault(sid, {
+                "state": "ready", "since": now, "updated": now, "ts": 0.0,
+                "project": "", "tool": "", "error": ""})
+            # Hooks laufen asynchron → Events können überholen. Ältere ignorieren.
+            if ts < s["ts"]:
+                return
+            s["ts"] = ts
+            s["updated"] = now
+            if ev.get("project"):
+                s["project"] = ev["project"]
+
+            new = None
+            if name == "SessionStart":
+                new = "ready"
+            elif name in WORKING_EVENTS:
+                new = "working"
+                if name == "PreToolUse":
+                    self._count_tool()
+            elif name == "PermissionRequest":
+                new = "permission"
+            elif name == "Notification":
+                nt = ev.get("notification_type", "")
+                if nt == "permission_prompt":
+                    new = "permission"
+                elif nt in WAITING_NOTIFICATIONS:
+                    new = "waiting"
+                elif nt == "quota_auto_resume_fired":
+                    new = "working"
+            elif name == "Stop":
+                new = "done"
+            elif name == "StopFailure":
+                et = ev.get("error_type", "unknown")
+                if et == "rate_limit":
+                    new = "limit"
+                else:
+                    new = "error"
+                    s["error"] = ERROR_LABELS.get(et, et)
+
+            if ev.get("tool_name"):
+                s["tool"] = ev["tool_name"]
+            elif name in ("UserPromptSubmit", "Stop"):
+                s["tool"] = ""
+            if new and new != s["state"]:
+                s["state"] = new
+                s["since"] = now
+
+    def handle_limits(self, data):
+        rl = data.get("rate_limits") or {}
+        with self.lock:
+            for key in ("five_hour", "seven_day"):
+                w = rl.get(key)
+                if isinstance(w, dict) and w.get("used_percentage") is not None:
+                    self.limits[key] = {"pct": float(w["used_percentage"]),
+                                        "reset": float(w.get("resets_at") or 0)}
+
+    def _count_tool(self):
+        today = datetime.now().date()
+        if today != self.day:
+            self.day, self.tools_today = today, 0
+        self.tools_today += 1
+
+    def _limit_reset(self, now):
+        """Zeitpunkt, bis zu dem ein volles Fenster blockiert (oder None)."""
+        resets = [w["reset"] for w in self.limits.values()
+                  if w["pct"] >= 100 and w["reset"] > now]
+        return max(resets) if resets else None
+
+    def _effective(self, s, now):
+        st, age, quiet = s["state"], now - s["since"], now - s["updated"]
+        if st == "working" and quiet > WORKING_STALE:
+            return "idle"
+        if st in ("done", "waiting", "ready", "error") and age > DONE_DECAY:
+            return "idle"
+        if st == "permission" and age > PERMISSION_DECAY:
+            return "idle"
+        if st == "limit":
+            reset = self.limits.get("five_hour", {}).get("reset", 0)
+            if (reset and reset < now and reset > s["since"]) or age > LIMIT_FALLBACK:
+                return "idle"
+        return st
+
+    def view(self):
+        now = time.time()
+        with self.lock:
+            for sid in [k for k, s in self.sessions.items() if now - s["updated"] > SESSION_FORGET]:
+                del self.sessions[sid]
+            eff = [(self._effective(s, now), sid, s) for sid, s in self.sessions.items()]
+            counts = {}
+            for st, _, _ in eff:
+                counts[st] = counts.get(st, 0) + 1
+            limit_reset = self._limit_reset(now)
+            limits = {k: dict(v) for k, v in self.limits.items()}
+
+            if eff:
+                state, sid, s = min(eff, key=lambda e: (PRIORITY.index(e[0]), -e[2]["updated"]))
+                s = dict(s)
+            else:
+                state, sid, s = "idle", "", {"project": "", "tool": "", "error": "", "since": 0}
+            if limit_reset and state != "permission":
+                state = "limit"
+            tools_today = self.tools_today
+
+        pct5 = limits.get("five_hour", {}).get("pct")
+        mood = state
+        if state == "working" and pct5 is not None and pct5 >= LIMIT_WARN_PCT:
+            mood = "tired"
+
+        reset = limit_reset or (limits.get("five_hour", {}).get("reset") if state == "limit" else None)
+        fill = {
+            "tool": s.get("tool") or "etwas",
+            "error": s.get("error") or "?",
+            "pct": int(pct5) if pct5 is not None else "?",
+            "reset": datetime.fromtimestamp(reset).strftime("%H:%M") if reset else "zum Reset",
+        }
+        key = mood
+        if mood == "working" and s.get("tool") and (int(now // 20) % 2):
+            key = "working_tool"
+        if mood == "permission" and not s.get("tool"):
+            key = "permission_notool"
+        rng = random.Random(f"{sid}|{state}|{s.get('since')}|{key}")
+        message = rng.choice(MESSAGES[key]).format(**fill)
+
+        return {
+            "state": state, "mood": mood, "message": message,
+            "project": s.get("project", ""), "counts": counts,
+            "sessions": len(eff), "limits": limits, "tools_today": tools_today,
+        }
+

@@ -1,0 +1,68 @@
+#!/bin/sh
+# USB-Gadget: Am Datenport meldet sich der Pi als Netzwerkkarte (CDC-ECM).
+# macOS und Linux brauchen keinen Treiber. Der Rechner bekommt per DHCP eine
+# Adresse, das Gotchi selbst ist unter $USB_ADDRESS erreichbar.
+
+. /run/claudegotchi.env 2>/dev/null
+USB_ADDRESS=${USB_ADDRESS:-192.168.77.1}
+G=/sys/kernel/config/usb_gadget/claudegotchi
+
+start() {
+	[ "$USB_ENABLED" = "0" ] && exit 0
+	modprobe -q libcomposite 2>/dev/null
+	mountpoint -q /sys/kernel/config || mount -t configfs none /sys/kernel/config || exit 1
+	UDC=$(ls /sys/class/udc 2>/dev/null | head -n1)
+	[ -n "$UDC" ] || { echo "USB-Gadget: kein USB-Controller im Gerätemodus"; exit 0; }
+
+	SERIAL=$(sed -n 's/^Serial[[:space:]]*: *//p' /proc/cpuinfo)
+	SERIAL=${SERIAL:-0000000000000000}
+	# Feste MAC-Adressen aus der Seriennummer, damit der Mac das Gerät wiedererkennt
+	TAIL=$(echo "$SERIAL" | tail -c 9 | sed 's/\(..\)\(..\)\(..\)\(..\)/\1:\2:\3:\4/')
+	HOST_MAC="02:c1:$TAIL"
+	DEV_MAC="06:c1:$TAIL"
+
+	mkdir -p $G && cd $G || exit 1
+	echo 0x1d6b > idVendor          # Linux Foundation
+	echo 0x0104 > idProduct         # Multifunction Composite Gadget
+	echo 0x0100 > bcdDevice
+	echo 0x0200 > bcdUSB
+	mkdir -p strings/0x409
+	echo "$SERIAL" > strings/0x409/serialnumber
+	echo "Claudegotchi" > strings/0x409/manufacturer
+	echo "Claudegotchi" > strings/0x409/product
+	mkdir -p configs/c.1/strings/0x409
+	echo "ECM" > configs/c.1/strings/0x409/configuration
+	echo 250 > configs/c.1/MaxPower
+	mkdir -p functions/ecm.usb0
+	echo "$HOST_MAC" > functions/ecm.usb0/host_addr
+	echo "$DEV_MAC" > functions/ecm.usb0/dev_addr
+	[ -e configs/c.1/ecm.usb0 ] || ln -s functions/ecm.usb0 configs/c.1/
+	echo "$UDC" > UDC
+
+	ip addr add "$USB_ADDRESS/24" dev usb0 2>/dev/null
+	ip link set usb0 up
+	NET=${USB_ADDRESS%.*}
+	cat > /run/udhcpd.usb0.conf <<CONF
+interface usb0
+start $NET.2
+end $NET.10
+lease_file /run/udhcpd.usb0.leases
+option subnet 255.255.255.0
+option lease 86400
+CONF
+	# Bewusst kein "option router": der Mac soll sein Internet nicht über das Gotchi leiten.
+	touch /run/udhcpd.usb0.leases
+	start-stop-daemon -S -q -b -m -p /run/udhcpd.usb0.pid -x /usr/sbin/udhcpd -- -f /run/udhcpd.usb0.conf
+	echo "USB-Gadget: $USB_ADDRESS"
+}
+
+stop() {
+	start-stop-daemon -K -q -p /run/udhcpd.usb0.pid 2>/dev/null
+	[ -e $G/UDC ] && echo "" > $G/UDC 2>/dev/null
+}
+
+case "$1" in
+	start) start ;;
+	stop) stop ;;
+	restart) stop; start ;;
+esac
