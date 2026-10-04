@@ -4,10 +4,16 @@
                                                    (für die Init-Skripte des Images)
 """
 import copy
+import json
 import os
+import re
 import shlex
 import sys
-import tomllib
+
+try:
+    import tomllib
+except ImportError:          # Python < 3.11 (z. B. das System-Python auf dem Mac)
+    tomllib = None
 
 DEFAULT_PATH = "/boot/claudegotchi.toml"
 
@@ -19,12 +25,48 @@ DEFAULTS = {
 }
 
 
+def _value(raw):
+    raw = raw.strip()
+    m = re.match(r'"((?:[^"\\]|\\.)*)"', raw)
+    if m:                                  # "text": Escapes wie in JSON
+        return json.loads(m.group(0))
+    m = re.match(r"'([^']*)'", raw)
+    if m:                                  # 'text': wörtlich
+        return m.group(1)
+    raw = raw.split("#", 1)[0].strip()
+    if raw in ("true", "false"):
+        return raw == "true"
+    try:
+        return int(raw)
+    except ValueError:
+        return float(raw)
+
+
+def _parse_simple_toml(text):
+    """Ersatz für tomllib unter Python < 3.11. Reicht für claudegotchi.toml:
+    [abschnitte] und key = "text" | 'text' | zahl | true/false."""
+    data, current = {}, None
+    for n, line in enumerate(text.splitlines(), 1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("[") and line.split("#", 1)[0].strip().endswith("]"):
+            current = data.setdefault(line.split("#", 1)[0].strip()[1:-1].strip(), {})
+            continue
+        if "=" not in line:
+            raise ValueError(f"Zeile {n}: unverständlich: {line}")
+        key, raw = line.split("=", 1)
+        (current if current is not None else data)[key.strip()] = _value(raw)
+    return data
+
+
 def load(path=None):
     cfg = copy.deepcopy(DEFAULTS)
     path = path or os.environ.get("CLAUDEGOTCHI_CONFIG", DEFAULT_PATH)
     try:
         with open(path, "rb") as f:
-            data = tomllib.load(f)
+            raw = f.read()
+        data = tomllib.loads(raw.decode("utf-8")) if tomllib else _parse_simple_toml(raw.decode("utf-8"))
     except FileNotFoundError:
         data = {}
     for section, values in data.items():

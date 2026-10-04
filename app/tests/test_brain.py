@@ -2,7 +2,11 @@ import time
 import unittest
 
 from claudegotchi.brain import Brain
-from claudegotchi.config import load, shell
+import os
+
+from claudegotchi.config import _parse_simple_toml, load, shell
+
+DEFAULT_TOML = os.path.join(os.path.dirname(__file__), "..", "..", "os", "board", "claudegotchi", "claudegotchi.toml")
 
 
 def hook(brain, name, **kw):
@@ -40,6 +44,18 @@ class ConfigTest(unittest.TestCase):
         cfg = load("/does/not/exist.toml")
         self.assertEqual(cfg["server"]["port"], 8765)
         self.assertIn("USB_ENABLED=1", shell(cfg).splitlines())
+
+    def test_fallback_parser_reads_default_file(self):
+        with open(DEFAULT_TOML, encoding="utf-8") as f:
+            data = _parse_simple_toml(f.read())
+        self.assertEqual(data["server"]["port"], 8765)
+        self.assertIs(data["usb"]["enabled"], True)
+        self.assertEqual(data["wifi"]["ssid"], "")
+
+    def test_fallback_parser_handles_quotes_and_comments(self):
+        text = '[wifi]\nssid = "Mein \\"WLAN\\"" # Kommentar\npsk = \'a#b\'\n'
+        data = _parse_simple_toml(text)
+        self.assertEqual(data["wifi"], {"ssid": 'Mein "WLAN"', "psk": "a#b"})
 
 
 if __name__ == "__main__":
