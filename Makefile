@@ -8,6 +8,7 @@
 #   make mockups   render every mood into docs/mockups.png
 #   make figures   redraw the blueprint figures in the website (docs/*.html)
 #   make faq       build docs/faq.html from docs/faq.md
+#   make social-pics  render the critter pictures for docs/friends.html
 #   make bundle    pack the app into output/claudegotchi-app.tar.gz (update without flashing)
 #   make update    send that bundle to a gotchi: make update GOTCHI=http://claudegotchi-xxxx.local:8765 TOKEN=…
 #   make zero2w    build the image for the Raspberry Pi Zero 2 W
@@ -26,7 +27,7 @@ BR_DIR     ?= $(CURDIR)/.buildroot
 OUT        ?= $(CURDIR)/output
 BR_MAKE     = $(MAKE) -C $(BR_DIR) BR2_EXTERNAL=$(CURDIR)/os O=$(OUT)/$@
 
-.PHONY: test sim mockups figures faq bundle update zero2w zerow clean
+.PHONY: test sim mockups figures faq social-pics bundle update zero2w zerow clean
 
 test:
 	cd app && python3 -m unittest discover -s tests
@@ -46,6 +47,9 @@ figures:
 
 faq:
 	cd app && python3 tools/faq.py ../docs
+
+social-pics:
+	cd app && PYTHONPATH=. python3 tools/site_social.py ../docs
 
 bundle:
 	@mkdir -p $(OUT)

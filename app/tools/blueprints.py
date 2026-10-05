@@ -344,6 +344,61 @@ def fig_ports():
             + "".join(o) + "</svg>")
 
 
+def fig_encounter():
+    """Sequence diagram: two gotchis meet and become friends (see social.py)."""
+    W, A, B = 660, 150, 510          # width, lifeline x of Pixel and Mochi
+    o = []
+
+    def text(x, y, t, cls="bp-seq", anchor="middle"):
+        o.append(f'<text class="{cls}" x="{x}" y="{y}" text-anchor="{anchor}">{t}</text>')
+
+    def arrow(y, x1, x2, label, sub="", accent=False, both=False):
+        cls = "bp-seq-arrow bp-accent" if accent else "bp-seq-arrow"
+        o.append(f'<line class="{cls}" x1="{x1}" y1="{y}" x2="{x2}" y2="{y}"/>')
+        for tip, d in ((x2, 1 if x2 > x1 else -1),) + (((x1, -1 if x2 > x1 else 1),) if both else ()):
+            o.append(f'<polygon class="{cls}" points="{tip},{y} {tip - 8 * d},{y - 4} {tip - 8 * d},{y + 4}"/>')
+        mid = (x1 + x2) / 2
+        text(mid, y - 8, label, "bp-seq bp-seq-label" + (" bp-accent" if accent else ""))
+        if sub:
+            text(mid, y + 16, sub, "bp-seq bp-seq-sub")
+
+    def note(y, t, sub="", accent=False):
+        cls = "bp-seq-note bp-accent" if accent else "bp-seq-note"
+        h = 34 if sub else 22
+        o.append(f'<rect class="{cls}" x="{A - 40}" y="{y - 15}" width="{B - A + 80}" height="{h}"/>')
+        text((A + B) / 2, y, t, "bp-seq bp-seq-label" + (" bp-accent" if accent else ""))
+        if sub:
+            text((A + B) / 2, y + 13, sub, "bp-seq bp-seq-sub")
+
+    def side(y, x, t, anchor):
+        text(x, y, t, "bp-seq bp-seq-sub", anchor)
+
+    top, bottom = 58, 556
+    for x, name, lv in ((A, "PIXEL", "YOU · LV3"), (B, "MOCHI", "NEXT DESK · LV4")):
+        o.append(f'<rect class="bp-seq-head" x="{x - 62}" y="8" width="124" height="38"/>')
+        text(x, 25, name, "bp-seq bp-seq-label")
+        text(x, 39, lv, "bp-seq bp-seq-sub")
+        o.append(f'<line class="bp-dash" x1="{x}" y1="{top - 10}" x2="{x}" y2="{bottom}"/>')
+
+    arrow(84, A, B, "BEACON", "random id, new every 15 min · level · mood · accessory", both=True)
+    side(126, B + 14, "open for new friends", "start")
+    arrow(144, B, A, "CARD", "name · level · public key, signed")
+    note(188, "30 S CLOSE BY = ENCOUNTER", "+20 XP each · again on another day +5 · anonymous +2")
+    side(236, A - 14, "you press Befriend", "end")
+    arrow(254, A, B, "OFFER", "signature over both keys and today · secret friend tag, encrypted")
+    side(296, B + 14, "screen: Pixel wants to be friends", "start")
+    side(310, B + 14, "owner presses Accept", "start")
+    arrow(328, B, A, "OFFER", "the same, signed by Mochi")
+    note(374, "TWO SIGNATURES = FRIENDSHIP PROOF", "+30 XP each · badge First friend → bow", accent=True)
+    arrow(424, A, B, "BEACON + FRIEND TAG", "only friends can read it: \u2665 instead of \u25cf", both=True)
+    note(470, "BOTH WORKING, CLOSE BY", "+10 % XP while it lasts · badge Co-working → glasses")
+    side(522, (A + B) / 2, "only game data on air: never prompts, code or folder names", "middle")
+
+    return (f'<svg class="bp bp-seqfig" viewBox="0 0 {W} {bottom + 8}" role="img" '
+            'aria-label="Sequence: two gotchis exchange beacons, a signed card, and two signed offers '
+            'that together form a friendship proof">' + "".join(o) + "</svg>")
+
+
 def fig_system():
     """Laptop → cable → gotchi."""
     f = Fig(1.6)
@@ -380,6 +435,7 @@ FIGURES = {
     "battery": fig_battery,
     "ports": fig_ports,
     "system": fig_system,
+    "encounter": fig_encounter,
 }
 
 
