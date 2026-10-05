@@ -15,8 +15,9 @@ CELEBRATE_OVER = {"working", "done", "ready", "idle", "error"}
 
 
 class Brain:
-    def __init__(self, life=None):
+    def __init__(self, life=None, battery=None):
         self.life = life or Life()
+        self.battery = battery    # battery.BatteryMonitor, or None without a battery
         self.lock = threading.Lock()
         self.sessions = {}
         self.limits = {}          # {"five_hour": {"pct":.., "reset":..}, ...}
@@ -142,7 +143,10 @@ class Brain:
 
         life = self.life.summary(now)
         hour = datetime.fromtimestamp(now).hour
-        if now - life["level_up_at"] < LEVELUP_SHOW and state in CELEBRATE_OVER:
+        battery = self.battery.state if self.battery else None
+        if self.battery and self.battery.low() and state in CELEBRATE_OVER:
+            mood = "lowbattery"
+        elif now - life["level_up_at"] < LEVELUP_SHOW and state in CELEBRATE_OVER:
             mood = "levelup"
         elif state == "idle" and (life["idle_days"] or 0) >= HUNGRY_AFTER_DAYS:
             mood = "hungry"
@@ -159,6 +163,7 @@ class Brain:
             "level": life["level"], "streak": life["streak"], "idle_days": life["idle_days"] or 0,
             "turns": life["today"]["turns"], "tools": life["today"]["tools"],
             "errors": life["today"]["errors"], "xp": life["today"]["xp"],
+            "battery": battery["pct"] if battery else "?",
         }
         key = mood
         if mood == "working" and s.get("tool") and (int(now // 20) % 2):
@@ -174,5 +179,6 @@ class Brain:
             "project": s.get("project", ""), "counts": counts,
             "sessions": len(eff), "limits": limits, "tools_today": tools_today,
             "level": life["level"], "streak": life["streak"], "life": life,
+            "battery": dict(battery) if battery else None,
         }
 

@@ -35,3 +35,11 @@ country = "DE"
 url = ""
 # Optional access token for a protected or self-hosted ntfy server
 auth = ""
+
+[battery]
+# Optional battery under the Pi. "auto" looks for a PiSugar 3 (or 3 Plus) on I2C and
+# shows nothing battery related without one. "pisugar3" insists on one, "none" turns it off.
+model = "auto"
+# Shut down cleanly at this charge (percent) when not on power, so the SD card stays
+# intact. 0 = never.
+shutdown_at = 5

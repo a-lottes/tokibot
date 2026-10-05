@@ -77,12 +77,31 @@ class Painter:
             d.rounded_rectangle((x, 2, x + w, HEADER_H - 3), radius=3, fill=255)
             d.text((x + 3, 1), lv, font=self.f_small_bold, fill=0)
         clock = datetime.now().strftime("%H:%M")
-        d.text((W - 4 - self.f_brand.getlength(clock), 1), clock, font=self.f_brand, fill=255)
+        cx = W - 4 - self.f_brand.getlength(clock)
+        d.text((cx, 1), clock, font=self.f_brand, fill=255)
+        if view.get("battery"):
+            self.battery_icon(d, int(cx) - 6, view["battery"])
         n = view["sessions"]
         if n:
             label = f"{n} {LABELS['session'] if n == 1 else LABELS['sessions']}"
             x = (W - self.f_small.getlength(label)) / 2 + 18
             d.text((x, 2), label, font=self.f_small, fill=255)
+
+    @staticmethod
+    def battery_icon(d, right, bat):
+        """White battery in the black header, its right edge at x = right. Returns its left x."""
+        x1, x0, y0, y1 = right - 2, right - 20, 3, 11
+        d.rectangle((x0, y0, x1, y1), outline=255)
+        d.rectangle((x1 + 1, y0 + 2, x1 + 2, y1 - 2), fill=255)         # the nub
+        fill = round(15 * max(0, min(100, bat["pct"])) / 100)
+        if fill:
+            d.rectangle((x0 + 2, y0 + 2, x0 + 1 + fill, y1 - 2), fill=255)
+        if bat["plugged"]:                                              # lightning bolt
+            bolt = [(x0 - 4, y0 - 1), (x0 - 7, y0 + 5), (x0 - 4, y0 + 5), (x0 - 6, y1 + 2),
+                    (x0 - 1, y0 + 3), (x0 - 4, y0 + 3), (x0 - 2, y0 - 1)]
+            d.polygon(bolt, fill=255)
+            return x0 - 8
+        return x0
 
     def bubble(self, d, view):
         x0, y0, x1, y1 = BUBBLE

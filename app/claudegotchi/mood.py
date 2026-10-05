@@ -9,7 +9,7 @@ PRIORITY = ["limit", "permission", "waiting", "error", "working", "done", "ready
 # Seconds per animation frame (missing = no animation)
 ANIM_PERIOD = {"working": 3, "tired": 6, "waiting": 4, "permission": 2,
                "done": 5, "error": 6, "limit": 20, "idle": 8, "ready": 6,
-               "levelup": 2, "summary": 10, "hungry": 7}
+               "levelup": 2, "summary": 10, "hungry": 7, "lowbattery": 5}
 
 MESSAGES = {
     "working": ["Busy building …", "Tap tap tap …", "On it!", "Hmm, interesting …",
@@ -35,6 +35,9 @@ MESSAGES = {
                 "Day's tally: {turns} tasks, {tools} tools. Level {level}."],
     "hungry": ["I'm hungry … feed me some code?", "{idle_days} days without code. *stomach growls*",
                "Did you forget me? Let's build something!"],
+    "lowbattery": ["Battery at {battery}% … plug me in?", "Running low: {battery}%",
+                   "Feeling weak … {battery}% left."],
+    "battery_off": ["Battery empty. Good night!"],
 }
 
 # Fallbacks for the {placeholders} above
@@ -60,6 +63,10 @@ LEVELUP_SHOW = 90            # celebrate a level-up for this many seconds
 SUMMARY_FROM_HOUR = 18       # when idle after this hour, show the day's tally instead of zZz
 SUMMARY_UNTIL_HOUR = 23
 HUNGRY_AFTER_DAYS = 2        # no work for this many days → hungry
+
+# Battery (PiSugar, see battery.py)
+BATTERY_LOW = 15             # below this, without power, the critter asks to be plugged in
+BATTERY_POLL = 20            # seconds between battery readings
 
 WORKING_EVENTS = {
     "UserPromptSubmit", "UserPromptExpansion", "PreToolUse", "PostToolUse",
