@@ -79,14 +79,14 @@ country = "DE"</code></pre>
         <p>Now teach Claude Code to talk to the gotchi. It comes as a Claude Code plugin. In Claude Code, add the Claudegotchi marketplace and install the plugin:</p>
         <pre data-title="claude code"><code><span class="p">$ </span>/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json
 <span class="p">$ </span>/plugin install claudegotchi@claudegotchi</code></pre>
-        <p>The plugin adds <a href="https://docs.claude.com/en/docs/claude-code/hooks">hooks</a> that report each event to the gotchi. It asks for an address, a token and a relay; leave all three empty for now. You can change them later in <code>/plugin</code>.</p>
+        <p>The plugin adds <a href="https://docs.claude.com/en/docs/claude-code/hooks">hooks</a> that report each event to the gotchi. It asks for an address, the gotchi's name, a token and a relay; leave them all empty for now. You can change them later in <code>/plugin</code>.</p>
         <p>Plugins cannot set the status line, and the status line is where the gotchi learns how much of your 5-hour and 7-day budget is left. To add it, run this in a terminal:</p>
         <pre data-title="your computer · terminal"><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only</code></pre>
-        <p>It keeps your existing status line and still shows it. You can <a href="install.sh">read the script</a> before you run it.</p>
+        <p>With the gotchi plugged in, this also pairs your computer with it: the client remembers the gotchi's name and gets a token from it, so a friend's gotchi on the same Wi-Fi never shows your sessions. It keeps your existing status line and still shows it. You can <a href="install.sh">read the script</a> before you run it.</p>
         <div class="note"><p><strong>No plugin?</strong> <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh</code> installs hooks and status line in one go, straight into <code>~/.claude/settings.json</code>. Use either the plugin or this, not both, or every event reaches the gotchi twice.</p></div>
         <p>On Windows, run the terminal commands in Git Bash. Then check that the gotchi answers. The test walks the critter through its moods over about a minute:</p>
         <pre data-title="your computer · terminal"><code><span class="p">$ </span>sh ~/.claude/claudegotchi/claudegotchi.sh test</code></pre>
-        <p>By default the client tries the USB cable first and then <code>claudegotchi.local</code> on your Wi-Fi. You can also watch the display live in a browser at <a href="http://192.168.77.1:8765/"><code>http://192.168.77.1:8765/</code></a>.</p>
+        <p>By default the client tries the USB cable first and then your gotchi's own name, <code>claudegotchi-xxxx.local</code>, on your Wi-Fi. The gotchi shows that name on screen until a client talks to it. You can also watch the display live in a browser at <a href="http://192.168.77.1:8765/"><code>http://192.168.77.1:8765/</code></a>.</p>
       </div></li>
       <li><div>
         <h3>Start Claude Code</h3>
@@ -99,7 +99,7 @@ country = "DE"</code></pre>
       <div class="cols">
         <div><h3>Upside down?</h3><p>Set <code>rotate = 180</code> on the <a href="docs.html#settings">settings page</a>.</p></div>
         <div><h3>Claude in the cloud?</h3><p>Sessions in a Claude Project or Claude Code on the web reach the gotchi through a <a href="docs.html#cloud">relay</a>. Four steps, once.</p></div>
-        <div><h3>Shared Wi-Fi?</h3><p>Set a token so only your computer can talk to the gotchi, see <a href="docs.html#security">security</a>.</p></div>
+        <div><h3>Wi-Fi only?</h3><p>Pair by the name on the screen, see <a href="docs.html#pairing">pairing</a>.</p></div>
       </div>
     </section>
   </main>

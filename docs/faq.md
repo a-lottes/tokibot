@@ -67,7 +67,7 @@ Check these in order:
 
 ### What address does the gotchi have? {#address}
 
-Over the USB cable it is always `192.168.77.1`, port `8765`. Your computer gets an address from the gotchi automatically (DHCP, `192.168.77.2` to `.10`). On Wi-Fi the gotchi is `claudegotchi.local`. The gotchi does not route your internet traffic; your normal connection keeps working.
+Over the USB cable it is always `192.168.77.1`, port `8765`. Your computer gets an address from the gotchi automatically (DHCP, `192.168.77.2` to `.10`). On Wi-Fi the gotchi has a name of its own, `claudegotchi-xxxx.local`; it shows that name on screen until a client talks to it. See [Two gotchis on the same Wi-Fi](#several-gotchis). The gotchi does not route your internet traffic; your normal connection keeps working.
 
 ### Windows: the gotchi does not show up as a network adapter. {#windows-rndis}
 
@@ -89,7 +89,7 @@ The gotchi's DHCP server has not answered yet. Wait until the critter is on the 
 
 Set the new wired connection to DHCP. With NetworkManager it is usually automatic; if not, set IPv4 to *Automatic (DHCP)* for the adapter (`nmcli device` lists it, often named `usb0` or `enx…`). With systemd-networkd or a manual setup, run a DHCP client on that interface. The gotchi itself is always `192.168.77.1`.
 
-### `claudegotchi.local` does not resolve. {#mdns}
+### `claudegotchi-xxxx.local` does not resolve. {#mdns}
 
 `.local` names need mDNS. On Linux install and start avahi with nss-mdns (on Debian and Ubuntu: `libnss-mdns`). On Windows `.local` lookups are often unreliable. Over the USB cable this does not matter: the client tries `192.168.77.1` first. On Wi-Fi you can set a fixed address instead, for example `--url http://192.168.1.50:8765` or the *Gotchi address* setting of the plugin.
 
@@ -138,6 +138,7 @@ Check these in order:
 - Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.
 - Run the test: `sh ~/.claude/claudegotchi/claudegotchi.sh test`.
 - If the gotchi has a token, the client needs the same one: set it in `/plugin` (plugin) or run the install script again with `--token`.
+- If the test says 409, the address answered with another gotchi than yours, for example a friend's. Pair again with yours, see [How do I pair](#pairing).
 - Check that plugin and install script are not both installed, see [I installed both](#both-installed).
 
 ### Does it work with Claude Code in VS Code or JetBrains? {#ide}
@@ -160,11 +161,19 @@ Either before the first start: put the card into your computer, open `claudegotc
 
 ### Where are the settings? {#settings}
 
-On the settings page at `http://claudegotchi.local:8765/settings`, or `http://192.168.77.1:8765/settings` over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes `claudegotchi.toml` on the card. You can also edit that file directly on the `GOTCHI` drive.
+On the settings page at `http://claudegotchi-xxxx.local:8765/settings`, or `http://192.168.77.1:8765/settings` over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes `claudegotchi.toml` on the card. You can also edit that file directly on the `GOTCHI` drive.
+
+### How do I pair my computer with my gotchi? {#pairing}
+
+The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: `--gotchi claudegotchi-xxxx`. To pair again later, run `sh ~/.claude/claudegotchi/claudegotchi.sh pair` (over USB) or `sh ~/.claude/claudegotchi/claudegotchi.sh pair claudegotchi-xxxx` (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in `claudegotchi.toml` and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.
+
+### Two gotchis on the same Wi-Fi: does mine get my events? {#several-gotchis}
+
+Yes. Every gotchi has its own network name, `claudegotchi-xxxx.local`, where `xxxx` comes from the Pi's serial number and stays the same after reflashing. The client sends your gotchi's name with every event, and a gotchi with another name refuses it (HTTP 409). A friend's gotchi on the same network never shows your sessions.
 
 ### Should I set a token? {#token}
 
-Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token, anyone who can reach the gotchi on port 8765 can send it events and open the settings page. Set the token on the settings page, then give the client the same one: in `/plugin` for the plugin, or with `--token` for the install script.
+Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token, anyone who can reach the gotchi on port 8765 can send it events and open the settings page. Pairing sets one up for you: if the gotchi has no token yet, it makes one and hands it to your computer, see [How do I pair](#pairing). You can also set it on the settings page and give the client the same one: in `/plugin` for the plugin, or with `--token` for the install script.
 
 ### The picture is upside down. {#upside-down}
 
@@ -219,7 +228,7 @@ Check that the HAT sits flush on all 40 pins, and that it is the **V4** revision
 
 ### How do gotchis become friends? {#friends}
 
-Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at `http://claudegotchi.local:8765/social`, tick *Open for new friends*, and press *Befriend* next to a gotchi nearby; its owner presses *Accept* on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (*Meet other gotchis*) or with `[social] enabled = false`.
+Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at `http://claudegotchi-xxxx.local:8765/social`, tick *Open for new friends*, and press *Befriend* next to a gotchi nearby; its owner presses *Accept* on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (*Meet other gotchis*) or with `[social] enabled = false`.
 
 ### How do I keep my critter's progress when I change the card? {#backup}
 

@@ -142,7 +142,7 @@
    "url": "https://claudegotchi.lottes.dev/faq.html#address",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Over the USB cable it is always <code>192.168.77.1<\/code>, port <code>8765<\/code>. Your computer gets an address from the gotchi automatically (DHCP, <code>192.168.77.2<\/code> to <code>.10<\/code>). On Wi-Fi the gotchi is <code>claudegotchi.local<\/code>. The gotchi does not route your internet traffic; your normal connection keeps working.<\/p>"
+    "text": "<p>Over the USB cable it is always <code>192.168.77.1<\/code>, port <code>8765<\/code>. Your computer gets an address from the gotchi automatically (DHCP, <code>192.168.77.2<\/code> to <code>.10<\/code>). On Wi-Fi the gotchi has a name of its own, <code>claudegotchi-xxxx.local<\/code>; it shows that name on screen until a client talks to it. See <a href=\"https://claudegotchi.lottes.dev/faq.html#several-gotchis\">Two gotchis on the same Wi-Fi<\/a>. The gotchi does not route your internet traffic; your normal connection keeps working.<\/p>"
    }
   },
   {
@@ -192,7 +192,7 @@
   },
   {
    "@type": "Question",
-   "name": "claudegotchi.local does not resolve.",
+   "name": "claudegotchi-xxxx.local does not resolve.",
    "url": "https://claudegotchi.lottes.dev/faq.html#mdns",
    "acceptedAnswer": {
     "@type": "Answer",
@@ -286,7 +286,7 @@
    "url": "https://claudegotchi.lottes.dev/faq.html#not-reacting",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Check these in order:<\/p>\n<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.<\/li><li>Run the test: <code>sh ~/.claude/claudegotchi/claudegotchi.sh test<\/code>.<\/li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin<\/code> (plugin) or run the install script again with <code>--token<\/code>.<\/li><li>Check that plugin and install script are not both installed, see <a href=\"https://claudegotchi.lottes.dev/faq.html#both-installed\">I installed both<\/a>.<\/li><\/ul>"
+    "text": "<p>Check these in order:<\/p>\n<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.<\/li><li>Run the test: <code>sh ~/.claude/claudegotchi/claudegotchi.sh test<\/code>.<\/li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin<\/code> (plugin) or run the install script again with <code>--token<\/code>.<\/li><li>If the test says 409, the address answered with another gotchi than yours, for example a friend's. Pair again with yours, see <a href=\"https://claudegotchi.lottes.dev/faq.html#pairing\">How do I pair<\/a>.<\/li><li>Check that plugin and install script are not both installed, see <a href=\"https://claudegotchi.lottes.dev/faq.html#both-installed\">I installed both<\/a>.<\/li><\/ul>"
    }
   },
   {
@@ -331,7 +331,25 @@
    "url": "https://claudegotchi.lottes.dev/faq.html#settings",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>On the settings page at <code>http://claudegotchi.local:8765/settings<\/code>, or <code>http://192.168.77.1:8765/settings<\/code> over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes <code>claudegotchi.toml<\/code> on the card. You can also edit that file directly on the <code>GOTCHI<\/code> drive.<\/p>"
+    "text": "<p>On the settings page at <code>http://claudegotchi-xxxx.local:8765/settings<\/code>, or <code>http://192.168.77.1:8765/settings<\/code> over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes <code>claudegotchi.toml<\/code> on the card. You can also edit that file directly on the <code>GOTCHI<\/code> drive.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I pair my computer with my gotchi?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#pairing",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: <code>--gotchi claudegotchi-xxxx<\/code>. To pair again later, run <code>sh ~/.claude/claudegotchi/claudegotchi.sh pair<\/code> (over USB) or <code>sh ~/.claude/claudegotchi/claudegotchi.sh pair claudegotchi-xxxx<\/code> (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in <code>claudegotchi.toml<\/code> and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Two gotchis on the same Wi-Fi: does mine get my events?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#several-gotchis",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Yes. Every gotchi has its own network name, <code>claudegotchi-xxxx.local<\/code>, where <code>xxxx<\/code> comes from the Pi's serial number and stays the same after reflashing. The client sends your gotchi's name with every event, and a gotchi with another name refuses it (HTTP 409). A friend's gotchi on the same network never shows your sessions.<\/p>"
    }
   },
   {
@@ -340,7 +358,7 @@
    "url": "https://claudegotchi.lottes.dev/faq.html#token",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token, anyone who can reach the gotchi on port 8765 can send it events and open the settings page. Set the token on the settings page, then give the client the same one: in <code>/plugin<\/code> for the plugin, or with <code>--token<\/code> for the install script.<\/p>"
+    "text": "<p>Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token, anyone who can reach the gotchi on port 8765 can send it events and open the settings page. Pairing sets one up for you: if the gotchi has no token yet, it makes one and hands it to your computer, see <a href=\"https://claudegotchi.lottes.dev/faq.html#pairing\">How do I pair<\/a>. You can also set it on the settings page and give the client the same one: in <code>/plugin<\/code> for the plugin, or with <code>--token<\/code> for the install script.<\/p>"
    }
   },
   {
@@ -439,7 +457,7 @@
    "url": "https://claudegotchi.lottes.dev/faq.html#friends",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at <code>http://claudegotchi.local:8765/social<\/code>, tick <em>Open for new friends<\/em>, and press <em>Befriend<\/em> next to a gotchi nearby; its owner presses <em>Accept<\/em> on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (<em>Meet other gotchis<\/em>) or with <code>[social] enabled = false<\/code>.<\/p>"
+    "text": "<p>Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at <code>http://claudegotchi-xxxx.local:8765/social<\/code>, tick <em>Open for new friends<\/em>, and press <em>Befriend<\/em> next to a gotchi nearby; its owner presses <em>Accept<\/em> on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (<em>Meet other gotchis<\/em>) or with <code>[social] enabled = false<\/code>.<\/p>"
    }
   },
   {
@@ -560,7 +578,7 @@
       </section>
       <section class="faq-q" id="address">
         <h3><a class="anchor" href="#address">What address does the gotchi have?</a></h3>
-        <p>Over the USB cable it is always <code>192.168.77.1</code>, port <code>8765</code>. Your computer gets an address from the gotchi automatically (DHCP, <code>192.168.77.2</code> to <code>.10</code>). On Wi-Fi the gotchi is <code>claudegotchi.local</code>. The gotchi does not route your internet traffic; your normal connection keeps working.</p>
+        <p>Over the USB cable it is always <code>192.168.77.1</code>, port <code>8765</code>. Your computer gets an address from the gotchi automatically (DHCP, <code>192.168.77.2</code> to <code>.10</code>). On Wi-Fi the gotchi has a name of its own, <code>claudegotchi-xxxx.local</code>; it shows that name on screen until a client talks to it. See <a href="#several-gotchis">Two gotchis on the same Wi-Fi</a>. The gotchi does not route your internet traffic; your normal connection keeps working.</p>
       </section>
       <section class="faq-q" id="windows-rndis">
         <h3><a class="anchor" href="#windows-rndis">Windows: the gotchi does not show up as a network adapter.</a></h3>
@@ -583,7 +601,7 @@
         <p>Set the new wired connection to DHCP. With NetworkManager it is usually automatic; if not, set IPv4 to <em>Automatic (DHCP)</em> for the adapter (<code>nmcli device</code> lists it, often named <code>usb0</code> or <code>enx…</code>). With systemd-networkd or a manual setup, run a DHCP client on that interface. The gotchi itself is always <code>192.168.77.1</code>.</p>
       </section>
       <section class="faq-q" id="mdns">
-        <h3><a class="anchor" href="#mdns"><code>claudegotchi.local</code> does not resolve.</a></h3>
+        <h3><a class="anchor" href="#mdns"><code>claudegotchi-xxxx.local</code> does not resolve.</a></h3>
         <p><code>.local</code> names need mDNS. On Linux install and start avahi with nss-mdns (on Debian and Ubuntu: <code>libnss-mdns</code>). On Windows <code>.local</code> lookups are often unreliable. Over the USB cable this does not matter: the client tries <code>192.168.77.1</code> first. On Wi-Fi you can set a fixed address instead, for example <code>--url http://192.168.1.50:8765</code> or the <em>Gotchi address</em> setting of the plugin.</p>
       </section>
       <h2 id="installing-the-client" data-n="04">Installing the client</h2>
@@ -626,7 +644,7 @@
       <section class="faq-q" id="not-reacting">
         <h3><a class="anchor" href="#not-reacting">The critter does not react to Claude Code.</a></h3>
         <p>Check these in order:</p>
-<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.</li><li>Run the test: <code>sh ~/.claude/claudegotchi/claudegotchi.sh test</code>.</li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin</code> (plugin) or run the install script again with <code>--token</code>.</li><li>Check that plugin and install script are not both installed, see <a href="#both-installed">I installed both</a>.</li></ul>
+<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.</li><li>Run the test: <code>sh ~/.claude/claudegotchi/claudegotchi.sh test</code>.</li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin</code> (plugin) or run the install script again with <code>--token</code>.</li><li>If the test says 409, the address answered with another gotchi than yours, for example a friend's. Pair again with yours, see <a href="#pairing">How do I pair</a>.</li><li>Check that plugin and install script are not both installed, see <a href="#both-installed">I installed both</a>.</li></ul>
       </section>
       <section class="faq-q" id="ide">
         <h3><a class="anchor" href="#ide">Does it work with Claude Code in VS Code or JetBrains?</a></h3>
@@ -647,11 +665,19 @@
       </section>
       <section class="faq-q" id="settings">
         <h3><a class="anchor" href="#settings">Where are the settings?</a></h3>
-        <p>On the settings page at <code>http://claudegotchi.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes <code>claudegotchi.toml</code> on the card. You can also edit that file directly on the <code>GOTCHI</code> drive.</p>
+        <p>On the settings page at <code>http://claudegotchi-xxxx.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes <code>claudegotchi.toml</code> on the card. You can also edit that file directly on the <code>GOTCHI</code> drive.</p>
+      </section>
+      <section class="faq-q" id="pairing">
+        <h3><a class="anchor" href="#pairing">How do I pair my computer with my gotchi?</a></h3>
+        <p>The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: <code>--gotchi claudegotchi-xxxx</code>. To pair again later, run <code>sh ~/.claude/claudegotchi/claudegotchi.sh pair</code> (over USB) or <code>sh ~/.claude/claudegotchi/claudegotchi.sh pair claudegotchi-xxxx</code> (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in <code>claudegotchi.toml</code> and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.</p>
+      </section>
+      <section class="faq-q" id="several-gotchis">
+        <h3><a class="anchor" href="#several-gotchis">Two gotchis on the same Wi-Fi: does mine get my events?</a></h3>
+        <p>Yes. Every gotchi has its own network name, <code>claudegotchi-xxxx.local</code>, where <code>xxxx</code> comes from the Pi's serial number and stays the same after reflashing. The client sends your gotchi's name with every event, and a gotchi with another name refuses it (HTTP 409). A friend's gotchi on the same network never shows your sessions.</p>
       </section>
       <section class="faq-q" id="token">
         <h3><a class="anchor" href="#token">Should I set a token?</a></h3>
-        <p>Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token, anyone who can reach the gotchi on port 8765 can send it events and open the settings page. Set the token on the settings page, then give the client the same one: in <code>/plugin</code> for the plugin, or with <code>--token</code> for the install script.</p>
+        <p>Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token, anyone who can reach the gotchi on port 8765 can send it events and open the settings page. Pairing sets one up for you: if the gotchi has no token yet, it makes one and hands it to your computer, see <a href="#pairing">How do I pair</a>. You can also set it on the settings page and give the client the same one: in <code>/plugin</code> for the plugin, or with <code>--token</code> for the install script.</p>
       </section>
       <section class="faq-q" id="upside-down">
         <h3><a class="anchor" href="#upside-down">The picture is upside down.</a></h3>
@@ -699,7 +725,7 @@
       <h2 id="friends-over-bluetooth" data-n="08">Friends over Bluetooth</h2>
       <section class="faq-q" id="friends">
         <h3><a class="anchor" href="#friends">How do gotchis become friends?</a></h3>
-        <p>Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at <code>http://claudegotchi.local:8765/social</code>, tick <em>Open for new friends</em>, and press <em>Befriend</em> next to a gotchi nearby; its owner presses <em>Accept</em> on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (<em>Meet other gotchis</em>) or with <code>[social] enabled = false</code>.</p>
+        <p>Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at <code>http://claudegotchi-xxxx.local:8765/social</code>, tick <em>Open for new friends</em>, and press <em>Befriend</em> next to a gotchi nearby; its owner presses <em>Accept</em> on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (<em>Meet other gotchis</em>) or with <code>[social] enabled = false</code>.</p>
       </section>
       <section class="faq-q" id="backup">
         <h3><a class="anchor" href="#backup">How do I keep my critter's progress when I change the card?</a></h3>

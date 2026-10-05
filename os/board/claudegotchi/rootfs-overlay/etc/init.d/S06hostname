@@ -1,0 +1,23 @@
+#!/bin/sh
+# Gives this gotchi its own network name, claudegotchi-xxxx, so several gotchis on
+# one Wi-Fi do not all answer to claudegotchi.local. The four hex digits come from
+# the Pi's serial number, so the name survives a fresh SD card. Without a serial
+# they are random and kept on the data partition.
+
+[ "$1" = "start" ] || exit 0
+
+code=$(sed -n 's/^Serial[[:space:]]*:[[:space:]]*//p' /proc/cpuinfo | tr -d ' ')
+if [ -n "$code" ]; then
+	code=$(echo "claudegotchi|$code" | sha256sum | cut -c1-4)
+else
+	code=$(cat /data/device-code 2>/dev/null)
+	case "$code" in
+		[0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
+		*)
+			code=$(head -c 2 /dev/urandom | od -An -tx1 | tr -d ' \n')
+			echo "$code" > /data/device-code 2>/dev/null
+			;;
+	esac
+fi
+hostname "claudegotchi-$code"
+echo "Hostname: claudegotchi-$code"

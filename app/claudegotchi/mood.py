@@ -32,6 +32,7 @@ MESSAGES = {
     "limit": ["Limit reached. zZz until {reset}", "Out of juice … back at {reset}",
               "Break until {reset}. Coffee?"],
     "idle": ["zZz …", "Wake me with work.", "Bored …", "Dreaming of tokens …"],
+    "address": ["Hi! I'm {address}. Plug me in to pair."],
     "offline": ["Offline. See you!"],
     "levelup": ["Level up! I'm level {level} now!", "Woohoo, level {level}!",
                 "I grew! Level {level}."],

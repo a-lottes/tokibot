@@ -19,13 +19,19 @@
     "url": {
       "type": "string",
       "title": "Gotchi address",
-      "description": "Leave empty for automatic: USB cable first, then claudegotchi.local. Or e.g. http://192.168.1.50:8765, or none for relay only.",
+      "description": "Leave empty for automatic: USB cable first, then your gotchi's name over Wi-Fi. Or e.g. http://192.168.1.50:8765, or none for relay only.",
+      "default": ""
+    },
+    "gotchi": {
+      "type": "string",
+      "title": "Gotchi name",
+      "description": "The name your gotchi shows on screen, e.g. claudegotchi-3f2a. Leave empty if you plug it in by USB once: the client then learns it.",
       "default": ""
     },
     "token": {
       "type": "string",
       "title": "Token",
-      "description": "Only if you set [server] token on the gotchi.",
+      "description": "The gotchi's [server] token. Pairing sets one up for you.",
       "sensitive": true,
       "default": ""
     },

@@ -35,12 +35,15 @@ class Brain:
         self.limits = {}          # {"five_hour": {"pct":.., "reset":..}, ...}
         self.tools_today = 0
         self.day = datetime.now().date()
+        self.address = ""         # e.g. claudegotchi-3f2a.local, shown until a client talks to us
+        self.heard = False
 
     def handle_hook(self, ev):
         name = ev.get("hook_event_name", "")
         sid = str(ev.get("session_id") or "unknown")
         ts = float(ev.get("ts") or time.time())
         now = time.time()
+        self.heard = True
         self.life.record(name, ev, now)
         with self.lock:
             if name == "SessionEnd":
@@ -98,6 +101,7 @@ class Brain:
 
     def handle_limits(self, data):
         rl = data.get("rate_limits") or {}
+        self.heard = True
         with self.lock:
             if data.get("session_id") and data.get("context_pct") is not None:
                 self.context[str(data["session_id"])] = float(data["context_pct"])
@@ -212,6 +216,7 @@ class Brain:
             "badge": BADGES.get(life["last_badge"], ("?",))[0],
             "battery": battery["pct"] if battery else "?",
             "n": counts.get("working", 0), "commits": life["today"].get("commits", 0),
+            "address": self.address,
         }
         if mood == "stuck":
             fill["tool"] = feel["tool"] or fill["tool"]
@@ -224,6 +229,8 @@ class Brain:
             key = "working_tool"
         if mood == "permission" and not s.get("tool"):
             key = "permission_notool"
+        if mood == "idle" and not self.heard and self.address:
+            key = "address"           # nobody has talked to us yet: say where to find us
         seed = datetime.fromtimestamp(now).date() if mood in ("summary", "hungry") else s.get("since")
         if mood in ("encounter", "friend", "newfriend"):
             seed = event.get("at")
