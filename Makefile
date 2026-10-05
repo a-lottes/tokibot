@@ -2,7 +2,9 @@
 #
 #   make test      run the app tests
 #   make sim       run the gotchi without hardware (preview: http://localhost:8765/)
-#                  other port: make sim PORT=8766, with a fake battery: make sim BATTERY=sim
+#                  other port: make sim PORT=8766
+#                  with a pretend gotchi nearby to make friends with: make sim FAKE=Mochi
+#                  with a fake battery: make sim BATTERY=sim
 #   make mockups   render every mood into docs/mockups.png
 #   make bundle    pack the app into output/claudegotchi-app.tar.gz (update without flashing)
 #   make update    send that bundle to a gotchi: make update GOTCHI=http://claudegotchi.local:8765 TOKEN=…
@@ -12,6 +14,7 @@
 # Images end up in output/<target>/images/claudegotchi-<target>.img.xz
 
 PORT       ?= 8765
+FAKE       ?=
 GOTCHI     ?= http://192.168.77.1:8765
 TOKEN      ?=
 BATTERY    ?=
@@ -31,7 +34,7 @@ test:
 sim:
 	@mkdir -p $(dir $(SIM_CONFIG))
 	@[ -f $(SIM_CONFIG) ] || cp os/board/claudegotchi/claudegotchi.toml $(SIM_CONFIG)
-	cd app && python3 -m claudegotchi --sim --port $(PORT) --config $(SIM_CONFIG) $(if $(BATTERY),--battery $(BATTERY))
+	cd app && python3 -m claudegotchi --sim --port $(PORT) --config $(SIM_CONFIG) $(if $(FAKE),--fake-peer $(FAKE)) $(if $(BATTERY),--battery $(BATTERY))
 
 mockups:
 	cd app && PYTHONPATH=. python3 tools/mockups.py ../docs/mockups.png

@@ -50,6 +50,50 @@ The progress lives in `life.json` on the image's small writable `data` partition
 (`~/.claudegotchi/` in the simulator), so it survives reboots and updates of the
 root filesystem. All numbers and texts are in `app/claudegotchi/mood.py`.
 
+## Friends
+
+Gotchis that meet in real life notice each other over Bluetooth LE, can become
+friends, and earn XP, badges and accessories for it. Everything works offline;
+the design leaves room for a community site with chat later
+([docs/social-concept.md](docs/social-concept.md)).
+
+* **Identity.** On first start the gotchi creates an Ed25519 key pair. The key *is*
+  the profile: no sign-up, no password. Name and accessory are set on the social page.
+* **Anonymous by default.** A gotchi sends a small beacon with a random id that
+  changes every 15 minutes, its level, mood and accessory. Strangers cannot follow it
+  around. Friends recognise it by a tag only they can compute.
+* **Open for new friends.** Only when you switch this on (social page) does the
+  gotchi also send its signed card with name and level, so others nearby can ask
+  to be friends.
+* **Friendship needs both.** One side asks, the other says yes on its social page
+  (or automatically, for gotchis met on three different days, if both allow it).
+  Both gotchis sign the friendship; the two signatures are a proof that a community
+  site can check later without trusting anyone.
+* **Game.** 20 XP for meeting a gotchi for the first time, 5 for meeting it again on
+  another day, 2 for an anonymous one (encounter XP is capped at 100 a day), 30 for a
+  new friend. +10 % XP while a friend nearby is working too. Badges and levels unlock
+  accessories: cap, bow, glasses, headphones, night cap, party hat, crown.
+* **On the display.** ♥ and the number of friends nearby (● for other gotchis) next to
+  the clock; the critter waves at new gotchis and celebrates new friends.
+
+Open `http://claudegotchi.local:8765/social` (or `/social` in the simulator) to see
+who is nearby, befriend them, pick an accessory and download a **backup**. The
+identity, friends and progress only live on the SD card; the backup is encrypted
+with a passphrase you choose and restores everything on a new card or gotchi.
+
+Only game data travels over Bluetooth: never session contents, folder names or
+prompts. Turn it all off with `[social] enabled = false` or on the settings page.
+
+To try it in the simulator, start it with a pretend gotchi nearby, open your gotchi
+for new friends on the social page and wait a minute:
+
+```bash
+make sim FAKE=Mochi
+```
+
+Two simulators on one computer (different `PORT` and settings files) also meet each
+other.
+
 ## Hardware
 
 * Raspberry Pi Zero 2 W (default) or Pi Zero W
@@ -72,6 +116,11 @@ app/       the service on the device (Python, Pillow)
   claudegotchi/life.py       experience, levels, streaks and daily stats
   claudegotchi/settings.py   the settings page in the browser
   claudegotchi/update.py     app updates without flashing
+  claudegotchi/identity.py   the gotchi's key pair, backup and restore
+  claudegotchi/social.py     encounters and friendships (the Bluetooth protocol)
+  claudegotchi/radio.py      Bluetooth LE over raw HCI, and a UDP radio for the simulator
+  claudegotchi/crypto.py     Ed25519, X25519, sealing, backups (libsodium via PyNaCl)
+  claudegotchi/socialpage.py the social page in the browser
   tools/mockups.py           renders docs/mockups.png
 client/    hook and status line client for your computer, plus installer
 os/        Buildroot extension (br2-external): defconfigs, board files, package
@@ -80,7 +129,7 @@ os/        Buildroot extension (br2-external): defconfigs, board files, package
 ## Try it without hardware
 
 ```bash
-python3 -m pip install pillow
+python3 -m pip install pillow pynacl
 make test
 make sim                       # preview: http://localhost:8765/  (other port: make sim PORT=8766)
 CLAUDEGOTCHI_URL=http://localhost:8765 python3 client/claudegotchi_client.py test
@@ -199,10 +248,11 @@ recharges, or `BATTERY=sim:20` to start at 20 %).
 * Read-only root filesystem, `/tmp` and `/run` in RAM. Pulling the plug does not hurt the card.
 * A 16 MB writable `data` partition at `/data` for the critter's progress and app updates.
 * BusyBox init with a few scripts (`os/board/claudegotchi/rootfs-overlay/etc/init.d/`):
-  read settings, USB gadget, Wi-Fi, then the service.
+  read settings, Bluetooth, USB gadget, Wi-Fi, then the service.
 * USB gadget as a CDC-ECM network adapter with a DHCP server for your computer.
 * avahi for `claudegotchi.local`, NTP on Wi-Fi. Without Wi-Fi the gotchi takes the
   time from your computer.
+* Bluetooth LE through the kernel's HCI socket, no bluetoothd.
 * No SSH in the default image.
 
 ## Privacy
@@ -213,6 +263,7 @@ that metadata passes through the ntfy server you chose.
 
 ## Status
 
-Version 0.2.0. The app runs in the simulator and the Buildroot defconfigs are
+Version 0.3.0. The app runs in the simulator and the Buildroot defconfigs are
 checked against Buildroot 2026.02.3. A full image build and a test on real
-hardware are still open.
+hardware are still open; for the social features this includes the Bluetooth
+radio, which so far is only tested in the simulator.
