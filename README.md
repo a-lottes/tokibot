@@ -103,7 +103,7 @@ Flash it with Raspberry Pi Imager: *Use custom* and pick the `.img.xz`.
 
 ## Set up
 
-After flashing, the boot partition (`CLAUDEGOTCHI`) contains `claudegotchi.toml`.
+After flashing, the boot partition (`GOTCHI`) contains `claudegotchi.toml`.
 Put your Wi-Fi, token, rotation and time zone there if you need them. Without
 Wi-Fi, the gotchi only talks over the USB cable: your computer gets an address
 automatically and the gotchi is reachable at `192.168.77.1`.

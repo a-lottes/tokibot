@@ -1,7 +1,7 @@
 # Claudegotchi settings
 #
 # This file lives on the SD card's boot partition. You can edit it directly on
-# your Mac (drive "CLAUDEGOTCHI"), then put the card back into the Pi.
+# your Mac (drive "GOTCHI"), then put the card back into the Pi.
 
 [device]
 # Display driver: "waveshare_2in13_v4"
