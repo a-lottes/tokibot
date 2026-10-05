@@ -33,6 +33,28 @@ Claude Code ── hooks + status line ──► claudegotchi_client.py ──HT
 | hungry | no work for two days or more |
 | lowbattery | on battery with 15 % or less left (only with a PiSugar) |
 
+### How it's going
+
+On top of what is happening, the critter feels how the work is going. Every signal
+nudges two values that fade over time: valence (going well or badly, half-life
+10 minutes) and energy (how busy, 3 minutes). They tint the situation:
+
+| Mood | When |
+|---|---|
+| stuck | the same tool failed 3 times in a row |
+| oops | you interrupted Claude (shown for 2 minutes) |
+| proud | a commit, push or pull request just landed (2 minutes) |
+| relieved | tests pass again after failing (2 minutes) |
+| struggling | working, but lots went wrong lately |
+| juggling | 3 or more sessions working at once |
+| flow | working, and lots went right lately (clean replies, green tests) |
+
+Permission, waiting, limit and error are never tinted: anything that needs you
+wins. A tint holds for at least 30 seconds so the e-paper does not flicker. When a
+session's context window is 85 % full, the critter carries a wrench. The client
+recognises test runs, commits, pushes and `gh pr create` on your computer and only
+sends the category, never the command.
+
 With several sessions (e.g. worktrees), the state that needs you most wins. The
 footer shows how many sessions are working (▶), waiting for you (?) or done (✓),
 plus bars for the 5-hour and 7-day budget.
@@ -40,7 +62,8 @@ plus bars for the 5-hour and 7-day budget.
 ## Growing up
 
 The critter earns experience from your work: 10 XP per finished reply, 5 per
-completed task, 3 per new session and 1 per tool call. Levels get further apart
+completed task, 3 per new session and 1 per tool call, plus 5 per commit, 8 per
+push and 15 per pull request. Levels get further apart
 as it grows (level 2 at 50 XP, level 3 at 150, level 4 at 300, …), and the level
 shows in the header. Every day with at least one finished reply extends the streak;
 skip a day and it starts over. In the evening it shows what you did today, and when
@@ -107,6 +130,7 @@ other.
 ```
 app/       the service on the device (Python, Pillow)
   claudegotchi/brain.py      folds all sessions into one mood
+  claudegotchi/feeling.py    how the work is going: valence, energy, stuck, proud, …
   claudegotchi/critter.py    the pixel critter and its expressions
   claudegotchi/painter.py    header, critter, speech bubble, status bar
   claudegotchi/mood.py       all display texts (one place, ready for i18n)
@@ -291,8 +315,9 @@ recharges, or `BATTERY=sim:20` to start at 20 %).
 
 ## Privacy
 
-Only metadata is sent: event, session ID, folder name, tool name and limit
-percentages. Prompts, code and replies never leave your computer. With a relay,
+Only metadata is sent: event, session ID, folder name, tool name, limit and
+context percentages, and categories of shell commands (test run, commit, push,
+pull request) recognised on your computer. Prompts, code and replies never leave your computer. With a relay,
 that metadata passes through the ntfy server you chose.
 
 ## Status

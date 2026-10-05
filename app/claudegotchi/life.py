@@ -11,7 +11,7 @@ import threading
 import time
 from datetime import date, datetime, timedelta
 
-from .mood import BADGES, XP_FOR
+from .mood import BADGES, XP_FOR, XP_FOR_SIGNAL
 
 log = logging.getLogger("claudegotchi")
 
@@ -32,7 +32,7 @@ def level_for(xp):
 
 
 def _empty_day():
-    return {"turns": 0, "tools": 0, "errors": 0, "sessions": 0, "xp": 0}
+    return {"turns": 0, "tools": 0, "errors": 0, "sessions": 0, "xp": 0, "commits": 0}
 
 
 class Life:
@@ -118,6 +118,28 @@ class Life:
             return True
         return False
 
+    def reward(self, signals, now=None):
+        """XP for what landed: commits, pushes and pull requests (see feeling.py).
+        Returns True on a level-up."""
+        gain = sum(XP_FOR_SIGNAL.get(sig, 0) for sig in signals)
+        if not gain:
+            return False
+        now = now or time.time()
+        today = datetime.fromtimestamp(now).date()
+        with self.lock:
+            st = self.state
+            day = st["days"].setdefault(today.isoformat(), _empty_day())
+            day["commits"] = day.get("commits", 0) + ("commit" in signals)
+            self._touch_streak(today)
+            before = level_for(st["xp"])
+            st["xp"] += gain
+            day["xp"] += gain
+            self.dirty = True
+            if level_for(st["xp"]) > before:
+                self.level_up_at = now
+                return True
+        return False
+
     def add_badge(self, key, now=None):
         """Returns True if the badge is new."""
         with self.lock:
@@ -155,7 +177,7 @@ class Life:
         with self.lock:
             st = self.state
             xp = st["xp"]
-            day = dict(st["days"].get(today.isoformat(), _empty_day()))
+            day = {**_empty_day(), **st["days"].get(today.isoformat(), {})}
             last = st["last_day"]
             streak = st["streak"]
             best = st["best_streak"]

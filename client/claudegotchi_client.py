@@ -17,11 +17,13 @@ With url "auto" the client tries the USB cable first, then <name>.local over Wi-
 learns the name the first time it reaches a gotchi over USB, or from "pair".
 
 Sends metadata only (event name, session ID, project folder name, tool name,
-notification/error type, limit percentages), never prompts, code or replies.
+notification/error type, limit and context percentages, and a few categories such as
+"a test run failed" or "a commit succeeded"), never prompts, code, commands or replies.
 Never blocks Claude Code: sending happens in a detached background process.
 """
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -31,7 +33,28 @@ import uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 KEEP = ("hook_event_name", "session_id", "notification_type", "error_type",
-        "tool_name", "source", "reason")
+        "tool_name", "source", "reason", "trigger")
+
+# Shell commands are classified here, on this machine; only the category is sent.
+# A match must start a command (start of line, or after ; & | or a run wrapper).
+START = r"(?:^|[;&|(]\s*)(?:\w+=\S*\s+)*(?:(?:uv|poetry|pipenv|pdm|hatch)\s+run\s+|npx\s+|bunx\s+|time\s+)?"
+GIT = r"git\s+(?:-C\s+\S+\s+|-c\s+\S+\s+)*"
+SIGNALS = (
+    ("pr", re.compile(START + r"gh\s+pr\s+create\b", re.M)),
+    ("push", re.compile(START + GIT + r"push\b", re.M)),
+    ("commit", re.compile(START + GIT + r"commit\b", re.M)),
+    ("test", re.compile(START + (
+        r"(?:pytest|py\.test|tox|nox|jest|vitest|mocha|rspec|phpunit|ctest|"
+        r"python3?\s+-m\s+(?:pytest|unittest)|go\s+test|cargo\s+test|dotnet\s+test|swift\s+test|"
+        r"mix\s+test|mvn\s+(?:-\S+\s+)*test|(?:\./)?gradlew?\s+test|"
+        r"(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?test|make\s+(?:test|check))\b"), re.M)),
+)
+SHELL_TOOLS = {"Bash", "PowerShell"}
+
+
+def classify(command):
+    """Categories of a shell command, e.g. ["commit", "push"]."""
+    return [name for name, rx in SIGNALS if rx.search(command or "")]
 
 
 # "auto": try the USB cable first, then the paired gotchi's name over Wi-Fi.
@@ -189,6 +212,15 @@ def cmd_hook(cfg):
     except ValueError:
         return
     ev = {k: data[k] for k in KEEP if data.get(k) not in (None, "")}
+    name = data.get("hook_event_name")
+    if name == "StopFailure" and data.get("error"):
+        ev["error_type"] = data["error"]          # StopFailure names its error type "error"
+    if name == "PostToolUseFailure" and data.get("is_interrupt"):
+        ev["interrupt"] = True
+    if name in ("PostToolUse", "PostToolUseFailure") and data.get("tool_name") in SHELL_TOOLS:
+        signals = classify((data.get("tool_input") or {}).get("command"))
+        if signals:
+            ev["signals"] = signals
     ev["project"] = os.path.basename((data.get("cwd") or "").rstrip("/"))
     ev["ts"] = time.time()
     post_detached(cfg, "/hook", ev)
@@ -219,9 +251,15 @@ def cmd_statusline(cfg):
         out = "(◕‿‿◕) " + " · ".join(parts)
     print(out)
 
-    # 2) Report the limits to the gotchi
-    if rl:
-        post_detached(cfg, "/limits", {"rate_limits": rl, "ts": time.time()})
+    # 2) Report the limits and how full this session's context is
+    ctx = (data.get("context_window") or {}).get("used_percentage")
+    if rl or ctx is not None:
+        payload = {"ts": time.time()}
+        if rl:
+            payload["rate_limits"] = rl
+        if ctx is not None and data.get("session_id"):
+            payload.update(session_id=data["session_id"], context_pct=ctx)
+        post_detached(cfg, "/limits", payload)
 
 
 def cmd_test(cfg):
@@ -234,7 +272,15 @@ def cmd_test(cfg):
         ({"hook_event_name": "Notification", "notification_type": "permission_prompt",
           "tool_name": "Bash"}, "asking for permission"),
         ({"hook_event_name": "PostToolUse", "tool_name": "Bash"}, "working again"),
-        ({"hook_event_name": "Stop"}, "done"),
+        ({"hook_event_name": "PostToolUseFailure", "tool_name": "Bash"}, "a command fails"),
+        ({"hook_event_name": "PostToolUseFailure", "tool_name": "Bash"}, "fails again"),
+        ({"hook_event_name": "PostToolUseFailure", "tool_name": "Bash", "signals": ["test"]},
+         "third failure in a row: stuck"),
+        ({"hook_event_name": "PostToolUse", "tool_name": "Bash", "signals": ["test"]},
+         "tests green again: relieved"),
+        ({"hook_event_name": "PostToolUse", "tool_name": "Bash", "signals": ["commit"]},
+         "a commit: proud"),
+        ({"hook_event_name": "Stop"}, "done (still proud of that commit)"),
         ({"hook_event_name": "Notification", "notification_type": "idle_prompt"}, "waiting for you"),
         ({"hook_event_name": "StopFailure", "error_type": "rate_limit"}, "limit reached"),
         ({"hook_event_name": "SessionEnd"}, "session ended"),

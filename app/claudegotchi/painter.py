@@ -187,7 +187,8 @@ class Painter:
         img = Image.new("1", (W, H), 255)
         d = ImageDraw.Draw(img)
         self.header(d, view)
-        critter.draw(d, *CRITTER_XY, view["mood"], frame, view.get("accessory", "none"))
+        critter.draw(d, *CRITTER_XY, view["mood"], frame, view.get("accessory", "none"),
+                     view.get("props") or ())
         self.bubble(d, view)
         self.footer(d, view)
         return img
