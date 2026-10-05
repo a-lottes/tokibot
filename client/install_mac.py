@@ -2,6 +2,7 @@
 """Sets up the Claudegotchi client in Claude Code (or removes it again). Mac and Linux.
 
   python3 install_mac.py                         # default: automatic (USB cable, then Wi-Fi)
+  python3 install_mac.py --gotchi claudegotchi-3f2a   # pair over Wi-Fi by the name on its screen
   python3 install_mac.py --url http://192.168.1.50:8765 --token secret
   python3 install_mac.py --new-relay             # also send through a new ntfy relay topic
   python3 install_mac.py --cloud-setup > setup.sh   # script for a cloud environment
@@ -13,12 +14,15 @@ What happens:
   * ~/.claude/settings.json gets the hooks and the status line
     (a backup settings.json.claudegotchi-backup is made first)
   * an existing status line is kept and still shown
+  * the client pairs with your gotchi (USB cable, or --gotchi NAME): it remembers the
+    gotchi's name and, if the gotchi has no token yet, gets one from it
 """
 import argparse
 import json
 import os
 import secrets
 import shutil
+import subprocess
 import sys
 
 CLAUDE_DIR = os.path.expanduser("~/.claude")
@@ -86,6 +90,11 @@ def resolve(args, old_cfg):
     return url, token, relay.rstrip("/")
 
 
+def resolve_gotchi(args, old_cfg):
+    name = args.gotchi if args.gotchi is not None else old_cfg.get("gotchi", "")
+    return name.strip().removesuffix(".local")
+
+
 def gotchi_settings(token, relay):
     return (f'[server]\ntoken = "{token}"\n\n'
             f'[relay]\nurl = "{relay}"\n')
@@ -111,7 +120,8 @@ def install(args):
 
     url, token, relay = resolve(args, old_cfg)
     with open(cfg_path, "w") as f:
-        json.dump({"url": url, "token": token, "relay": relay, "statusline_chain": chain}, f, indent=2)
+        json.dump({"url": url, "token": token, "relay": relay, "gotchi": resolve_gotchi(args, old_cfg),
+                   "statusline_chain": chain}, f, indent=2)
 
     cmd = f'python3 "{CLIENT}"'
     strip_ours(settings)
@@ -138,6 +148,10 @@ def install(args):
         print(f"→ Relay: {relay}")
         print("→ Put this into claudegotchi.toml on the gotchi (it needs Wi-Fi for the relay):\n")
         print(gotchi_settings(token, relay))
+    if url != "none":
+        print("→ Pairing with your gotchi …")
+        if subprocess.run([sys.executable, CLIENT, "pair", resolve_gotchi(args, old_cfg)]).returncode:
+            print(f'→ Pair later:  python3 "{CLIENT}" pair [claudegotchi-xxxx]')
     print(f'→ Test:  python3 "{CLIENT}" test')
     print("→ Restart running Claude Code sessions once so the hooks take effect.")
 
@@ -192,6 +206,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--url", default=None, help=f"address of the gotchi, or none for relay only (default: {DEFAULT_URL})")
     ap.add_argument("--token", default=None, help="optional token, must match the gotchi")
+    ap.add_argument("--gotchi", default=None,
+                    help="your gotchi's name as shown on its screen (claudegotchi-xxxx); "
+                         "not needed if it is plugged in with the USB cable")
     ap.add_argument("--relay", default=None, help="ntfy topic URL to publish to as well (\"\" to turn it off)")
     ap.add_argument("--new-relay", action="store_true", help="create a random ntfy.sh topic (and a token)")
     ap.add_argument("--cloud-setup", action="store_true",

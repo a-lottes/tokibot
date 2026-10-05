@@ -3,6 +3,8 @@
 Endpoints:
   POST /hook    hook event (from claudegotchi_client.py)
   POST /limits  rate_limits from the status line
+  GET  /whoami  this gotchi's network name (claudegotchi-xxxx), for pairing a client
+  POST /pair    pair a client: creates a token if none is set yet (see pair below)
   GET  /        live preview in the browser
   GET  /frame.png, GET /state
   GET  /settings, POST /settings   settings page (writes claudegotchi.toml, then restarts)
@@ -11,6 +13,11 @@ Endpoints:
   POST /social/backup, /social/restore, /social/reset   the gotchi's identity
 
 With [relay] url set, the same events also arrive through an ntfy topic (see relay.py).
+
+Several gotchis can share one network, so each has its own name (claudegotchi-xxxx,
+set by the image's S06hostname). Every answer carries it in X-Claudegotchi-Gotchi.
+A client that sends X-Claudegotchi-Gotchi with another name gets 409 instead of
+having its events land on someone else's gotchi.
 """
 import argparse
 import errno
@@ -18,7 +25,9 @@ import json
 import logging
 import os
 import re
+import secrets
 import signal
+import socket
 import tempfile
 import threading
 import time
@@ -116,7 +125,7 @@ class Control:
         threading.Thread(target=later, daemon=True).start()
 
 
-def make_handler(brain, renderer, token, dispatch, control=None):
+def make_handler(brain, renderer, token, dispatch, control=None, name=""):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
             log.debug("%s %s", self.address_string(), fmt % args)
@@ -126,6 +135,8 @@ def make_handler(brain, renderer, token, dispatch, control=None):
             self.send_header("Content-Type", ctype)
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
+            if name:
+                self.send_header("X-Claudegotchi-Gotchi", name)
             self.end_headers()
             self.wfile.write(body)
 
@@ -147,8 +158,13 @@ def make_handler(brain, renderer, token, dispatch, control=None):
             if control and (self.path in ("/settings", "/update", "/update/reset")
                             or self.path.startswith("/social")):
                 return self.web_post()
+            if self.path == "/pair":
+                return self.pair()
             if token and self.headers.get("X-Claudegotchi-Token") != token:
                 return self._send(401, b'{"error":"token"}')
+            want = self.headers.get("X-Claudegotchi-Gotchi")
+            if want and name and want.lower() != name.lower():
+                return self._send(409, json.dumps({"error": "gotchi", "gotchi": name}).encode())
             length = int(self.headers.get("Content-Length") or 0)
             if length > 65536:
                 return self._send(413)
@@ -159,6 +175,32 @@ def make_handler(brain, renderer, token, dispatch, control=None):
             if not isinstance(data, dict) or not dispatch(self.path, data):
                 return self._send(404)
             self._send(204)
+
+        def pair(self):
+            """A client pairs with this gotchi. Without a token yet, the gotchi makes one,
+            saves it in claudegotchi.toml and hands it out once: from then on only that
+            client (and whoever knows the token) gets through. With a token set, the
+            client must already know it. The custom header keeps web pages from doing
+            this behind your back (a cross-site request cannot send it)."""
+            nonlocal token
+            if self.headers.get("X-Claudegotchi-Pair") != "1":
+                return self._send(400, b'{"error":"header"}')
+            if token:
+                if self.headers.get("X-Claudegotchi-Token") != token:
+                    return self._send(401, b'{"error":"token"}')
+                return self._send(200, json.dumps({"gotchi": name, "token": token}).encode())
+            new = ""
+            if control:
+                new = secrets.token_urlsafe(18)
+                try:
+                    settings.write_config(control.cfg_path, {("server", "token"): new})
+                except Exception as e:
+                    log.warning("Pairing without a token, saving it failed: %s", e)
+                    new = ""
+            if new:
+                control.cfg["server"]["token"] = token = new
+                log.info("Paired with %s, token created", self.address_string())
+            self._send(200, json.dumps({"gotchi": name, "token": new}).encode())
 
         def web_post(self):
             if not self._same_origin():
@@ -304,6 +346,8 @@ def make_handler(brain, renderer, token, dispatch, control=None):
                 self._social_page()
             elif path == "/settings" and control:
                 self._html(200, settings.page(control.cfg, bool(token), "", update.running_from()))
+            elif path == "/whoami":
+                self._send(200, json.dumps({"gotchi": name, "token": bool(token)}).encode())
             elif path == "/":
                 self._send(200, PREVIEW_HTML, "text/html; charset=utf-8")
             elif path == "/state":
@@ -402,6 +446,9 @@ def main(argv=None):
     bat_dev = battery_mod.detect(bat_cfg)
     monitor = battery_mod.BatteryMonitor(bat_dev, bat_cfg["shutdown_at"]) if bat_dev else None
     brain = Brain(Life(path), battery=monitor)
+    name = socket.gethostname().split(".")[0]
+    if not args.sim:
+        brain.address = f"{name}.local"
     data_dir = os.path.dirname(path) if path else None
     social = start_social(cfg, brain, data_dir, args)
     renderer = Renderer(brain, display)
@@ -412,7 +459,7 @@ def main(argv=None):
     renderer.start()
     dispatch = make_dispatch(brain, set_clock=not args.sim)
     control = Control(cfg_path, cfg, on_device, social=social, data_dir=data_dir)
-    handler = make_handler(brain, renderer, srv["token"], dispatch, control)
+    handler = make_handler(brain, renderer, srv["token"], dispatch, control, name)
     try:
         server = ThreadingHTTPServer((srv["host"], port), handler)
     except OSError as e:
@@ -437,7 +484,7 @@ def main(argv=None):
     relay = cfg["relay"]
     if relay["url"]:
         Relay(relay["url"], srv["token"], dispatch, relay["auth"]).start()
-    log.info("Claudegotchi listening on http://%s:%d", srv["host"], port)
+    log.info("Claudegotchi %s listening on http://%s:%d", name, srv["host"], port)
     server.serve_forever()
     if social:
         social.close()

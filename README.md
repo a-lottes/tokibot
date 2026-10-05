@@ -76,7 +76,7 @@ the design leaves room for a community site with chat later
 * **On the display.** ♥ and the number of friends nearby (● for other gotchis) next to
   the clock; the critter waves at new gotchis and celebrates new friends.
 
-Open `http://claudegotchi.local:8765/social` (or `/social` in the simulator) to see
+Open `http://claudegotchi-xxxx.local:8765/social` (or `/social` in the simulator) to see
 who is nearby, befriend them, pick an accessory and download a **backup**. The
 identity, friends and progress only live on the SD card; the backup is encrypted
 with a passphrase you choose and restores everything on a new card or gotchi.
@@ -163,9 +163,30 @@ automatically and the gotchi is reachable at `192.168.77.1`.
 On your computer:
 
 ```bash
-python3 client/install_mac.py          # address "auto": USB first, then claudegotchi.local
+python3 client/install_mac.py          # address "auto": USB first, then your gotchi's name on Wi-Fi
 python3 ~/.claude/claudegotchi/claudegotchi_client.py test
 ```
+
+### Which gotchi?
+
+Every gotchi has its own network name, `claudegotchi-xxxx`, where `xxxx` comes from
+the Pi's serial number. It shows the name on screen until a client talks to it. So
+two gotchis on the same Wi-Fi (yours and a friend's) never answer to the same name.
+
+The installer pairs the client with your gotchi: plug the gotchi in with the USB
+cable, or pass its name with `--gotchi claudegotchi-xxxx` for Wi-Fi only. Pairing
+remembers the name and, if the gotchi has no token yet, the gotchi makes one, saves
+it in `claudegotchi.toml` and hands it to this computer. From then on it only takes
+events from clients with that token. Pair again any time:
+
+```bash
+python3 ~/.claude/claudegotchi/claudegotchi_client.py pair                    # over USB
+python3 ~/.claude/claudegotchi/claudegotchi_client.py pair claudegotchi-xxxx  # over Wi-Fi
+```
+
+The client sends the gotchi's name with every event. A gotchi with another name
+answers 409 and the event is not shown there. Without pairing, the client learns the
+name the first time it reaches a gotchi over the USB cable.
 
 The installer adds hooks and a status line to `~/.claude/settings.json`, backs up
 the old file, and leaves your existing hooks and status line alone.
@@ -186,7 +207,7 @@ for the website.
 
 ## Settings in the browser
 
-Open `http://claudegotchi.local:8765/settings` (or `http://192.168.77.1:8765/settings`
+Open `http://claudegotchi-xxxx.local:8765/settings` (or `http://192.168.77.1:8765/settings`
 over USB) to change Wi-Fi, time zone, rotation, token and relay. The page writes
 `claudegotchi.toml` on the boot partition, keeps its comments, and restarts the
 gotchi. Once a token is set, the page asks for it. Editing the file on the SD
@@ -198,7 +219,7 @@ The Python app can be updated in place; only kernel or system changes need a new
 image.
 
 ```bash
-make update GOTCHI=http://claudegotchi.local:8765 TOKEN=your-token
+make update GOTCHI=http://claudegotchi-xxxx.local:8765 TOKEN=your-token
 ```
 
 This packs `app/` into `output/claudegotchi-app.tar.gz` and sends it to the gotchi.
@@ -261,9 +282,9 @@ recharges, or `BATTERY=sim:20` to start at 20 %).
 * Read-only root filesystem, `/tmp` and `/run` in RAM. Pulling the plug does not hurt the card.
 * A 16 MB writable `data` partition at `/data` for the critter's progress and app updates.
 * BusyBox init with a few scripts (`os/board/claudegotchi/rootfs-overlay/etc/init.d/`):
-  read settings, Bluetooth, USB gadget, Wi-Fi, then the service.
+  read settings, hostname, Bluetooth, USB gadget, Wi-Fi, then the service.
 * USB gadget as a CDC-ECM network adapter with a DHCP server for your computer.
-* avahi for `claudegotchi.local`, NTP on Wi-Fi. Without Wi-Fi the gotchi takes the
+* avahi for `claudegotchi-xxxx.local` (a name of its own per gotchi), NTP on Wi-Fi. Without Wi-Fi the gotchi takes the
   time from your computer.
 * Bluetooth LE through the kernel's HCI socket, no bluetoothd.
 * No SSH in the default image.

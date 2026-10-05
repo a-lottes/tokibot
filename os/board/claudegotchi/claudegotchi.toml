@@ -12,7 +12,7 @@ timezone = "Europe/Berlin"
 
 [server]
 port = 8765
-# Optional: only accept clients that send this token
+# Only accept clients that send this token. Pairing a client sets it for you.
 token = ""
 
 [usb]

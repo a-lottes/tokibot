@@ -8,7 +8,7 @@
 #   make mockups   render every mood into docs/mockups.png
 #   make figures   redraw the blueprint figures in the website (docs/*.html)
 #   make bundle    pack the app into output/claudegotchi-app.tar.gz (update without flashing)
-#   make update    send that bundle to a gotchi: make update GOTCHI=http://claudegotchi.local:8765 TOKEN=…
+#   make update    send that bundle to a gotchi: make update GOTCHI=http://claudegotchi-xxxx.local:8765 TOKEN=…
 #   make zero2w    build the image for the Raspberry Pi Zero 2 W
 #   make zerow     build the image for the Raspberry Pi Zero W
 #
