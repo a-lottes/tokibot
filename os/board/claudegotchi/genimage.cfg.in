@@ -1,6 +1,6 @@
 image boot.vfat {
 	vfat {
-		label = "CLAUDEGOTCHI"
+		label = "GOTCHI"   # FAT labels: at most 11 characters
 		files = {
 #BOOT_FILES#
 		}
