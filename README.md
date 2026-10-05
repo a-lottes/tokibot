@@ -163,13 +163,13 @@ automatically and the gotchi is reachable at `192.168.77.1`.
 On your computer:
 
 ```bash
-python3 client/install_mac.py          # address "auto": USB first, then claudegotchi.local
-python3 ~/.claude/claudegotchi/claudegotchi_client.py test
+python3 client/install.py          # address "auto": USB first, then claudegotchi.local
+sh ~/.claude/claudegotchi/claudegotchi.sh test
 ```
 
 The installer adds hooks and a status line to `~/.claude/settings.json`, backs up
 the old file, and leaves your existing hooks and status line alone.
-Remove it with `python3 client/install_mac.py --uninstall`.
+Remove it with `python3 client/install.py --uninstall`.
 
 Or install it as a Claude Code plugin from this repository (or from the
 website's `https://claudegotchi.lottes.dev/marketplace.json`):
@@ -180,7 +180,7 @@ website's `https://claudegotchi.lottes.dev/marketplace.json`):
 ```
 
 The plugin brings the hooks only, because plugins cannot set the status line.
-Add the status line with `python3 client/install_mac.py --statusline-only`. Use
+Add the status line with `python3 client/install.py --statusline-only`. Use
 the plugin or the full installer, not both. `plugin/build.py` packs the plugin
 for the website.
 
@@ -220,7 +220,7 @@ the gotchi keeps one outgoing connection to it, so it works behind any hotspot.
 1. Create a relay topic and a token on your computer:
 
    ```bash
-   python3 client/install_mac.py --new-relay
+   python3 client/install.py --new-relay
    ```
 
    It prints a `[server]` token and a `[relay]` url. Put both into
@@ -229,7 +229,7 @@ the gotchi keeps one outgoing connection to it, so it works behind any hotspot.
    environment's setup script:
 
    ```bash
-   python3 client/install_mac.py --cloud-setup > cloud-setup.sh
+   python3 client/install.py --cloud-setup > cloud-setup.sh
    ```
 
    The script carries the client inline and installs it with `url = none`, so it
@@ -262,7 +262,8 @@ recharges, or `BATTERY=sim:20` to start at 20 %).
 * A 16 MB writable `data` partition at `/data` for the critter's progress and app updates.
 * BusyBox init with a few scripts (`os/board/claudegotchi/rootfs-overlay/etc/init.d/`):
   read settings, Bluetooth, USB gadget, Wi-Fi, then the service.
-* USB gadget as a CDC-ECM network adapter with a DHCP server for your computer.
+* USB gadget as a network adapter with a DHCP server for your computer: RNDIS for
+  Windows, CDC-ECM for macOS and Linux, no driver needed.
 * avahi for `claudegotchi.local`, NTP on Wi-Fi. Without Wi-Fi the gotchi takes the
   time from your computer.
 * Bluetooth LE through the kernel's HCI socket, no bluetoothd.
