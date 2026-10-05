@@ -106,6 +106,8 @@ LOOKS = {
                    "props": [[("heart", 70, -12)], [("heart", 70, -14)], [("heart", 70, -12)]]},
     "hungry":     {"eyes": ["tired", "left"], "mouth": "o", "arms": ("out", "down"),
                    "props": [[("crumb", 70, 0)], [("crumb", 72, 4)]]},
+    "lowbattery": {"eyes": ["tired", "closed"], "mouth": "o", "arms": ("down", "down"),
+                   "props": [[("battery", 62, -12)], []]},
     "offline":    {"eyes": ["closed"], "mouth": "dot", "arms": ("down", "down"),
                    "props": [[("z_small", 66, -6), ("z_big", 74, -18)]]},
 }

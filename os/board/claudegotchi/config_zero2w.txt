@@ -13,6 +13,8 @@ display_auto_detect=0
 
 # The e-paper is on SPI
 dtparam=spi=on
+# I2C for an optional PiSugar 3 battery (pins 3/5)
+dtparam=i2c_arm=on
 # USB data port in device mode (network adapter to the computer)
 dtoverlay=dwc2,dr_mode=peripheral
 

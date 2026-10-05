@@ -24,6 +24,7 @@ DEFAULTS = {
     "wifi": {"ssid": "", "psk": "", "country": "DE"},
     "usb": {"enabled": True, "address": "192.168.77.1"},
     "relay": {"url": "", "auth": ""},
+    "battery": {"model": "auto", "shutdown_at": 5, "i2c_bus": 1},
 }
 
 
