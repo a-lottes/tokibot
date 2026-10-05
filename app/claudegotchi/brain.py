@@ -4,19 +4,28 @@ import threading
 import time
 from datetime import datetime
 
+from .feeling import Feeling
 from .life import Life
-from .mood import (DONE_DECAY, ERROR_LABELS, FILL_DEFAULTS, HUNGRY_AFTER_DAYS, LEVELUP_SHOW,
-                   LIMIT_FALLBACK, LIMIT_WARN_PCT, MESSAGES, PERMISSION_DECAY, PRIORITY,
-                   SESSION_FORGET, SUMMARY_FROM_HOUR, SUMMARY_UNTIL_HOUR, WAITING_NOTIFICATIONS,
-                   WORKING_EVENTS, WORKING_STALE)
+from .mood import (CONTEXT_FULL_PCT, DONE_DECAY, ERROR_LABELS, FILL_DEFAULTS, FOCUS_WEIGHT,
+                   HUNGRY_AFTER_DAYS, JUGGLING_FROM, LEVELUP_SHOW, LIMIT_FALLBACK, LIMIT_WARN_PCT,
+                   MESSAGES, MOMENT_SHOW, MOOD_HOLD, PERMISSION_DECAY, PRIORITY, SESSION_FORGET,
+                   SUMMARY_FROM_HOUR, SUMMARY_UNTIL_HOUR, WAITING_NOTIFICATIONS, WORKING_EVENTS,
+                   WORKING_STALE)
 
 # Moods a level-up celebration may cover; anything that needs you wins over it.
 CELEBRATE_OVER = {"working", "done", "ready", "idle", "error"}
+# Situations the feeling layer may tint; permission, waiting, limit and error never are.
+TINTABLE = {"working", "done", "ready", "idle"}
+# Tints of "working": they swap among each other at most every MOOD_HOLD seconds.
+WORKING_MOODS = {"working", "flow", "struggling", "juggling", "tired"}
 
 
 class Brain:
     def __init__(self, life=None, battery=None):
         self.life = life or Life()
+        self.feeling = Feeling()
+        self.context = {}         # session id → context window used, in percent
+        self.shown, self.shown_since = "", 0.0
         self.battery = battery    # battery.BatteryMonitor, or None without a battery
         self.lock = threading.Lock()
         self.sessions = {}
@@ -33,6 +42,8 @@ class Brain:
         with self.lock:
             if name == "SessionEnd":
                 self.sessions.pop(sid, None)
+                self.feeling.forget(sid)
+                self.context.pop(sid, None)
                 return
             s = self.sessions.setdefault(sid, {
                 "state": "ready", "since": now, "updated": now, "ts": 0.0,
@@ -44,6 +55,8 @@ class Brain:
             s["updated"] = now
             if ev.get("project"):
                 s["project"] = ev["project"]
+            signals = self.feeling.record(sid, ev, now)
+            self.life.reward(signals, now)
 
             new = None
             if name == "SessionStart":
@@ -83,6 +96,8 @@ class Brain:
     def handle_limits(self, data):
         rl = data.get("rate_limits") or {}
         with self.lock:
+            if data.get("session_id") and data.get("context_pct") is not None:
+                self.context[str(data["session_id"])] = float(data["context_pct"])
             for key in ("five_hour", "seven_day"):
                 w = rl.get(key)
                 if isinstance(w, dict) and w.get("used_percentage") is not None:
@@ -120,6 +135,8 @@ class Brain:
         with self.lock:
             for sid in [k for k, s in self.sessions.items() if now - s["updated"] > SESSION_FORGET]:
                 del self.sessions[sid]
+                self.feeling.forget(sid)
+                self.context.pop(sid, None)
             eff = [(self._effective(s, now), sid, s) for sid, s in self.sessions.items()]
             counts = {}
             for st, _, _ in eff:
@@ -136,10 +153,19 @@ class Brain:
                 state = "limit"
             tools_today = self.tools_today
 
-        pct5 = limits.get("five_hour", {}).get("pct")
-        mood = state
-        if state == "working" and pct5 is not None and pct5 >= LIMIT_WARN_PCT:
-            mood = "tired"
+            active = [k for st, k, _ in eff if st != "idle"]
+            valence, energy = self.feeling.blend(sid, active, now, FOCUS_WEIGHT)
+            mood = self._tint(state, sid, valence, counts.get("working", 0), now)
+            pct5 = limits.get("five_hour", {}).get("pct")
+            if mood in ("working", "flow", "juggling") and pct5 is not None and pct5 >= LIMIT_WARN_PCT:
+                mood = "tired"
+            if (mood in WORKING_MOODS and self.shown in WORKING_MOODS and mood != self.shown
+                    and now - self.shown_since < MOOD_HOLD):
+                mood = self.shown
+            if mood != self.shown:
+                self.shown, self.shown_since = mood, now
+            feel = self.feeling.info(sid)
+            context_pct = self.context.get(sid)
 
         life = self.life.summary(now)
         hour = datetime.fromtimestamp(now).hour
@@ -164,8 +190,13 @@ class Brain:
             "turns": life["today"]["turns"], "tools": life["today"]["tools"],
             "errors": life["today"]["errors"], "xp": life["today"]["xp"],
             "battery": battery["pct"] if battery else "?",
+            "n": counts.get("working", 0), "commits": life["today"].get("commits", 0),
         }
+        if mood == "stuck":
+            fill["tool"] = feel["tool"] or fill["tool"]
         key = mood
+        if mood == "proud":
+            key = "proud_" + (feel["kind"] or "commit")
         if mood == "working" and s.get("tool") and (int(now // 20) % 2):
             key = "working_tool"
         if mood == "permission" and not s.get("tool"):
@@ -180,5 +211,27 @@ class Brain:
             "sessions": len(eff), "limits": limits, "tools_today": tools_today,
             "level": life["level"], "streak": life["streak"], "life": life,
             "battery": dict(battery) if battery else None,
+            "feeling": {"valence": round(valence, 2), "energy": round(energy, 2)},
+            "context_pct": context_pct,
+            "props": (["wrench"] if context_pct is not None and context_pct >= CONTEXT_FULL_PCT
+                      and mood in WORKING_MOODS | {"stuck"} else []),
         }
 
+    def _tint(self, state, sid, valence, working, now):
+        """The situation plus how it is going → the mood (see feeling.py)."""
+        if state not in TINTABLE or not sid:
+            return state
+        f = self.feeling
+        if state == "working" and f.stuck(sid):
+            return "stuck"
+        for kind in ("oops", "proud", "relieved"):
+            if f.moment(sid, kind, now, MOMENT_SHOW):
+                return kind
+        tone = f.tone(sid, valence)
+        if state != "working":
+            return state
+        if tone < 0:
+            return "struggling"
+        if working >= JUGGLING_FROM:
+            return "juggling"
+        return "flow" if tone > 0 else "working"

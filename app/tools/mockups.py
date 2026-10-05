@@ -24,7 +24,16 @@ CASES = [
     ("summary", "Today: 23 tasks, 412 tools, 2 errors. Streak: 5 days.", "", {}),
     ("hungry", "3 days without code. *stomach growls*", "", {}),
     ("lowbattery", "Battery at 12% … plug me in?", "", {}),
+    ("flow", "In the zone.", "claudegotchi", {"working": 1}),
+    ("struggling", "This one is tricky …", "claudegotchi", {"working": 1}),
+    ("stuck", "Bash keeps failing …", "claudegotchi", {"working": 1}),
+    ("oops", "Oops, wrong way? Tell me.", "claudegotchi", {"working": 1}),
+    ("juggling", "Juggling 3 sessions!", "claudegotchi", {"working": 3}),
+    ("proud", "Committed! 4 today.", "claudegotchi", {"working": 1}),
+    ("relieved", "Green again. Phew!", "claudegotchi", {"working": 1}),
 ]
+# A nearly full context window: the critter carries a wrench
+PROPS = {"struggling": ["wrench"]}
 # With a PiSugar battery: the header shows the charge (lightning bolt = on power)
 BATTERY = {"lowbattery": {"pct": 12, "plugged": False}, "done": {"pct": 64, "plugged": True},
            "idle": {"pct": 87, "plugged": False}}
@@ -38,7 +47,8 @@ def main(out):
         for frame in range(critter.frames(mood)):
             view = {"mood": mood, "message": msg, "project": project, "counts": counts,
                     "sessions": sum(counts.values()), "tools_today": 12, "level": 4, "streak": 5,
-                    "limits": {} if mood == "idle" else LIMITS, "battery": BATTERY.get(mood)}
+                    "limits": {} if mood == "idle" else LIMITS, "battery": BATTERY.get(mood),
+                    "props": PROPS.get(mood, [])}
             tiles.append((f"{mood} {frame + 1}/{critter.frames(mood)}", painter.render(view, frame)))
     rows = (len(tiles) + COLS - 1) // COLS
     tw, th = W * SCALE, H * SCALE + 18
