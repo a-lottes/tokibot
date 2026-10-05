@@ -73,6 +73,8 @@ PROPS = {
     "arrow":    ["  #  ", " ### ", "#####", "  #  ", "  #  "],
     "heart":    [" # # ", "#####", "#####", " ### ", "  #  "],
     "crumb":    ["# ", " #"],
+    "check":    ["     #", "    ##", "#  ## ", "####  ", " ##   "],
+    "wrench":   [" #  #", " #  #", " ####", "  ## ", "  ## ", "  ## ", "  ## "],
     "star":     ["  #  ", " ### ", "#####", " ### ", " # # "],
     "bubble":   [" ### ", "#   #", "#   #", " ### "],
 }
@@ -190,6 +192,23 @@ LOOKS = {
                              [("star", 72, -20), ("sparkle", 2, -12), ("sparkle", 62, -4)]]},
     "lowbattery": {"eyes": ["tired", "closed"], "mouth": "o", "arms": ("down", "down"),
                    "props": [[("battery", 62, -12)], []]},
+    "flow":       {"eyes": ["focused", "happy"], "mouth": "smile", "arms": ("out", "out"),
+                   "legs": ["step_a", "step_b"],
+                   "props": [[("sparkle", 72, -10)], [("sparkle", 70, -4)]]},
+    "struggling": {"eyes": ["tired"], "mouth": "frown", "arms": ("out", "out"),
+                   "legs": ["step_a", "step_b"], "props": [[("drop", 74, -6)], [("drop", 74, 0)]]},
+    "stuck":      {"eyes": ["x", "left"], "mouth": "wavy", "arms": ("up", "up"),
+                   "props": [[("question", 70, -16), ("bolt", -4, -10)],
+                             [("question", 72, -18), ("bolt", -2, -14)]]},
+    "oops":       {"eyes": ["wide"], "mouth": "o", "arms": ("down", "down"),
+                   "props": [[("bang", 74, -14)], [("bang", 74, -18)]]},
+    "juggling":   {"eyes": ["left", "right"], "mouth": "o", "arms": ("up", "up"),
+                   "props": [[("dot", 2, -14), ("dot", 38, -22), ("dot", 72, -14)],
+                             [("dot", 20, -20), ("dot", 56, -20), ("dot", 72, -6)]]},
+    "proud":      {"eyes": ["happy"], "mouth": "grin", "arms": ("up", "up"),
+                   "props": [[("check", 70, -14)], [("check", 70, -20), ("sparkle", -2, -6)]]},
+    "relieved":   {"eyes": ["happy", "closed"], "mouth": "smile", "arms": ("down", "down"),
+                   "props": [[("sparkle", 72, -10)], [("sparkle", 68, -4)]]},
     "offline":    {"eyes": ["closed"], "mouth": "dot", "arms": ("down", "down"),
                    "props": [[("z_small", 66, -6), ("z_big", 74, -18)]]},
 }
@@ -214,12 +233,13 @@ def _blit(draw, pattern, x, y, cell, mirror=False):
                                 x + (c + 1) * cell - 1, y + (r + 1) * cell - 1), fill=255)
 
 
-def draw(draw, x, y, mood, frame=0, accessory="none"):
-    """Draw the critter with its top-left corner at (x, y)."""
+def draw(draw, x, y, mood, frame=0, accessory="none", extras=()):
+    """Draw the critter with its top-left corner at (x, y). `extras`: props it holds,
+    e.g. ["wrench"] when the context window is nearly full."""
     look = LOOKS.get(mood, LOOKS["idle"])
     pick = lambda seq: seq[frame % len(seq)]
     b, f = BODY_CELL, FACE_CELL
-    bounce = -b if mood in ("done", "permission", "levelup", "newfriend", "badge") and frame % 2 else 0
+    bounce = -b if mood in ("done", "permission", "levelup", "newfriend", "badge", "proud") and frame % 2 else 0
     y0 = y + bounce
 
     _blit(draw, BODY, x + 2 * b, y0, b)
@@ -242,3 +262,6 @@ def draw(draw, x, y, mood, frame=0, accessory="none"):
 
     for name, px, py in pick(look["props"]) if look["props"] else []:
         _blit(draw, PROPS[name], x + px, y + py, f)
+    for name in extras:
+        if name in PROPS:
+            _blit(draw, PROPS[name], x - 6, y0 + 10 * b, f)
