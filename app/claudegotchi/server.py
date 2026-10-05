@@ -25,6 +25,7 @@ from io import BytesIO
 
 from PIL import Image
 
+from . import battery as battery_mod
 from . import config, settings, update
 from .brain import Brain
 from .displays import open_display
@@ -220,6 +221,17 @@ def make_handler(brain, renderer, token, dispatch, control=None):
     return Handler
 
 
+def power_off(renderer, on_device):
+    """The battery is about to run out: say good night and shut down cleanly,
+    so the SD card is not cut off mid-write."""
+    if not on_device:
+        log.warning("Battery empty: on the device the gotchi would power off now")
+        return
+    renderer.farewell = "battery_off"
+    renderer.goodbye()
+    os.system("poweroff")
+
+
 def life_path(data_dir):
     """Where the critter keeps its progress: the data partition on the device,
     ~/.claudegotchi elsewhere (e.g. the simulator on a Mac)."""
@@ -241,6 +253,8 @@ def main(argv=None):
     ap.add_argument("--relay", default=None, help="ntfy topic URL to subscribe to (overrides [relay] url)")
     ap.add_argument("--sim", action="store_true", help="no e-paper, browser preview only")
     ap.add_argument("--png", default="", help="in sim mode, save every frame to this file")
+    ap.add_argument("--battery", default=None,
+                    help='battery model, overrides [battery] model (e.g. "sim" or "sim:20" for a fake one)')
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
@@ -255,12 +269,24 @@ def main(argv=None):
     display = open_display("sim" if args.sim else dev["display"], int(dev["rotate"]), args.png)
     path = life_path(dev["data_dir"])
     log.info("Progress file: %s", path or "none (kept in memory)")
-    brain = Brain(Life(path))
+    cfg_path = args.config or os.environ.get("CLAUDEGOTCHI_CONFIG", config.DEFAULT_PATH)
+    on_device = not args.sim and cfg_path.startswith("/boot/")
+    bat_cfg = dict(cfg["battery"])
+    if args.battery is not None:
+        bat_cfg["model"] = args.battery
+    elif args.sim and bat_cfg["model"] == "auto":
+        bat_cfg["model"] = "none"          # no I2C in the simulator unless asked for
+    bat_dev = battery_mod.detect(bat_cfg)
+    monitor = battery_mod.BatteryMonitor(bat_dev, bat_cfg["shutdown_at"]) if bat_dev else None
+    brain = Brain(Life(path), battery=monitor)
     renderer = Renderer(brain, display)
+    if monitor:
+        monitor.on_empty = lambda: power_off(renderer, on_device)
+        monitor.check()                     # so the first frame already knows the charge
+        monitor.start()
     renderer.start()
     dispatch = make_dispatch(brain, set_clock=not args.sim)
-    cfg_path = args.config or os.environ.get("CLAUDEGOTCHI_CONFIG", config.DEFAULT_PATH)
-    control = Control(cfg_path, cfg, on_device=not args.sim and cfg_path.startswith("/boot/"))
+    control = Control(cfg_path, cfg, on_device)
     handler = make_handler(brain, renderer, srv["token"], dispatch, control)
     try:
         server = ThreadingHTTPServer((srv["host"], port), handler)
