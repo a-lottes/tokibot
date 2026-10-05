@@ -26,3 +26,12 @@ address = "192.168.77.1"
 ssid = ""
 psk = ""
 country = "DE"
+
+[relay]
+# For Claude Code running in the cloud (e.g. Claude Projects), which cannot reach the
+# gotchi directly. Cloud hooks publish to this ntfy topic and the gotchi listens to it
+# over Wi-Fi. Generate a URL with: python3 client/install_mac.py --new-relay
+# The topic name is the secret, so keep it long and random. Also set [server] token.
+url = ""
+# Optional access token for a protected or self-hosted ntfy server
+auth = ""

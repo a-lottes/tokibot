@@ -5,6 +5,10 @@
   claudegotchi_client.py statusline  as the status line: report limits and print a status line
   claudegotchi_client.py test        send a test sequence to the gotchi
 
+Transport: straight to the gotchi over HTTP (USB cable or Wi-Fi), and/or through a
+relay (an ntfy topic) when "relay" is set. The relay is for Claude Code running in the
+cloud (e.g. Claude Projects), which cannot reach a gotchi on your local network.
+
 Sends metadata only (event name, session ID, project folder name, tool name,
 notification/error type, limit percentages), never prompts, code or replies.
 Never blocks Claude Code: sending happens in a detached background process.
@@ -15,6 +19,7 @@ import subprocess
 import sys
 import time
 import urllib.request
+import uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 KEEP = ("hook_event_name", "session_id", "notification_type", "error_type",
@@ -27,7 +32,7 @@ LAST_URL = os.path.join(HERE, "last_url")
 
 
 def load_config():
-    cfg = {"url": "auto", "token": "", "statusline_chain": ""}
+    cfg = {"url": "auto", "token": "", "relay": "", "statusline_chain": ""}
     try:
         with open(os.path.join(HERE, "claudegotchi.json")) as f:
             cfg.update(json.load(f))
@@ -35,10 +40,13 @@ def load_config():
         pass
     cfg["url"] = os.environ.get("CLAUDEGOTCHI_URL", cfg["url"]).rstrip("/")
     cfg["token"] = os.environ.get("CLAUDEGOTCHI_TOKEN", cfg["token"])
+    cfg["relay"] = os.environ.get("CLAUDEGOTCHI_RELAY", cfg["relay"]).rstrip("/")
     return cfg
 
 
 def candidates(cfg):
+    if cfg["url"] in ("", "none"):              # relay only
+        return []
     if cfg["url"] != "auto":
         return [cfg["url"]]
     urls = list(AUTO_URLS)
@@ -54,11 +62,14 @@ def candidates(cfg):
 
 
 def post(cfg, path, payload, timeout=3):
+    """Send straight to the gotchi; returns the URL that worked."""
+    urls = candidates(cfg)
+    if not urls:
+        raise OSError("no direct address configured (url = none)")
     headers = {"Content-Type": "application/json"}
     if cfg["token"]:
         headers["X-Claudegotchi-Token"] = cfg["token"]
     body = json.dumps(payload).encode()
-    urls = candidates(cfg)
     for i, url in enumerate(urls):
         req = urllib.request.Request(url + path, data=body, headers=headers, method="POST")
         try:
@@ -76,6 +87,30 @@ def post(cfg, path, payload, timeout=3):
         return url
 
 
+def publish(cfg, path, payload, timeout=5):
+    """Send through the relay: one ntfy message whose body is our JSON envelope.
+    The gotchi subscribes to the same topic and checks the token."""
+    env = {"claudegotchi": 1, "path": path, "token": cfg["token"], "data": payload}
+    req = urllib.request.Request(cfg["relay"], data=json.dumps(env).encode(), method="POST",
+                                 headers={"Content-Type": "application/json"})
+    urllib.request.urlopen(req, timeout=timeout).read()
+    return cfg["relay"]
+
+
+def send(cfg, path, payload, timeout=3):
+    """Relay and direct path; succeeds if at least one of them worked."""
+    payload.setdefault("id", uuid.uuid4().hex[:12])    # lets the gotchi drop duplicates
+    done, err = [], None
+    for fn in ((publish,) if cfg["relay"] else ()) + ((post,) if candidates(cfg) else ()):
+        try:
+            done.append(fn(cfg, path, payload, timeout))
+        except Exception as e:
+            err = e
+    if not done:
+        raise err or OSError("neither url nor relay is configured")
+    return ", ".join(done)
+
+
 def post_detached(cfg, path, payload):
     """Detach and send in the background; the caller returns immediately."""
     sys.stdout.flush()
@@ -85,7 +120,7 @@ def post_detached(cfg, path, payload):
             return
     except (OSError, AttributeError):          # no fork (e.g. Windows): send with a short timeout
         try:
-            post(cfg, path, payload, timeout=0.5)
+            send(cfg, path, payload, timeout=0.5)
         except Exception:
             pass
         return
@@ -94,7 +129,7 @@ def post_detached(cfg, path, payload):
         devnull = os.open(os.devnull, os.O_RDWR)
         for fd in (0, 1, 2):
             os.dup2(devnull, fd)
-        post(cfg, path, payload)
+        send(cfg, path, payload)
     except Exception:
         pass
     finally:
@@ -160,10 +195,10 @@ def cmd_test(cfg):
     for ev, label in steps:
         ev.update(session_id=sid, project="claudegotchi-test", ts=time.time())
         try:
-            url = post(cfg, "/hook", ev)
+            url = send(cfg, "/hook", ev)
             print(f"✓ {label}  ({url})")
         except Exception as e:
-            print(f"✗ {label}: {e} (is it reachable at {', '.join(candidates(cfg))}?)")
+            print(f"✗ {label}: {e} (is it reachable at {', '.join(candidates(cfg) + [cfg['relay']]).strip(', ')}?)")
             return 1
         time.sleep(6)
     return 0

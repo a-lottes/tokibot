@@ -22,6 +22,7 @@ DEFAULTS = {
     "server": {"host": "0.0.0.0", "port": 8765, "token": ""},
     "wifi": {"ssid": "", "psk": "", "country": "DE"},
     "usb": {"enabled": True, "address": "192.168.77.1"},
+    "relay": {"url": "", "auth": ""},
 }
 
 

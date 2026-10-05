@@ -49,6 +49,7 @@ app/       the service on the device (Python, Pillow)
   claudegotchi/mood.py       all display texts (one place, ready for i18n)
   claudegotchi/displays/     display drivers (simulator, Waveshare 2.13" V4)
   claudegotchi/config.py     reads claudegotchi.toml
+  claudegotchi/relay.py      listens to an ntfy topic for cloud sessions
   tools/mockups.py           renders docs/mockups.png
 client/    hook and status line client for your computer, plus installer
 os/        Buildroot extension (br2-external): defconfigs, board files, package
@@ -99,6 +100,40 @@ The installer adds hooks and a status line to `~/.claude/settings.json`, backs u
 the old file, and leaves your existing hooks and status line alone.
 Remove it with `python3 client/install_mac.py --uninstall`.
 
+## On the go and with Claude in the cloud
+
+Hooks run wherever Claude Code runs. A session on your laptop reaches the gotchi
+over the USB cable, or over a shared Wi-Fi such as your phone's hotspot (put it
+under `[wifi]`). A session in the cloud, for example in a Claude Project, runs in
+a container that cannot see your local network. For that case the gotchi can listen
+to a relay: an [ntfy](https://ntfy.sh) topic. Cloud hooks publish to the topic, and
+the gotchi keeps one outgoing connection to it, so it works behind any hotspot.
+
+1. Create a relay topic and a token on your computer:
+
+   ```bash
+   python3 client/install_mac.py --new-relay
+   ```
+
+   It prints a `[server]` token and a `[relay]` url. Put both into
+   `claudegotchi.toml` on the gotchi, and give it Wi-Fi (the phone hotspot works).
+2. Print a setup script for the cloud environment and paste it into the
+   environment's setup script:
+
+   ```bash
+   python3 client/install_mac.py --cloud-setup > cloud-setup.sh
+   ```
+
+   The script carries the client inline and installs it with `url = none`, so it
+   only publishes to the relay.
+3. Allow `ntfy.sh` in the cloud environment's network access settings. Without it,
+   the hooks cannot reach the relay.
+
+The topic name is the secret: anyone who knows it can read the events (metadata
+only, see below) and could publish to it. The gotchi ignores relay messages
+without the right token. You can also run your own ntfy server and point
+`--relay` at it; set `[relay] auth` if it needs an access token.
+
 ## What is in the image
 
 * Read-only root filesystem, `/tmp` and `/run` in RAM. Pulling the plug does not hurt the card.
@@ -112,7 +147,8 @@ Remove it with `python3 client/install_mac.py --uninstall`.
 ## Privacy
 
 Only metadata is sent: event, session ID, folder name, tool name and limit
-percentages. Prompts, code and replies never leave your computer.
+percentages. Prompts, code and replies never leave your computer. With a relay,
+that metadata passes through the ntfy server you chose.
 
 ## Status
 
