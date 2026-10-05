@@ -8,13 +8,14 @@ name: Deploy website
 # The download page serves the files of the latest GitHub release. The repository is
 # private, so release assets need a login; this workflow copies them into the site
 # instead. After "Build image" finishes it runs again, so a new release shows up there.
+# The client files are copied too, for docs/install.sh.
 
 on:
   push:
     branches: [main]
-    paths: ["docs/**", ".github/workflows/site.yml"]
+    paths: ["docs/**", "client/**", ".github/workflows/site.yml"]
   pull_request:
-    paths: ["docs/**", ".github/workflows/site.yml"]
+    paths: ["docs/**", "client/**", ".github/workflows/site.yml"]
   workflow_run:
     workflows: ["Build image"]
     types: [completed]
@@ -37,6 +38,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Add the client, so install.sh works without access to the repository
+        run: |
+          mkdir -p docs/client
+          cp client/claudegotchi_client.py client/install_mac.py docs/client/
       - name: Add the latest release to the download page
         env:
           GH_TOKEN: ${{ github.token }}

@@ -86,12 +86,15 @@
       <p>The progress lives in <code>life.json</code> on the image's small writable <code>data</code> partition, so it survives reboots and updates. In the simulator it is in <code>~/.claudegotchi/</code>.</p>
 
       <h2 id="client" data-n="04">The client</h2>
-      <p>Install it from a copy of the repository. It works on macOS and Linux.</p>
-      <pre><code><span class="p">$ </span>python3 client/install_mac.py<span class="c">                                  # automatic: USB cable, then Wi-Fi</span>
-<span class="p">$ </span>python3 client/install_mac.py --url http://192.168.1.50:8765<span class="c">   # a fixed address</span>
-<span class="p">$ </span>python3 client/install_mac.py --token my-secret<span class="c">                # with a token</span>
-<span class="p">$ </span>python3 client/install_mac.py --uninstall<span class="c">                      # remove it again</span></code></pre>
-      <p>The installer copies <code>claudegotchi_client.py</code> to <code>~/.claude/claudegotchi/</code> and adds the hooks and the status line to <code>~/.claude/settings.json</code>. It backs up the old file as <code>settings.json.claudegotchi-backup</code>. Existing hooks stay, and an existing status line is still shown.</p>
+      <p>It works on macOS and Linux and needs Python 3.9 or newer. Install it with one line; everything after <code>--</code> goes to the installer:</p>
+      <pre><code><span class="c"># automatic: USB cable first, then Wi-Fi</span>
+<span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh
+<span class="c"># a fixed address, or a token</span>
+<span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --url http://192.168.1.50:8765
+<span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --token my-secret
+<span class="c"># remove it again</span>
+<span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --uninstall</code></pre>
+      <p>The <a href="install.sh">install script</a> downloads <a href="client/install_mac.py"><code>install_mac.py</code></a> and <a href="client/claudegotchi_client.py"><code>claudegotchi_client.py</code></a> from this website and runs the installer. It copies <code>claudegotchi_client.py</code> to <code>~/.claude/claudegotchi/</code> and adds the hooks and the status line to <code>~/.claude/settings.json</code>. It backs up the old file as <code>settings.json.claudegotchi-backup</code>. Existing hooks stay, and an existing status line is still shown.</p>
       <p>To check the connection, play the test sequence. It walks through the moods over about a minute and prints which address answered:</p>
       <pre><code><span class="p">$ </span>python3 ~/.claude/claudegotchi/claudegotchi_client.py test</code></pre>
 
@@ -130,12 +133,12 @@ auth = ""<span class="c">                     # access token for a protected ntf
       <ol>
         <li>
           <p>Create a relay topic and a token on your computer:</p>
-          <pre><code><span class="p">$ </span>python3 client/install_mac.py --new-relay</code></pre>
+          <pre><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --new-relay</code></pre>
           <p>It prints a <code>[server]</code> token and a <code>[relay]</code> url. Put both into the gotchi's settings and give it Wi-Fi.</p>
         </li>
         <li>
           <p>Print a setup script for the cloud environment and paste it into the environment's setup script:</p>
-          <pre><code><span class="p">$ </span>python3 client/install_mac.py --cloud-setup &gt; cloud-setup.sh</code></pre>
+          <pre><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --cloud-setup &gt; cloud-setup.sh</code></pre>
           <p>The script carries the client inline and installs it so that it only publishes to the relay.</p>
         </li>
         <li><p>Allow <code>ntfy.sh</code> in the cloud environment's network access settings. Without it, the hooks cannot reach the relay.</p></li>
@@ -145,13 +148,13 @@ auth = ""<span class="c">                     # access token for a protected ntf
       </div>
 
       <h2 id="updates" data-n="08">Updates</h2>
-      <p>The Python app updates in place. Only kernel or system changes need a new image.</p>
+      <p>The Python app updates in place. Only kernel or system changes need a new image. Get <code>claudegotchi-app.tar.gz</code> from the <a href="download.html">download page</a> and upload it on the settings page. Developers with the source code can also send it from the command line:</p>
       <pre><code><span class="p">$ </span>make update GOTCHI=http://claudegotchi.local:8765 TOKEN=your-token</code></pre>
-      <p>This packs <code>app/</code> into <code>output/claudegotchi-app.tar.gz</code> and sends it to the gotchi. You can also upload that file on the settings page; the <a href="download.html">download page</a> has the one from the latest release.</p>
+      <p>This packs <code>app/</code> into <code>output/claudegotchi-app.tar.gz</code> and sends it to the gotchi.</p>
       <p>The gotchi checks that the new version starts, keeps it in <code>/data/app</code>, and restarts. If it crashes three times in a row right after starting, it falls back to the version built into the image. "Back to the built-in version" on the settings page does the same by hand.</p>
 
       <h2 id="simulator" data-n="09">Simulator</h2>
-      <p>Try everything without hardware. You need Python 3.9 or newer and Pillow.</p>
+      <p>For developers: try everything without hardware, from the source code. You need Python 3.9 or newer and Pillow.</p>
       <pre><code><span class="p">$ </span>python3 -m pip install pillow
 <span class="p">$ </span>make test
 <span class="p">$ </span>make sim<span class="c">                    # preview at http://localhost:8765/  (other port: make sim PORT=8766)</span>
@@ -160,7 +163,7 @@ auth = ""<span class="c">                     # access token for a protected ntf
       <p>The simulator keeps its own copy of the settings in <code>~/.claudegotchi/claudegotchi.toml</code>, so the settings page does not change the template in the repository.</p>
 
       <h2 id="image" data-n="10">The image</h2>
-      <p>The operating system is built with Buildroot from the <code>os/</code> folder. There is one configuration per board:</p>
+      <p>The operating system is built with Buildroot from the <code>os/</code> folder of the source code. There is one configuration per board:</p>
       <pre><code><span class="p">$ </span>make zero2w<span class="c">     # Raspberry Pi Zero 2 W (64-bit)</span>
 <span class="p">$ </span>make zerow<span class="c">      # Raspberry Pi Zero W</span></code></pre>
       <p>On GitHub, the workflow <code>image.yml</code> builds both images for every <code>v*</code> tag and attaches them to the release, together with the app bundle. The website then picks them up for the <a href="download.html">download page</a>.</p>
