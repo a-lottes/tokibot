@@ -86,7 +86,15 @@
       <p>The progress lives in <code>life.json</code> on the image's small writable <code>data</code> partition, so it survives reboots and updates. In the simulator it is in <code>~/.claudegotchi/</code>.</p>
 
       <h2 id="client" data-n="04">The client</h2>
-      <p>It works on macOS and Linux and needs Python 3.9 or newer. Install it with one line; everything after <code>--</code> goes to the installer:</p>
+      <p>It works on macOS and Linux and needs Python 3.9 or newer. There are two ways to install it.</p>
+      <h3>As a Claude Code plugin</h3>
+      <pre data-title="claude code"><code><span class="p">$ </span>/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json
+<span class="p">$ </span>/plugin install claudegotchi@claudegotchi</code></pre>
+      <p>The plugin brings the hooks. It has three settings, which you can change in <code>/plugin</code>: the gotchi's address (empty: USB cable, then Wi-Fi), the token, and the relay URL. Claude Code keeps the token in its secure storage. Updates arrive through <code>/plugin</code> when a new version is out. If you have access to the repository, <code>/plugin marketplace add a-lottes/claudegotchi</code> works too.</p>
+      <p>Plugins cannot set the status line, so the budget bars need one more line in a terminal. Pass the same <code>--token</code> or <code>--url</code> as in the plugin, if you set one:</p>
+      <pre><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only</code></pre>
+      <h3>With the install script</h3>
+      <p>One line installs hooks and status line straight into your settings; everything after <code>--</code> goes to the installer. Do not combine it with the plugin, or every event is sent twice.</p>
       <pre><code><span class="c"># automatic: USB cable first, then Wi-Fi</span>
 <span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh
 <span class="c"># a fixed address, or a token</span>
@@ -195,7 +203,7 @@ auth = ""<span class="c">                     # access token for a protected ntf
       <h3>The critter does not react to Claude Code</h3>
       <ul>
         <li>Run the test sequence (see <a href="#client">the client</a>). It prints which addresses it tried.</li>
-        <li>If the gotchi has a token, the client needs the same one: reinstall with <code>--token</code>.</li>
+        <li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin</code>, or reinstall with <code>--token</code>.</li>
         <li>Start a new Claude Code session after installing; running sessions keep their old settings.</li>
       </ul>
       <h3>The picture is upside down</h3>

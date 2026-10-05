@@ -70,16 +70,21 @@ country = "DE"</code></pre>
       </div></li>
       <li id="connect"><div>
         <h3>Connect Claude Code</h3>
-        <p>Now teach Claude Code to talk to the gotchi. Paste this into a terminal on the computer where you use Claude Code:</p>
-        <pre data-title="your computer · terminal"><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh</code></pre>
-        <p>The script downloads two small Python files from this website and installs them in <code>~/.claude/claudegotchi/</code>. It adds <a href="https://docs.claude.com/en/docs/claude-code/hooks">hooks</a> and a status line to <code>~/.claude/settings.json</code>, makes a backup first, and keeps your existing hooks and status line. You can <a href="install.sh">read the script</a> before you run it.</p>
+        <p>Now teach Claude Code to talk to the gotchi. It comes as a Claude Code plugin. In Claude Code, add the Claudegotchi marketplace and install the plugin:</p>
+        <pre data-title="claude code"><code><span class="p">$ </span>/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json
+<span class="p">$ </span>/plugin install claudegotchi@claudegotchi</code></pre>
+        <p>The plugin adds <a href="https://docs.claude.com/en/docs/claude-code/hooks">hooks</a> that report each event to the gotchi. It asks for an address, a token and a relay; leave all three empty for now. You can change them later in <code>/plugin</code>.</p>
+        <p>Plugins cannot set the status line, and the status line is where the gotchi learns how much of your 5-hour and 7-day budget is left. To add it, run this in a terminal:</p>
+        <pre data-title="your computer · terminal"><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only</code></pre>
+        <p>It keeps your existing status line and still shows it. You can <a href="install.sh">read the script</a> before you run it.</p>
+        <div class="note"><p><strong>No plugin?</strong> <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh</code> installs hooks and status line in one go, straight into <code>~/.claude/settings.json</code>. Use either the plugin or this, not both, or every event reaches the gotchi twice.</p></div>
         <p>Then check that the gotchi answers. The test walks the critter through its moods over about a minute:</p>
         <pre data-title="your computer · terminal"><code><span class="p">$ </span>python3 ~/.claude/claudegotchi/claudegotchi_client.py test</code></pre>
         <p>By default the client tries the USB cable first and then <code>claudegotchi.local</code> on your Wi-Fi. You can also watch the display live in a browser at <a href="http://192.168.77.1:8765/"><code>http://192.168.77.1:8765/</code></a>.</p>
       </div></li>
       <li><div>
         <h3>Start Claude Code</h3>
-        <p>Close running Claude Code sessions and open a new one, so it picks up the hooks. The critter says hello, gets busy while Claude works, raises its arms when Claude needs your permission and lets you know when the reply is done.</p>
+        <p>Close running Claude Code sessions and open a new one, so it picks up the plugin. The critter says hello, gets busy while Claude works, raises its arms when Claude needs your permission and lets you know when the reply is done.</p>
       </div></li>
     </ol>
 
