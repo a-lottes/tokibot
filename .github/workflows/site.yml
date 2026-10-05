@@ -1,0 +1,45 @@
+name: Deploy website
+
+# Publishes docs/ to Netlify. Needs two repository secrets:
+#   NETLIFY_AUTH_TOKEN  a personal access token from Netlify (User settings → Applications)
+#   NETLIFY_SITE_ID     the site's ID (Site configuration → General → Site details)
+# Pushes to main go live; pull requests that touch docs/ get a preview deploy.
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**", ".github/workflows/site.yml"]
+  pull_request:
+    paths: ["docs/**", ".github/workflows/site.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Fork PRs get no secrets, so skip them instead of failing.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "::warning::NETLIFY_AUTH_TOKEN or NETLIFY_SITE_ID is not set, skipping the deploy."
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npx --yes netlify-cli@latest deploy --dir=docs --no-build \
+              --alias="pr-${{ github.event.number }}" --message="PR #${{ github.event.number }}"
+          else
+            npx --yes netlify-cli@latest deploy --dir=docs --no-build --prod \
+              --message="${{ github.sha }}"
+          fi

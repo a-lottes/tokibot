@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docs · Claudegotchi</title>
+  <meta name="description" content="Setup, settings, cloud relay, updates and reference for Claudegotchi.">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./">claude<span>gotchi</span></a>
+      <nav class="site-nav">
+        <a href="./">Home</a>
+        <a href="parts.html">Shopping list</a>
+        <a href="build.html">Assembly</a>
+        <a href="docs.html" aria-current="page">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+    <main class="wrap docs">
+    <nav class="toc" aria-label="On this page">
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#moods">Moods</a></li>
+        <li><a href="#growing">Growing up</a></li>
+        <li><a href="#client">The client</a></li>
+        <li><a href="#settings">Settings</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#cloud">Claude in the cloud</a></li>
+        <li><a href="#updates">Updates</a></li>
+        <li><a href="#simulator">Simulator</a></li>
+        <li><a href="#image">The image</a></li>
+        <li><a href="#privacy">Privacy</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+        <li><a href="#repository">Repository</a></li>
+      </ul>
+    </nav>
+
+    <div class="docs-body">
+      <h1>Docs</h1>
+      <p class="lead">How the Claudegotchi works, how to set it up and how to change it.</p>
+
+      <h2 id="overview">Overview</h2>
+      <p>The Claudegotchi has two halves:</p>
+      <ul>
+        <li><strong>The gotchi</strong>: a Raspberry Pi Zero with an e-paper display, running its own small Buildroot image. A Python service receives events, works out a mood and draws it.</li>
+        <li><strong>The client</strong>: a small Python script on your computer. Claude Code runs it as a hook on every event and as the status line. It sends metadata to the gotchi and never blocks Claude Code: sending happens in a detached background process.</li>
+      </ul>
+      <p>The gotchi listens on port <code>8765</code>. Over the USB cable it is at <code>192.168.77.1</code>, on Wi-Fi at <code>claudegotchi.local</code>. A live preview of the display is at <code>http://claudegotchi.local:8765/</code>.</p>
+
+      <h2 id="moods">Moods</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mood</th><th>When</th></tr></thead>
+          <tbody>
+            <tr><td><code>ready</code></td><td>a new session started</td></tr>
+            <tr><td><code>working</code></td><td>prompt sent, tools running</td></tr>
+            <tr><td><code>tired</code></td><td>working, but 80 % or more of the 5-hour budget is used</td></tr>
+            <tr><td><code>permission</code></td><td>Claude asks for permission</td></tr>
+            <tr><td><code>waiting</code></td><td>Claude waits for your input</td></tr>
+            <tr><td><code>done</code></td><td>the reply is finished</td></tr>
+            <tr><td><code>error</code></td><td>API error (overloaded, logged out, …)</td></tr>
+            <tr><td><code>limit</code></td><td>rate limit reached, with the time it resets</td></tr>
+            <tr><td><code>idle</code></td><td>nothing going on</td></tr>
+            <tr><td><code>levelup</code></td><td>the critter just reached a new level</td></tr>
+            <tr><td><code>summary</code></td><td>idle in the evening (18–23 h): the day's tally</td></tr>
+            <tr><td><code>hungry</code></td><td>no work for two days or more</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>With several sessions (for example worktrees), the state that needs you most wins. The footer shows how many sessions are working (▶), waiting for you (?) or done (✓), plus bars for the 5-hour and 7-day budget. The header shows the level and the number of sessions.</p>
+
+      <h2 id="growing">Growing up</h2>
+      <p>The critter earns experience from your work:</p>
+      <ul>
+        <li>10 XP per finished reply</li>
+        <li>5 XP per completed task</li>
+        <li>3 XP per new session</li>
+        <li>1 XP per tool call</li>
+      </ul>
+      <p>Levels get further apart as it grows: level 2 at 50 XP, level 3 at 150, level 4 at 300, and so on. Every day with at least one finished reply extends the streak; skip a day and it starts over. In the evening it shows what you did today, and when you leave it alone for two days it gets hungry.</p>
+      <p>The progress lives in <code>life.json</code> on the image's small writable <code>data</code> partition, so it survives reboots and updates. In the simulator it is in <code>~/.claudegotchi/</code>.</p>
+
+      <h2 id="client">The client</h2>
+      <p>Install it from a copy of the repository. It works on macOS and Linux.</p>
+      <pre><code>python3 client/install_mac.py                                  # automatic: USB cable, then Wi-Fi
+python3 client/install_mac.py --url http://192.168.1.50:8765   # a fixed address
+python3 client/install_mac.py --token my-secret                # with a token
+python3 client/install_mac.py --uninstall                      # remove it again</code></pre>
+      <p>The installer copies <code>claudegotchi_client.py</code> to <code>~/.claude/claudegotchi/</code> and adds the hooks and the status line to <code>~/.claude/settings.json</code>. It backs up the old file as <code>settings.json.claudegotchi-backup</code>. Existing hooks stay, and an existing status line is still shown.</p>
+      <p>To check the connection, play the test sequence. It walks through the moods over about a minute and prints which address answered:</p>
+      <pre><code>python3 ~/.claude/claudegotchi/claudegotchi_client.py test</code></pre>
+
+      <h2 id="settings">Settings</h2>
+      <p>Open <code>http://claudegotchi.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. The page changes Wi-Fi, time zone, rotation, token and relay. It writes <code>claudegotchi.toml</code> on the boot partition, keeps the comments in it, and restarts the gotchi. Once a token is set, the page asks for it.</p>
+      <p>You can also edit the file directly: put the card into your computer and open <code>claudegotchi.toml</code> on the <code>CLAUDEGOTCHI</code> drive.</p>
+      <pre><code>[device]
+display = "waveshare_2in13_v4"
+rotate = 0                    # 180 if the picture is upside down
+timezone = "Europe/Berlin"
+
+[server]
+port = 8765
+token = ""                    # only accept clients that send this token
+
+[usb]
+enabled = true                # network adapter on the USB data port
+address = "192.168.77.1"
+
+[wifi]
+ssid = ""                     # empty: USB cable only
+psk = ""
+country = "DE"
+
+[relay]
+url = ""                      # ntfy topic for Claude Code in the cloud
+auth = ""                     # access token for a protected ntfy server</code></pre>
+      <p>Without Wi-Fi the gotchi takes the time from your computer. With Wi-Fi it uses NTP.</p>
+
+      <h2 id="security">Security</h2>
+      <p>By default anyone who can reach the gotchi on port 8765 can send it events. On your desk over USB that is just your computer. On a shared Wi-Fi, set a token: put it under <code>[server] token</code> on the gotchi and install the client with <code>--token</code>. The settings page and app updates then need the token too.</p>
+      <p>The image has no SSH. The root filesystem is read-only.</p>
+
+      <h2 id="cloud">Claude in the cloud</h2>
+      <p>Hooks run wherever Claude Code runs. A session in the cloud, for example in a Claude Project, runs in a container that cannot see your local network. For that case the gotchi can listen to a relay: an <a href="https://ntfy.sh">ntfy</a> topic. Cloud hooks publish to the topic, and the gotchi keeps one outgoing connection to it, so it works behind any Wi-Fi, even a phone hotspot.</p>
+      <ol>
+        <li>
+          <p>Create a relay topic and a token on your computer:</p>
+          <pre><code>python3 client/install_mac.py --new-relay</code></pre>
+          <p>It prints a <code>[server]</code> token and a <code>[relay]</code> url. Put both into the gotchi's settings and give it Wi-Fi.</p>
+        </li>
+        <li>
+          <p>Print a setup script for the cloud environment and paste it into the environment's setup script:</p>
+          <pre><code>python3 client/install_mac.py --cloud-setup &gt; cloud-setup.sh</code></pre>
+          <p>The script carries the client inline and installs it so that it only publishes to the relay.</p>
+        </li>
+        <li><p>Allow <code>ntfy.sh</code> in the cloud environment's network access settings. Without it, the hooks cannot reach the relay.</p></li>
+      </ol>
+      <div class="note">
+        <p>The topic name is the secret: anyone who knows it can read the events (metadata only) and could publish to it. The gotchi ignores relay messages without the right token. You can run your own ntfy server and point <code>--relay</code> at it; set <code>[relay] auth</code> if it needs an access token.</p>
+      </div>
+
+      <h2 id="updates">Updates</h2>
+      <p>The Python app updates in place. Only kernel or system changes need a new image.</p>
+      <pre><code>make update GOTCHI=http://claudegotchi.local:8765 TOKEN=your-token</code></pre>
+      <p>This packs <code>app/</code> into <code>output/claudegotchi-app.tar.gz</code> and sends it to the gotchi. You can also upload that file on the settings page; every GitHub release carries one.</p>
+      <p>The gotchi checks that the new version starts, keeps it in <code>/data/app</code>, and restarts. If it crashes three times in a row right after starting, it falls back to the version built into the image. "Back to the built-in version" on the settings page does the same by hand.</p>
+
+      <h2 id="simulator">Simulator</h2>
+      <p>Try everything without hardware. You need Python 3.9 or newer and Pillow.</p>
+      <pre><code>python3 -m pip install pillow
+make test
+make sim                    # preview at http://localhost:8765/  (other port: make sim PORT=8766)
+CLAUDEGOTCHI_URL=http://localhost:8765 python3 client/claudegotchi_client.py test
+make mockups                # every mood in docs/mockups.png</code></pre>
+      <p>The simulator keeps its own copy of the settings in <code>~/.claudegotchi/claudegotchi.toml</code>, so the settings page does not change the template in the repository.</p>
+
+      <h2 id="image">The image</h2>
+      <p>The operating system is built with Buildroot from the <code>os/</code> folder. There is one configuration per board:</p>
+      <pre><code>make zero2w     # Raspberry Pi Zero 2 W (64-bit)
+make zerow      # Raspberry Pi Zero W</code></pre>
+      <p>On GitHub, the workflow <code>image.yml</code> builds both images for every <code>v*</code> tag and attaches them to the release, together with the app bundle.</p>
+      <ul>
+        <li>Read-only root filesystem, <code>/tmp</code> and <code>/run</code> in RAM. Pulling the plug does not hurt the card.</li>
+        <li>A 16 MB writable <code>data</code> partition at <code>/data</code> for the critter's progress and app updates.</li>
+        <li>BusyBox init with a few scripts: read settings, USB gadget, Wi-Fi, then the service.</li>
+        <li>USB gadget as a CDC-ECM network adapter with a DHCP server for your computer.</li>
+        <li>avahi for <code>claudegotchi.local</code>, NTP on Wi-Fi.</li>
+        <li>No SSH, no Debian, no Wi-Fi hacking tools.</li>
+      </ul>
+
+      <h2 id="privacy">Privacy</h2>
+      <p>Only metadata is sent: event name, session ID, project folder name, tool name, notification or error type and limit percentages. Prompts, code and replies never leave your computer. With a relay, that metadata passes through the ntfy server you chose.</p>
+
+      <h2 id="troubleshooting">Troubleshooting</h2>
+      <h3>The display stays blank</h3>
+      <ul>
+        <li>Check that the HAT sits flush on all 40 pins.</li>
+        <li>Check that it is the V4 revision of the 2.13" display.</li>
+        <li>Give it a moment: an e-paper refresh is slow and the first boot takes a little while.</li>
+      </ul>
+      <h3>The computer does not see the gotchi</h3>
+      <ul>
+        <li>The cable must be in the port labelled <strong>USB</strong>, not <strong>PWR</strong>.</li>
+        <li>Try another cable. Many micro-USB cables only charge and carry no data.</li>
+        <li>Open <code>http://192.168.77.1:8765/</code> in a browser. If the preview loads, the connection works and the problem is in the client setup.</li>
+      </ul>
+      <h3>The critter does not react to Claude Code</h3>
+      <ul>
+        <li>Run the test sequence (see <a href="#client">the client</a>). It prints which addresses it tried.</li>
+        <li>If the gotchi has a token, the client needs the same one: reinstall with <code>--token</code>.</li>
+        <li>Start a new Claude Code session after installing; running sessions keep their old settings.</li>
+      </ul>
+      <h3>The picture is upside down</h3>
+      <p>Set <code>rotate = 180</code> on the settings page.</p>
+
+      <h2 id="repository">Repository</h2>
+      <pre><code>app/       the service on the device (Python, Pillow)
+client/    hook and status line client for your computer, plus installer
+os/        Buildroot extension (br2-external): defconfigs, board files, package
+docs/      this website</code></pre>
+      <p>All display texts are in <code>app/claudegotchi/mood.py</code>, the critter's pixels in <code>critter.py</code>.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Claudegotchi is a hobby project, inspired by Pwnagotchi. Not affiliated with Anthropic.</p>
+      <p>MIT licensed. Fonts: DejaVu.</p>
+    </div>
+  </footer>
+</body>
+</html>

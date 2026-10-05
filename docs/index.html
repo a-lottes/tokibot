@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claudegotchi</title>
+  <meta name="description" content="A small e-ink companion that shows how your Claude Code sessions are doing.">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./">claude<span>gotchi</span></a>
+      <nav class="site-nav">
+        <a href="./" aria-current="page">Home</a>
+        <a href="parts.html">Shopping list</a>
+        <a href="build.html">Assembly</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <h1>A pixel critter for your Claude Code sessions</h1>
+        <p class="lead">Claudegotchi is a tiny e-ink gadget on your desk. Its mood shows what Claude Code is up to: working, waiting for you, asking for permission, done, or stuck at a rate limit.</p>
+        <div class="actions">
+          <a class="button" href="parts.html">What you need</a>
+          <a class="button ghost" href="build.html">Build one</a>
+        </div>
+      </div>
+      <figure class="screen">
+        <img src="img/moods/permission.png" width="500" height="244" alt="The critter raises its arms: May I use Bash? Please!">
+        <figcaption>permission: Claude wants to run a tool</figcaption>
+      </figure>
+    </section>
+
+    <h2>How it works</h2>
+    <p>Claude Code calls a small client through its hooks and status line. The client sends a few lines of metadata to the gotchi, over the USB cable or Wi-Fi. The gotchi folds every running session into one mood and draws it on the e-paper display.</p>
+    <pre><code>Claude Code ── hooks + status line ──► claudegotchi_client.py ──HTTP──► Pi: claudegotchi ──► e-paper
+                                          (USB cable or Wi-Fi)</code></pre>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Knows your sessions</h3>
+        <p>Several sessions or worktrees at once? The one that needs you most wins. The footer counts sessions that are working, waiting and done, plus your 5-hour and 7-day budget.</p>
+      </div>
+      <div class="card">
+        <h3>Grows with your work</h3>
+        <p>Finished replies, tasks and tool calls earn experience. The critter levels up, keeps a daily streak, sums up your day in the evening and gets hungry when you leave it alone.</p>
+      </div>
+      <div class="card">
+        <h3>Its own tiny OS</h3>
+        <p>A slim Buildroot image with a read-only root filesystem. No Debian, no Wi-Fi hacking tools, no SSH. Pulling the plug does not hurt the card.</p>
+      </div>
+      <div class="card">
+        <h3>Works with the cloud</h3>
+        <p>Claude Code in the cloud cannot see your desk. An optional ntfy relay carries the events to the gotchi over any Wi-Fi, even your phone's hotspot.</p>
+      </div>
+      <div class="card">
+        <h3>Private by design</h3>
+        <p>Only metadata leaves your computer: event, session ID, folder name, tool name and limit percentages. Prompts, code and replies never do.</p>
+      </div>
+      <div class="card">
+        <h3>Set up in the browser</h3>
+        <p>Wi-Fi, time zone, rotation and token live on a small settings page on the gotchi. App updates install from there too, no reflashing needed.</p>
+      </div>
+    </div>
+
+    <h2>Every mood</h2>
+    <p>Twelve moods, each with its own face and a short line in the speech bubble.</p>
+    <div class="moods">
+      <figure class="screen"><img src="img/moods/ready.png" width="500" height="244" alt="ready" loading="lazy"><figcaption>ready: a new session started</figcaption></figure>
+      <figure class="screen"><img src="img/moods/working.png" width="500" height="244" alt="working" loading="lazy"><figcaption>working: prompt sent, tools running</figcaption></figure>
+      <figure class="screen"><img src="img/moods/tired.png" width="500" height="244" alt="tired" loading="lazy"><figcaption>tired: 80 % of the 5-hour budget used</figcaption></figure>
+      <figure class="screen"><img src="img/moods/permission.png" width="500" height="244" alt="permission" loading="lazy"><figcaption>permission: Claude asks for permission</figcaption></figure>
+      <figure class="screen"><img src="img/moods/waiting.png" width="500" height="244" alt="waiting" loading="lazy"><figcaption>waiting: your turn</figcaption></figure>
+      <figure class="screen"><img src="img/moods/done.png" width="500" height="244" alt="done" loading="lazy"><figcaption>done: the reply is finished</figcaption></figure>
+      <figure class="screen"><img src="img/moods/error.png" width="500" height="244" alt="error" loading="lazy"><figcaption>error: overloaded, logged out, …</figcaption></figure>
+      <figure class="screen"><img src="img/moods/limit.png" width="500" height="244" alt="limit" loading="lazy"><figcaption>limit: rate limit, with reset time</figcaption></figure>
+      <figure class="screen"><img src="img/moods/idle.png" width="500" height="244" alt="idle" loading="lazy"><figcaption>idle: nothing going on</figcaption></figure>
+      <figure class="screen"><img src="img/moods/levelup.png" width="500" height="244" alt="levelup" loading="lazy"><figcaption>levelup: a new level reached</figcaption></figure>
+      <figure class="screen"><img src="img/moods/summary.png" width="500" height="244" alt="summary" loading="lazy"><figcaption>summary: the day's tally, in the evening</figcaption></figure>
+      <figure class="screen"><img src="img/moods/hungry.png" width="500" height="244" alt="hungry" loading="lazy"><figcaption>hungry: no work for two days</figcaption></figure>
+    </div>
+
+    <h2>Status</h2>
+    <p>Version 0.2.0. The app runs in the simulator and the Buildroot configs are checked against Buildroot 2026.02.3. A full image build and a test on real hardware are still open, so expect rough edges if you build one now.</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Claudegotchi is a hobby project, inspired by Pwnagotchi. Not affiliated with Anthropic.</p>
+      <p>MIT licensed. Fonts: DejaVu.</p>
+    </div>
+  </footer>
+</body>
+</html>

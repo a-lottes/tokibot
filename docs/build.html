@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assembly Guide · Claudegotchi</title>
+  <meta name="description" content="Build, flash and connect a Claudegotchi step by step.">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./">claude<span>gotchi</span></a>
+      <nav class="site-nav">
+        <a href="./">Home</a>
+        <a href="parts.html">Shopping list</a>
+        <a href="build.html" aria-current="page">Assembly</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+    <main class="wrap">
+    <h1>Assembly guide</h1>
+    <p class="lead">From a bag of parts to a critter that reacts to Claude Code. Plan about half an hour, plus the time to build the image if you build it yourself.</p>
+
+    <div class="note">
+      <p><strong>Early days.</strong> The image has not been tested on real hardware yet. If something below does not match what you see, the <a href="docs.html#troubleshooting">troubleshooting notes</a> may help.</p>
+    </div>
+
+    <h2>You need</h2>
+    <ul>
+      <li>The parts from the <a href="parts.html">shopping list</a></li>
+      <li>A Mac or Linux computer with Python 3.9 or newer and Claude Code</li>
+      <li><a href="https://www.raspberrypi.com/software/">Raspberry Pi Imager</a> to flash the card</li>
+    </ul>
+
+    <ol class="steps">
+      <li>
+        <h3>Put the display on the Pi</h3>
+        <p>Unplug everything first. Hold the Pi with the header pins facing up and press the e-Paper HAT onto the 40-pin header so the HAT lies right on top of the Pi and its outline matches the board. Push down evenly on both ends of the connector until it sits flush. Do not press on the glass of the display.</p>
+        <p>The display talks to the Pi over SPI. If you wire it by hand instead of using the HAT connector, these are the pins the driver uses (BCM numbering): RST 17, DC 25, CS 8 (CE0), BUSY 24, PWR 18, plus MOSI 10, SCLK 11, 3.3 V and GND.</p>
+      </li>
+      <li>
+        <h3>Get the image</h3>
+        <p>Once a version is tagged, every GitHub release carries ready images: <code>claudegotchi-zero2w.img.xz</code> for the Pi Zero 2 W and <code>claudegotchi-zerow.img.xz</code> for the Pi Zero W.</p>
+        <p>You can also build it yourself on a Debian or Ubuntu machine. The first build downloads Buildroot and all sources and takes about an hour.</p>
+        <pre><code>sudo apt-get install build-essential bc cpio rsync unzip file wget
+make zero2w      # or: make zerow
+# result: output/zero2w/images/claudegotchi-zero2w.img.xz</code></pre>
+      </li>
+      <li>
+        <h3>Flash the card</h3>
+        <p>In Raspberry Pi Imager, pick <em>Choose OS</em> → <em>Use custom</em> and select the <code>.img.xz</code> file. Choose the microSD card and write. Skip Imager's OS customisation: the gotchi has its own settings file.</p>
+      </li>
+      <li>
+        <h3>Optional: Wi-Fi and settings</h3>
+        <p>After flashing, the card shows up on your computer as a drive called <code>CLAUDEGOTCHI</code>. It holds <code>claudegotchi.toml</code>. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk. To use it over Wi-Fi or with the cloud relay, fill in the <code>[wifi]</code> section:</p>
+        <pre><code>[wifi]
+ssid = "MyNetwork"
+psk = "my-wifi-password"
+country = "DE"</code></pre>
+        <p>You can change all of this later in the browser, see <a href="docs.html#settings">settings</a>.</p>
+      </li>
+      <li>
+        <h3>Plug it in</h3>
+        <p>Put the card into the Pi. Connect the cable to the micro-USB port labelled <strong>USB</strong>, not the one labelled <strong>PWR</strong>. On the USB port the gotchi gets power and shows up on your computer as a small network adapter. Your computer gets an address automatically, and the gotchi is reachable at <code>192.168.77.1</code>.</p>
+        <p>After booting, the critter appears on the display. On a Mac, if macOS asks whether to allow the new accessory to connect, allow it.</p>
+      </li>
+      <li>
+        <h3>Install the client</h3>
+        <p>Get the Claudegotchi repository onto your computer and run the installer. It adds hooks and a status line to <code>~/.claude/settings.json</code>, makes a backup first, and keeps your existing hooks and status line.</p>
+        <pre><code>python3 client/install_mac.py
+python3 ~/.claude/claudegotchi/claudegotchi_client.py test</code></pre>
+        <p>The test walks the critter through its moods over about a minute. By default the client tries the USB cable first and then <code>claudegotchi.local</code> on your Wi-Fi.</p>
+      </li>
+      <li>
+        <h3>Start Claude Code</h3>
+        <p>Open a new Claude Code session. The critter says hello, gets busy while Claude works, raises its arms when Claude needs your permission and lets you know when the reply is done.</p>
+      </li>
+    </ol>
+
+    <h2>Next steps</h2>
+    <ul>
+      <li>Upside down? Set <code>rotate = 180</code> on the <a href="docs.html#settings">settings page</a>.</li>
+      <li>Using Claude Code in the cloud? Set up the <a href="docs.html#cloud">relay</a>.</li>
+      <li>Want a token so only your computer can talk to the gotchi? See <a href="docs.html#security">security</a>.</li>
+    </ul>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Claudegotchi is a hobby project, inspired by Pwnagotchi. Not affiliated with Anthropic.</p>
+      <p>MIT licensed. Fonts: DejaVu.</p>
+    </div>
+  </footer>
+</body>
+</html>
