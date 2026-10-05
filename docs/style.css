@@ -328,3 +328,9 @@ svg.bp { display: block; width: 100%; height: auto; overflow: visible; font-fami
 
 /* long inline commands must wrap on phones */
 p code, li code { overflow-wrap: anywhere; }
+
+/* FAQ: every question is a linkable section */
+.faq-q { scroll-margin-top: 72px; padding-top: 4px; }
+.faq-q h3 a.anchor { color: inherit; text-decoration: none; }
+.faq-q h3 a.anchor:hover::after { content: " #"; color: var(--accent); }
+.faq-src { color: var(--muted); font-size: 13px; }

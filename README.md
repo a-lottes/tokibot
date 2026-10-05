@@ -208,6 +208,10 @@ Add the status line with `python3 client/install.py --statusline-only`. Use
 the plugin or the full installer, not both. `plugin/build.py` packs the plugin
 for the website.
 
+Problems during setup? [docs/faq.md](docs/faq.md) answers the common ones per
+operating system (also at https://claudegotchi.lottes.dev/faq.html). After editing it,
+run `make faq` to rebuild the page.
+
 ## Settings in the browser
 
 Open `http://claudegotchi.local:8765/settings` (or `http://192.168.77.1:8765/settings`
