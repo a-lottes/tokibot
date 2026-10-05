@@ -8,7 +8,8 @@ PRIORITY = ["limit", "permission", "waiting", "error", "working", "done", "ready
 
 # Seconds per animation frame (missing = no animation)
 ANIM_PERIOD = {"working": 3, "tired": 6, "waiting": 4, "permission": 2,
-               "done": 5, "error": 6, "limit": 20, "idle": 8, "ready": 6}
+               "done": 5, "error": 6, "limit": 20, "idle": 8, "ready": 6,
+               "levelup": 2, "summary": 10, "hungry": 7}
 
 MESSAGES = {
     "working": ["Busy building …", "Tap tap tap …", "On it!", "Hmm, interesting …",
@@ -27,6 +28,13 @@ MESSAGES = {
               "Break until {reset}. Coffee?"],
     "idle": ["zZz …", "Wake me with work.", "Bored …", "Dreaming of tokens …"],
     "offline": ["Offline. See you!"],
+    "levelup": ["Level up! I'm level {level} now!", "Woohoo, level {level}!",
+                "I grew! Level {level}."],
+    "summary": ["Today: {turns} tasks, {tools} tools, {errors} errors. Streak: {streak} days.",
+                "Good day! {turns} tasks done, {xp} XP earned.",
+                "Day's tally: {turns} tasks, {tools} tools. Level {level}."],
+    "hungry": ["I'm hungry … feed me some code?", "{idle_days} days without code. *stomach growls*",
+               "Did you forget me? Let's build something!"],
 }
 
 # Fallbacks for the {placeholders} above
@@ -42,7 +50,16 @@ ERROR_LABELS = {
 }
 
 # Labels on the display
-LABELS = {"session": "session", "sessions": "sessions", "tools_today": "{n} tools today"}
+LABELS = {"session": "session", "sessions": "sessions", "tools_today": "{n} tools today",
+          "tools_streak": "{n} tools · {streak}d streak",
+          "tools_streak_short": "{streak}-day streak", "level": "Lv{level}"}
+
+# Experience per hook event (the critter's life, see life.py)
+XP_FOR = {"Stop": 10, "SessionStart": 3, "PreToolUse": 1, "TaskCompleted": 5}
+LEVELUP_SHOW = 90            # celebrate a level-up for this many seconds
+SUMMARY_FROM_HOUR = 18       # when idle after this hour, show the day's tally instead of zZz
+SUMMARY_UNTIL_HOUR = 23
+HUNGRY_AFTER_DAYS = 2        # no work for this many days → hungry
 
 WORKING_EVENTS = {
     "UserPromptSubmit", "UserPromptExpansion", "PreToolUse", "PostToolUse",

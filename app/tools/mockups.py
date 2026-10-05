@@ -20,6 +20,9 @@ CASES = [
     ("error", "Oh no … overloaded", "claudegotchi", {}),
     ("limit", "Limit reached. zZz until 18:40", "", {}),
     ("idle", "Dreaming of tokens …", "", {}),
+    ("levelup", "Level up! I'm level 4 now!", "claudegotchi", {"done": 1}),
+    ("summary", "Today: 23 tasks, 412 tools, 2 errors. Streak: 5 days.", "", {}),
+    ("hungry", "3 days without code. *stomach growls*", "", {}),
 ]
 SCALE, PAD, COLS = 2, 16, 3
 
@@ -30,7 +33,7 @@ def main(out):
     for mood, msg, project, counts in CASES:
         for frame in range(critter.frames(mood)):
             view = {"mood": mood, "message": msg, "project": project, "counts": counts,
-                    "sessions": sum(counts.values()), "tools_today": 12,
+                    "sessions": sum(counts.values()), "tools_today": 12, "level": 4, "streak": 5,
                     "limits": {} if mood == "idle" else LIMITS}
             tiles.append((f"{mood} {frame + 1}/{critter.frames(mood)}", painter.render(view, frame)))
     rows = (len(tiles) + COLS - 1) // COLS

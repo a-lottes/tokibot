@@ -70,6 +70,12 @@ class Painter:
     def header(self, d, view):
         d.rectangle((0, 0, W - 1, HEADER_H - 1), fill=0)
         d.text((4, 1), "claudegotchi", font=self.f_brand, fill=255)
+        if view.get("level"):
+            x = 8 + self.f_brand.getlength("claudegotchi")
+            lv = LABELS["level"].format(level=view["level"])
+            w = self.f_small_bold.getlength(lv) + 6
+            d.rounded_rectangle((x, 2, x + w, HEADER_H - 3), radius=3, fill=255)
+            d.text((x + 3, 1), lv, font=self.f_small_bold, fill=0)
         clock = datetime.now().strftime("%H:%M")
         d.text((W - 4 - self.f_brand.getlength(clock), 1), clock, font=self.f_brand, fill=255)
         n = view["sessions"]
@@ -98,27 +104,6 @@ class Painter:
 
     def footer(self, d, view):
         d.line((0, FOOTER_Y, W, FOOTER_Y), fill=0)
-        c = view["counts"]
-        chips = []
-        if c.get("working"):
-            chips.append(("▶", c["working"]))
-        waiting = c.get("waiting", 0) + c.get("permission", 0)
-        if waiting:
-            chips.append(("?", waiting))
-        if c.get("done"):
-            chips.append(("✓", c["done"]))
-        x = 3
-        if chips:
-            for icon, n in chips:
-                label = f"{icon}{n}"
-                w = self.f_small_bold.getlength(label) + 8
-                d.rounded_rectangle((x, FOOTER_Y + 3, x + w, FOOTER_Y + 14), radius=5, fill=0)
-                d.text((x + 4, FOOTER_Y + 3), label, font=self.f_small_bold, fill=255)
-                x += w + 4
-        else:
-            d.text((x, FOOTER_Y + 3), LABELS["tools_today"].format(n=view["tools_today"]),
-                   font=self.f_small, fill=0)
-
         x = W - 3
         for key, label in (("seven_day", "7d"), ("five_hour", "5h")):
             w = view["limits"].get(key)
@@ -137,6 +122,33 @@ class Painter:
             x -= self.f_small_bold.getlength(label) + 2
             d.text((x, FOOTER_Y + 3), label, font=self.f_small_bold, fill=0)
             x -= 8
+        room = x - 3
+
+        c = view["counts"]
+        chips = []
+        if c.get("working"):
+            chips.append(("▶", c["working"]))
+        waiting = c.get("waiting", 0) + c.get("permission", 0)
+        if waiting:
+            chips.append(("?", waiting))
+        if c.get("done"):
+            chips.append(("✓", c["done"]))
+        x = 3
+        if chips:
+            for icon, n in chips:
+                label = f"{icon}{n}"
+                w = self.f_small_bold.getlength(label) + 8
+                d.rounded_rectangle((x, FOOTER_Y + 3, x + w, FOOTER_Y + 14), radius=5, fill=0)
+                d.text((x + 4, FOOTER_Y + 3), label, font=self.f_small_bold, fill=255)
+                x += w + 4
+            return
+        streak = view.get("streak", 0)
+        keys = ["tools_streak", "tools_streak_short", "tools_today"] if streak >= 2 else ["tools_today"]
+        for k in keys:
+            label = LABELS[k].format(n=view["tools_today"], streak=streak)
+            if self.f_small.getlength(label) <= room:
+                break
+        d.text((x, FOOTER_Y + 3), self.ellipsize(label, self.f_small, room), font=self.f_small, fill=0)
 
     def render(self, view, frame=0):
         img = Image.new("1", (W, H), 255)

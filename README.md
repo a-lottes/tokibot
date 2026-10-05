@@ -28,10 +28,26 @@ Claude Code ── hooks + status line ──► claudegotchi_client.py ──HT
 | error | API error (overloaded, logged out, …) |
 | limit | rate limit reached, with the time it resets |
 | idle | nothing going on |
+| levelup | the critter just reached a new level |
+| summary | idle in the evening (18–23 h): the day's tally |
+| hungry | no work for two days or more |
 
 With several sessions (e.g. worktrees), the state that needs you most wins. The
 footer shows how many sessions are working (▶), waiting for you (?) or done (✓),
 plus bars for the 5-hour and 7-day budget.
+
+## Growing up
+
+The critter earns experience from your work: 10 XP per finished reply, 5 per
+completed task, 3 per new session and 1 per tool call. Levels get further apart
+as it grows (level 2 at 50 XP, level 3 at 150, level 4 at 300, …), and the level
+shows in the header. Every day with at least one finished reply extends the streak;
+skip a day and it starts over. In the evening it shows what you did today, and when
+you leave it alone for two days it gets hungry.
+
+The progress lives in `life.json` on the image's small writable `data` partition
+(`~/.claudegotchi/` in the simulator), so it survives reboots and updates of the
+root filesystem. All numbers and texts are in `app/claudegotchi/mood.py`.
 
 ## Hardware
 
@@ -50,6 +66,7 @@ app/       the service on the device (Python, Pillow)
   claudegotchi/displays/     display drivers (simulator, Waveshare 2.13" V4)
   claudegotchi/config.py     reads claudegotchi.toml
   claudegotchi/relay.py      listens to an ntfy topic for cloud sessions
+  claudegotchi/life.py       experience, levels, streaks and daily stats
   tools/mockups.py           renders docs/mockups.png
 client/    hook and status line client for your computer, plus installer
 os/        Buildroot extension (br2-external): defconfigs, board files, package
@@ -137,6 +154,7 @@ without the right token. You can also run your own ntfy server and point
 ## What is in the image
 
 * Read-only root filesystem, `/tmp` and `/run` in RAM. Pulling the plug does not hurt the card.
+* A 16 MB writable `data` partition at `/data`, only for the critter's progress.
 * BusyBox init with a few scripts (`os/board/claudegotchi/rootfs-overlay/etc/init.d/`):
   read settings, USB gadget, Wi-Fi, then the service.
 * USB gadget as a CDC-ECM network adapter with a DHCP server for your computer.

@@ -70,6 +70,9 @@ PROPS = {
     "bolt":     ["  ##", " ## ", "####", " ## ", "##  "],
     "battery":  ["####### ", "#     ##", "#     ##", "####### "],
     "dot":      ["##", "##"],
+    "arrow":    ["  #  ", " ### ", "#####", "  #  ", "  #  "],
+    "heart":    [" # # ", "#####", "#####", " ### ", "  #  "],
+    "crumb":    ["# ", " #"],
 }
 
 # What each mood looks like: eyes per animation frame, mouth, arms, legs, props.
@@ -96,6 +99,13 @@ LOOKS = {
                    "props": [[("battery", 62, -12)]]},
     "idle":       {"eyes": ["closed"], "mouth": "dot", "arms": ("down", "down"),
                    "props": [[("z_small", 66, -6)], [("z_small", 66, -6), ("z_big", 74, -18)]]},
+    "levelup":    {"eyes": ["happy"], "mouth": "grin", "arms": ("up", "up"),
+                   "props": [[("arrow", 72, -16), ("sparkle", -2, -6)],
+                             [("arrow", 72, -22), ("sparkle", 2, -12), ("sparkle", 62, -4)]]},
+    "summary":    {"eyes": ["happy", "happy", "closed"], "mouth": "smile", "arms": ("down", "down"),
+                   "props": [[("heart", 70, -12)], [("heart", 70, -14)], [("heart", 70, -12)]]},
+    "hungry":     {"eyes": ["tired", "left"], "mouth": "o", "arms": ("out", "down"),
+                   "props": [[("crumb", 70, 0)], [("crumb", 72, 4)]]},
     "offline":    {"eyes": ["closed"], "mouth": "dot", "arms": ("down", "down"),
                    "props": [[("z_small", 66, -6), ("z_big", 74, -18)]]},
 }
@@ -124,7 +134,7 @@ def draw(draw, x, y, mood, frame=0):
     look = LOOKS.get(mood, LOOKS["idle"])
     pick = lambda seq: seq[frame % len(seq)]
     b, f = BODY_CELL, FACE_CELL
-    bounce = -b if mood in ("done", "permission") and frame % 2 else 0
+    bounce = -b if mood in ("done", "permission", "levelup") and frame % 2 else 0
     y0 = y + bounce
 
     _blit(draw, BODY, x + 2 * b, y0, b)

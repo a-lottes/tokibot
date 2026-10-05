@@ -37,6 +37,7 @@ class Renderer(threading.Thread):
                         self.tick()
             except Exception:
                 log.exception("Drawing failed")
+            self.brain.life.maybe_save()
             self.stop_evt.wait(1.0)
 
     def tick(self):
@@ -45,7 +46,7 @@ class Renderer(threading.Thread):
         frame = self.frame_for(view["mood"], now)
         key = (view["mood"], frame, view["message"], view["project"], json.dumps(view["counts"], sort_keys=True),
                json.dumps({k: int(v["pct"]) for k, v in view["limits"].items()}, sort_keys=True),
-               datetime.now().strftime("%H:%M"), view["sessions"])
+               datetime.now().strftime("%H:%M"), view["sessions"], view.get("level"), view.get("streak"))
         if key == self.last_key or now - self.last_draw < self.MIN_INTERVAL:
             return
         img = self.painter.render(view, frame)
@@ -62,8 +63,10 @@ class Renderer(threading.Thread):
 
     def goodbye(self):
         self.stop_evt.set()
+        self.brain.life.maybe_save(force=True)
         view = {"state": "offline", "mood": "offline", "message": MESSAGES["offline"][0],
-                "project": "", "counts": {}, "sessions": 0, "limits": {}, "tools_today": 0}
+                "project": "", "counts": {}, "sessions": 0, "limits": {}, "tools_today": 0,
+                "level": self.brain.view().get("level"), "streak": 0}
         try:
             with self.draw_lock:
                 img = self.painter.render(view)

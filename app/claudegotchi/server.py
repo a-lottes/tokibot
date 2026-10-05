@@ -12,6 +12,7 @@ import argparse
 import errno
 import json
 import logging
+import os
 import signal
 import threading
 import time
@@ -24,6 +25,7 @@ from PIL import Image
 from . import config
 from .brain import Brain
 from .displays import open_display
+from .life import Life
 from .painter import H, W
 from .relay import Relay
 from .renderer import Renderer
@@ -125,6 +127,19 @@ def make_handler(brain, renderer, token, dispatch):
     return Handler
 
 
+def life_path(data_dir):
+    """Where the critter keeps its progress: the data partition on the device,
+    ~/.claudegotchi elsewhere (e.g. the simulator on a Mac)."""
+    for d in (data_dir, os.path.expanduser("~/.claudegotchi")):
+        try:
+            os.makedirs(d, exist_ok=True)
+        except OSError:
+            continue
+        if os.access(d, os.W_OK):
+            return os.path.join(d, "life.json")
+    return None
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="claudegotchi",
                                  description="Claudegotchi: an e-ink companion for Claude Code")
@@ -145,7 +160,9 @@ def main(argv=None):
         cfg["relay"]["url"] = args.relay
 
     display = open_display("sim" if args.sim else dev["display"], int(dev["rotate"]), args.png)
-    brain = Brain()
+    path = life_path(dev["data_dir"])
+    log.info("Progress file: %s", path or "none (kept in memory)")
+    brain = Brain(Life(path))
     renderer = Renderer(brain, display)
     renderer.start()
     dispatch = make_dispatch(brain, set_clock=not args.sim)

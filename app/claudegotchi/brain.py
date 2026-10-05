@@ -4,13 +4,19 @@ import threading
 import time
 from datetime import datetime
 
-from .mood import (DONE_DECAY, ERROR_LABELS, FILL_DEFAULTS, LIMIT_FALLBACK, LIMIT_WARN_PCT, MESSAGES,
-                   PERMISSION_DECAY, PRIORITY, SESSION_FORGET, WAITING_NOTIFICATIONS,
+from .life import Life
+from .mood import (DONE_DECAY, ERROR_LABELS, FILL_DEFAULTS, HUNGRY_AFTER_DAYS, LEVELUP_SHOW,
+                   LIMIT_FALLBACK, LIMIT_WARN_PCT, MESSAGES, PERMISSION_DECAY, PRIORITY,
+                   SESSION_FORGET, SUMMARY_FROM_HOUR, SUMMARY_UNTIL_HOUR, WAITING_NOTIFICATIONS,
                    WORKING_EVENTS, WORKING_STALE)
+
+# Moods a level-up celebration may cover; anything that needs you wins over it.
+CELEBRATE_OVER = {"working", "done", "ready", "idle", "error"}
 
 
 class Brain:
-    def __init__(self):
+    def __init__(self, life=None):
+        self.life = life or Life()
         self.lock = threading.Lock()
         self.sessions = {}
         self.limits = {}          # {"five_hour": {"pct":.., "reset":..}, ...}
@@ -22,6 +28,7 @@ class Brain:
         sid = str(ev.get("session_id") or "unknown")
         ts = float(ev.get("ts") or time.time())
         now = time.time()
+        self.life.record(name, ev, now)
         with self.lock:
             if name == "SessionEnd":
                 self.sessions.pop(sid, None)
@@ -133,24 +140,39 @@ class Brain:
         if state == "working" and pct5 is not None and pct5 >= LIMIT_WARN_PCT:
             mood = "tired"
 
+        life = self.life.summary(now)
+        hour = datetime.fromtimestamp(now).hour
+        if now - life["level_up_at"] < LEVELUP_SHOW and state in CELEBRATE_OVER:
+            mood = "levelup"
+        elif state == "idle" and (life["idle_days"] or 0) >= HUNGRY_AFTER_DAYS:
+            mood = "hungry"
+        elif (state == "idle" and life["today"]["turns"]
+              and SUMMARY_FROM_HOUR <= hour < SUMMARY_UNTIL_HOUR):
+            mood = "summary"
+
         reset = limit_reset or (limits.get("five_hour", {}).get("reset") if state == "limit" else None)
         fill = {
             "tool": s.get("tool") or FILL_DEFAULTS["tool"],
             "error": s.get("error") or FILL_DEFAULTS["error"],
             "pct": int(pct5) if pct5 is not None else FILL_DEFAULTS["pct"],
             "reset": datetime.fromtimestamp(reset).strftime("%H:%M") if reset else FILL_DEFAULTS["reset"],
+            "level": life["level"], "streak": life["streak"], "idle_days": life["idle_days"] or 0,
+            "turns": life["today"]["turns"], "tools": life["today"]["tools"],
+            "errors": life["today"]["errors"], "xp": life["today"]["xp"],
         }
         key = mood
         if mood == "working" and s.get("tool") and (int(now // 20) % 2):
             key = "working_tool"
         if mood == "permission" and not s.get("tool"):
             key = "permission_notool"
-        rng = random.Random(f"{sid}|{state}|{s.get('since')}|{key}")
+        seed = datetime.fromtimestamp(now).date() if mood in ("summary", "hungry") else s.get("since")
+        rng = random.Random(f"{sid}|{state}|{seed}|{key}|{life['level_up_at']}")
         message = rng.choice(MESSAGES[key]).format(**fill)
 
         return {
             "state": state, "mood": mood, "message": message,
             "project": s.get("project", ""), "counts": counts,
             "sessions": len(eff), "limits": limits, "tools_today": tools_today,
+            "level": life["level"], "streak": life["streak"], "life": life,
         }
 

@@ -9,6 +9,16 @@ image boot.vfat {
 	size = 64M
 }
 
+# Small writable partition for the critter's progress (XP, level, streaks).
+# Empty at first; the root filesystem and /boot stay read-only.
+image data.ext4 {
+	ext4 {
+		label = "data"
+		use-mke2fs = true
+	}
+	size = 16M
+}
+
 image sdcard.img {
 	hdimage {
 	}
@@ -22,5 +32,10 @@ image sdcard.img {
 	partition rootfs {
 		partition-type = 0x83
 		image = "rootfs.ext4"
+	}
+
+	partition data {
+		partition-type = 0x83
+		image = "data.ext4"
 	}
 }

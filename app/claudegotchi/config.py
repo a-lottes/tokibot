@@ -18,7 +18,8 @@ except ImportError:          # Python < 3.11 (e.g. the system Python on a Mac)
 DEFAULT_PATH = "/boot/claudegotchi.toml"
 
 DEFAULTS = {
-    "device": {"display": "waveshare_2in13_v4", "rotate": 0, "timezone": "Europe/Berlin"},
+    "device": {"display": "waveshare_2in13_v4", "rotate": 0, "timezone": "Europe/Berlin",
+               "data_dir": "/data"},
     "server": {"host": "0.0.0.0", "port": 8765, "token": ""},
     "wifi": {"ssid": "", "psk": "", "country": "DE"},
     "usb": {"enabled": True, "address": "192.168.77.1"},
