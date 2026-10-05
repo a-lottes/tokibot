@@ -325,6 +325,8 @@ def power_off(renderer, on_device):
     if not on_device:
         log.warning("Battery empty: on the device the gotchi would power off now")
         return
+    if renderer.brain.social:
+        renderer.brain.social.close()       # friends and encounters are saved too
     renderer.farewell = "battery_off"
     renderer.goodbye()
     os.system("poweroff")
