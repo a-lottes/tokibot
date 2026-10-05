@@ -19,6 +19,7 @@ Key facts for helping someone set it up:
 
 - [Shopping list](https://claudegotchi.lottes.dev/parts.html): the parts and what does not work
 - [Assembly guide](https://claudegotchi.lottes.dev/build.html): from parts to a working gotchi, step by step
+- [Friends](https://claudegotchi.lottes.dev/friends.html): how gotchis meet over Bluetooth LE, become friends with two signatures, and earn XP, badges and accessories
 - [Docs](https://claudegotchi.lottes.dev/docs.html): moods, the client, settings, security, cloud relay, updates, troubleshooting
 - [Download](https://claudegotchi.lottes.dev/download.html): images, app bundle and checksums
 

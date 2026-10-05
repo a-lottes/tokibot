@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Friends · Claudegotchi</title>
+  <meta name="description" content="Claudegotchis that meet over Bluetooth earn XP, become friends with two taps and unlock badges and accessories. Try the demo with two gotchis.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
+      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html" aria-current="page">Friends</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
+      <span class="sys"><span class="dot">●</span> v0.3.0 · 192.168.77.1:8765</span>
+    </div>
+  </header>
+
+    <main class="wrap">
+    <section class="hero">
+      <div>
+        <span class="kicker"><b>§ friends</b> / bluetooth le · offline · no account <span class="cursor"></span></span>
+        <h1>Gotchis make <em>friends</em>.</h1>
+        <p class="lead">Take your gotchi to the office, a meetup or a conference. When two gotchis meet, they notice each other over Bluetooth, earn XP, and can become friends with two taps. Friends unlock badges and accessories, and working side by side pays a bonus.</p>
+        <div class="actions">
+          <a class="button primary" href="#demo">Try it below ↓</a>
+          <a class="button" href="#ladder">Badges and accessories</a>
+        </div>
+      </div>
+      <figure class="plate"><div class="art art-pair"><img src="img/social/pixel-friends.png" width="500" height="244" alt="Pixel's display: Mochi and I are friends now!"><img src="img/social/mochi-friends.png" width="500" height="244" alt="Mochi's display: New friend: Pixel!"></div><figcaption><span>Fig. F1 — two displays, one friendship</span><span>pixel ♥ mochi</span></figcaption></figure>
+    </section>
+
+    <div class="note"><p><span class="tag">v0.3.0</span>Friends, XP for encounters, badges and accessories are built into the app. The Bluetooth radio has only been tested in the simulator so far, not yet on real hardware. The community site at the end of this page is a plan.</p></div>
+
+    <section class="block" id="how">
+      <span class="kicker"><b>§ 01</b> / how it works</span>
+      <h2>Meet, <em>befriend</em>, both sign.</h2>
+      <div>
+        <div class="docs-cols">
+          <p>Gotchis talk in tiny Bluetooth LE advertisements. No pairing, no connection, no app and no server: just two gadgets that hear each other.</p>
+          <ul>
+            <li><strong>Beacon.</strong> Every gotchi sends a short beacon with a random id that changes every 15 minutes, plus its level, mood and accessory. Strangers can't follow it around.</li>
+            <li><strong>Encounter.</strong> Thirty seconds close to another gotchi count as a meeting. Both earn XP, and the critter waves.</li>
+            <li><strong>Card.</strong> Only when you switch on <em>Open for new friends</em> does your gotchi also send its card: name, level and public key, signed.</li>
+            <li><strong>Friendship.</strong> You press <em>Befriend</em>, the other owner presses <em>Accept</em>. Each gotchi signs the friendship, and the two signatures together are a proof no one can fake.</li>
+            <li><strong>Friend tag.</strong> From then on the two recognise each other by a secret tag only friends can compute: the display shows ♥ instead of ●.</li>
+          </ul>
+        </div>
+        <figure class="plate seq-plate"><div class="art"><!-- fig:encounter --><svg class="bp bp-seqfig" viewBox="0 0 660 564" role="img" aria-label="Sequence: two gotchis exchange beacons, a signed card, and two signed offers that together form a friendship proof"><rect class="bp-seq-head" x="88" y="8" width="124" height="38"/><text class="bp-seq bp-seq-label" x="150" y="25" text-anchor="middle">PIXEL</text><text class="bp-seq bp-seq-sub" x="150" y="39" text-anchor="middle">YOU · LV3</text><line class="bp-dash" x1="150" y1="48" x2="150" y2="556"/><rect class="bp-seq-head" x="448" y="8" width="124" height="38"/><text class="bp-seq bp-seq-label" x="510" y="25" text-anchor="middle">MOCHI</text><text class="bp-seq bp-seq-sub" x="510" y="39" text-anchor="middle">NEXT DESK · LV4</text><line class="bp-dash" x1="510" y1="48" x2="510" y2="556"/><line class="bp-seq-arrow" x1="150" y1="84" x2="510" y2="84"/><polygon class="bp-seq-arrow" points="510,84 502,80 502,88"/><polygon class="bp-seq-arrow" points="150,84 158,80 158,88"/><text class="bp-seq bp-seq-label" x="330.0" y="76" text-anchor="middle">BEACON</text><text class="bp-seq bp-seq-sub" x="330.0" y="100" text-anchor="middle">random id, new every 15 min · level · mood · accessory</text><text class="bp-seq bp-seq-sub" x="524" y="126" text-anchor="start">open for new friends</text><line class="bp-seq-arrow" x1="510" y1="144" x2="150" y2="144"/><polygon class="bp-seq-arrow" points="150,144 158,140 158,148"/><text class="bp-seq bp-seq-label" x="330.0" y="136" text-anchor="middle">CARD</text><text class="bp-seq bp-seq-sub" x="330.0" y="160" text-anchor="middle">name · level · public key, signed</text><rect class="bp-seq-note" x="110" y="173" width="440" height="34"/><text class="bp-seq bp-seq-label" x="330.0" y="188" text-anchor="middle">30 S CLOSE BY = ENCOUNTER</text><text class="bp-seq bp-seq-sub" x="330.0" y="201" text-anchor="middle">+20 XP each · again on another day +5 · anonymous +2</text><text class="bp-seq bp-seq-sub" x="136" y="236" text-anchor="end">you press Befriend</text><line class="bp-seq-arrow" x1="150" y1="254" x2="510" y2="254"/><polygon class="bp-seq-arrow" points="510,254 502,250 502,258"/><text class="bp-seq bp-seq-label" x="330.0" y="246" text-anchor="middle">OFFER</text><text class="bp-seq bp-seq-sub" x="330.0" y="270" text-anchor="middle">signature over both keys and today · secret friend tag, encrypted</text><text class="bp-seq bp-seq-sub" x="524" y="296" text-anchor="start">screen: Pixel wants to be friends</text><text class="bp-seq bp-seq-sub" x="524" y="310" text-anchor="start">owner presses Accept</text><line class="bp-seq-arrow" x1="510" y1="328" x2="150" y2="328"/><polygon class="bp-seq-arrow" points="150,328 158,324 158,332"/><text class="bp-seq bp-seq-label" x="330.0" y="320" text-anchor="middle">OFFER</text><text class="bp-seq bp-seq-sub" x="330.0" y="344" text-anchor="middle">the same, signed by Mochi</text><rect class="bp-seq-note bp-accent" x="110" y="359" width="440" height="34"/><text class="bp-seq bp-seq-label bp-accent" x="330.0" y="374" text-anchor="middle">TWO SIGNATURES = FRIENDSHIP PROOF</text><text class="bp-seq bp-seq-sub" x="330.0" y="387" text-anchor="middle">+30 XP each · badge First friend → bow</text><line class="bp-seq-arrow" x1="150" y1="424" x2="510" y2="424"/><polygon class="bp-seq-arrow" points="510,424 502,420 502,428"/><polygon class="bp-seq-arrow" points="150,424 158,420 158,428"/><text class="bp-seq bp-seq-label" x="330.0" y="416" text-anchor="middle">BEACON + FRIEND TAG</text><text class="bp-seq bp-seq-sub" x="330.0" y="440" text-anchor="middle">only friends can read it: ♥ instead of ●</text><rect class="bp-seq-note" x="110" y="455" width="440" height="34"/><text class="bp-seq bp-seq-label" x="330.0" y="470" text-anchor="middle">BOTH WORKING, CLOSE BY</text><text class="bp-seq bp-seq-sub" x="330.0" y="483" text-anchor="middle">+10 % XP while it lasts · badge Co-working → glasses</text><text class="bp-seq bp-seq-sub" x="330.0" y="522" text-anchor="middle">only game data on air: never prompts, code or folder names</text></svg><!-- /fig:encounter --></div><figcaption><span>Fig. F2 — an encounter, packet by packet</span><span>bluetooth le advertising</span></figcaption></figure>
+      </div>
+    </section>
+
+    <section class="block" id="demo">
+      <span class="kicker"><b>§ 02</b> / try it</span>
+      <h2>Two gotchis, <em>one desk apart</em>.</h2>
+      <p>You are Pixel, level 3, busy in <code>my-app</code>. Mochi sits at the next desk. Play through what happens when they meet. The displays are rendered by the same code as the real device.</p>
+      <div class="demo" data-step="0">
+        <div class="demo-gotchis">
+          <div class="demo-gotchi" id="g-pixel">
+            <div class="demo-name"><b>pixel</b> · you</div>
+            <div class="demo-screen"><img src="img/social/pixel-start.png" width="500" height="244" alt="Pixel's display"></div>
+            <div class="demo-xp"><span class="demo-lv">Lv3</span><span class="demo-bar"><i></i></span><span class="demo-num">270 / 300 xp</span></div>
+            <div class="demo-badges"></div>
+          </div>
+          <div class="demo-gotchi" id="g-mochi">
+            <div class="demo-name"><b>mochi</b> · next desk</div>
+            <div class="demo-screen"><img src="img/social/mochi-start.png" width="500" height="244" alt="Mochi's display"></div>
+            <div class="demo-xp"><span class="demo-lv">Lv4</span><span class="demo-bar"><i></i></span><span class="demo-num">420 / 500 xp</span></div>
+            <div class="demo-badges"></div>
+          </div>
+        </div>
+        <div class="demo-controls">
+          <button class="button primary" id="demo-next">01 · Walk over to Mochi →</button>
+          <button class="button" id="demo-reset">Start over</button>
+        </div>
+        <pre class="demo-log" data-title="bluetooth · what goes over the air"><code id="demo-log"><span class="c"># nothing yet: Pixel and Mochi are out of range</span></code></pre>
+        <p class="demo-hint">In the demo time runs fast and the critters put on new accessories by themselves. On a real gotchi you pick the accessory on its social page.</p>
+      </div>
+    </section>
+
+    <section class="block" id="xp">
+      <span class="kicker"><b>§ 03</b> / the game</span>
+      <h2>Where the <em>XP</em> comes from.</h2>
+      <div class="split">
+        <div>
+          <p>Most XP still comes from your work with Claude Code. Friends add to it, with a daily cap so nobody farms a conference hall.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>What</th><th>XP</th></tr></thead>
+              <tbody>
+                <tr><td>finished reply</td><td>10</td></tr>
+                <tr><td>pull request · push · commit</td><td>15 · 8 · 5</td></tr>
+                <tr><td>completed task · new session · tool call</td><td>5 · 3 · 1</td></tr>
+                <tr><td>meet a gotchi for the first time</td><td>20</td></tr>
+                <tr><td>meet it again, on another day</td><td>5</td></tr>
+                <tr><td>an anonymous gotchi passes by</td><td>2</td></tr>
+                <tr><td>a new friend</td><td>30</td></tr>
+                <tr><td>a friend nearby is working too</td><td>+10 %</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mono" style="color:var(--muted)">Encounter XP is capped at 100 a day; friendships are not.</p>
+        </div>
+        <div>
+          <p>Levels get further apart as the critter grows. Every day with at least one finished reply extends the streak.</p>
+          <div class="ladder" aria-label="XP needed per level">
+            <div><b>Lv2</b><span style="--w:5%"></span><em>50</em></div>
+            <div><b>Lv3</b><span style="--w:14%"></span><em>150</em></div>
+            <div><b>Lv4</b><span style="--w:29%"></span><em>300</em></div>
+            <div><b>Lv5</b><span style="--w:48%"></span><em>500</em></div>
+            <div><b>Lv6</b><span style="--w:71%"></span><em>750</em></div>
+            <div><b>Lv7</b><span style="--w:100%"></span><em>1050</em></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="ladder">
+      <span class="kicker"><b>§ 04</b> / badges and accessories</span>
+      <h2>Dress up the <em>critter</em>.</h2>
+      <p>Badges come from meeting people, making friends and keeping at it. Some badges and levels unlock an accessory, which other gotchis see in your beacon.</p>
+      <div class="accs">
+        <figure><img src="img/social/acc-cap.png" width="368" height="320" alt="critter with a cap" loading="lazy"><figcaption><b>cap</b><span>reach level 3</span></figcaption></figure>
+        <figure><img src="img/social/acc-bow.png" width="368" height="320" alt="critter with a bow" loading="lazy"><figcaption><b>bow</b><span>badge First friend</span></figcaption></figure>
+        <figure><img src="img/social/acc-glasses.png" width="368" height="320" alt="critter with glasses" loading="lazy"><figcaption><b>glasses</b><span>badge Co-working</span></figcaption></figure>
+        <figure><img src="img/social/acc-headphones.png" width="368" height="320" alt="critter with headphones" loading="lazy"><figcaption><b>headphones</b><span>reach level 5</span></figcaption></figure>
+        <figure><img src="img/social/acc-nightcap.png" width="368" height="320" alt="critter with a night cap" loading="lazy"><figcaption><b>night cap</b><span>badge Night owl</span></figcaption></figure>
+        <figure><img src="img/social/acc-party.png" width="368" height="320" alt="critter with a party hat" loading="lazy"><figcaption><b>party hat</b><span>badge Conference</span></figcaption></figure>
+        <figure><img src="img/social/acc-crown.png" width="368" height="320" alt="critter with a crown" loading="lazy"><figcaption><b>crown</b><span>badge Popular</span></figcaption></figure>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Badge</th><th>How to get it</th><th>Unlocks</th></tr></thead>
+          <tbody>
+            <tr><td>Hello world</td><td>meet another gotchi</td><td></td></tr>
+            <tr><td>First friend</td><td>become friends with a gotchi</td><td>bow</td></tr>
+            <tr><td>Social butterfly</td><td>have 5 friends</td><td></td></tr>
+            <tr><td>Popular</td><td>have 10 friends</td><td>crown</td></tr>
+            <tr><td>Conference</td><td>5 gotchis nearby at once</td><td>party hat</td></tr>
+            <tr><td>Co-working</td><td>work while a friend nearby works too</td><td>glasses</td></tr>
+            <tr><td>Night owl</td><td>finish a reply between midnight and 4 am</td><td>night cap</td></tr>
+            <tr><td>On a roll</td><td>a 7-day streak</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="block" id="privacy">
+      <span class="kicker"><b>§ 05</b> / private by design</span>
+      <h2>Social, but <em>not tracked</em>.</h2>
+      <div class="cols">
+        <div><span class="kicker"><b>01</b> anonymous</span><h3>Anonymous by default</h3><p>The beacon carries a random id that changes every 15 minutes. Without your card, nobody knows whose gotchi it is or can follow it.</p></div>
+        <div><span class="kicker"><b>02</b> key</span><h3>The key is the profile</h3><p>On first start the gotchi creates its own key pair. No sign-up, no password, no account anywhere.</p></div>
+        <div><span class="kicker"><b>03</b> on air</span><h3>Only game data</h3><p>Level, mood, accessory, name and signatures. Never prompts, code, folder names or anything about your sessions.</p></div>
+        <div><span class="kicker"><b>04</b> backup</span><h3>Yours to keep</h3><p>Identity, friends and progress live on the SD card. A backup, encrypted with your passphrase, moves them to a new card or gotchi.</p></div>
+        <div><span class="kicker"><b>05</b> off</span><h3>Off with one switch</h3><p><em>Meet other gotchis</em> on the settings page turns Bluetooth off completely.</p></div>
+        <div><span class="kicker"><b>06</b> proof</span><h3>Proof without trust</h3><p>A friendship is two signatures. Anyone can check it later, without trusting a server or the other person.</p></div>
+      </div>
+    </section>
+
+    <section class="block" id="next">
+      <span class="kicker"><b>§ 06</b> / what's next</span>
+      <h2>From the desk to a <em>community</em>.</h2>
+      <p>Everything so far works offline. The friendship proofs are made so that a community site can build on them later.</p>
+      <ol class="roadmap">
+        <li class="done"><b>01</b> identity<span>key pair, profile, backup</span></li>
+        <li class="done"><b>02</b> encounters<span>beacons, gotchis nearby</span></li>
+        <li class="done"><b>03</b> friends<span>two taps, two signatures</span></li>
+        <li class="done"><b>04</b> game<span>XP, badges, accessories</span></li>
+        <li><b>05</b> community site<span>sign in with your gotchi, profile, friend list</span></li>
+        <li><b>06</b> chat<span>end-to-end encrypted, only between friends you have met</span></li>
+        <li><b>07</b> community<span>groups, events, opt-in leaderboards</span></li>
+      </ol>
+      <div class="actions"><a class="button primary" href="build.html">Build your gotchi →</a><a class="button" href="faq.html#friends">Friends in the FAQ</a></div>
+    </section>
+  </main>
+
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span><b>▚</b> claudegotchi · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
+    </div>
+  </footer>
+  <script src="friends.js" defer></script>
+</body>
+</html>
