@@ -54,7 +54,7 @@ AUTO_URLS = ["http://192.168.77.1:8765", "http://claudegotchi.local:8765"]
 # As a Claude Code plugin the client lives in the plugin cache, which is replaced on
 # every update; keep the little state it writes in the plugin's data folder instead.
 LAST_URL = os.path.join(os.environ.get("CLAUDE_PLUGIN_DATA") or HERE, "last_url")
-# Where install_mac.py keeps the settings; the plugin reads them from there as well.
+# Where install.py keeps the settings; the plugin reads them from there as well.
 INSTALLED_CFG = os.path.expanduser("~/.claude/claudegotchi/claudegotchi.json")
 
 
@@ -201,7 +201,10 @@ def cmd_statusline(cfg):
     out = ""
     if cfg.get("statusline_chain"):
         try:
-            out = subprocess.run(cfg["statusline_chain"], shell=True, input=raw, text=True,
+            chain = cfg["statusline_chain"]
+            # Claude Code ran it in Git Bash on Windows; shell=True there would mean cmd.exe
+            cmd = ["sh", "-c", chain] if os.name == "nt" else chain
+            out = subprocess.run(cmd, shell=os.name != "nt", input=raw, text=True,
                                  capture_output=True, timeout=5).stdout.rstrip("\n")
         except Exception:
             out = ""

@@ -42,7 +42,7 @@ jobs:
       - name: Add the client, so install.sh works without access to the repository
         run: |
           mkdir -p docs/client
-          cp client/claudegotchi_client.py client/install_mac.py docs/client/
+          cp client/claudegotchi_client.py client/claudegotchi.sh client/install.py docs/client/
       - name: Add the Claude Code plugin and its marketplace
         env:
           PR: ${{ github.event.pull_request.number }}

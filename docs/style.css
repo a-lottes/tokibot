@@ -325,3 +325,6 @@ svg.bp { display: block; width: 100%; height: auto; overflow: visible; font-fami
 .bp-callout.bp-accent text { fill: var(--accent); }
 .bp-dim line { stroke: var(--muted); stroke-width: 1; }
 .bp-dim text, .bp-note { fill: var(--muted); font-size: 11px; letter-spacing: .04em; }
+
+/* long inline commands must wrap on phones */
+p code, li code { overflow-wrap: anywhere; }

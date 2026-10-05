@@ -29,7 +29,7 @@ def build(out, site):
                 src = os.path.join(dirpath, name)
                 rel = os.path.relpath(src, PLUGIN)
                 info = zipfile.ZipInfo(rel.replace(os.sep, "/"), (2020, 1, 1, 0, 0, 0))
-                info.external_attr = (0o755 if name.endswith(".py") else 0o644) << 16
+                info.external_attr = (0o755 if name.endswith((".py", ".sh")) else 0o644) << 16
                 info.compress_type = zipfile.ZIP_DEFLATED
                 with open(src, "rb") as f:  # follows the symlink to client/
                     z.writestr(info, f.read())

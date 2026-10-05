@@ -188,6 +188,32 @@ def usb_plug(f, ox, oy, oz, tail=40, tone="bp-accent"):
             (cx + tail * 1.1, cy + tail * 1.05, cz), "bp-cable " + tone)
 
 
+SUGAR_PCB = 1.2
+BATTERY = (4.0, 2.5, 57.0, 25.0, 5.5)   # x, y, w, d, h of the LiPo pouch under the board
+
+
+def pisugar(f, ox=0.0, oy=0.0, oz=0.0, battery=True):
+    """PiSugar 3: a Pi Zero sized board with its battery underneath and pogo pins on top
+    that touch the Pi's header pads 1-6 (5 V, GND, SDA, SCL) from below. Simplified."""
+    if battery:
+        bx, by, bw, bd, bh = BATTERY
+        f.box(ox + bx, oy + by, oz - bh, bw, bd, bh, "bp-plastic")
+    f.box(ox, oy, oz, PI_W, PI_D, SUGAR_PCB, "bp-pcb")
+    top = oz + SUGAR_PCB
+    for hx, hy in HOLES:
+        f.ellipse(ox + hx, oy + hy, top, 1.4)
+    f.flat_text(ox + 22, oy + 22, top, "PiSugar 3", 2.6)
+    # pogo pins under header pins 1-6, the first three columns of the header
+    for row in (0, 1):
+        for i in range(3):
+            px = ox + HEADER_X + PITCH / 2 + i * PITCH
+            py = oy + HEADER_Y + PITCH / 2 + row * PITCH
+            f.box(px - 0.5, py - 0.5, top, 1.0, 1.0, 1.6, "bp-metal bp-accent")
+    f.box(ox + 30, oy + 10, top, 6, 6, 0.9, "bp-chip")
+    f.box(ox + PI_W - 7.5, oy + 11.5, top, 7.5, 9, 3.2, "bp-metal")        # USB-C for charging
+    f.box(ox + 46, oy + PI_D - 4, top, 4, 3, 1.4, "bp-plastic")            # power button
+
+
 # figures -----------------------------------------------------------------------
 
 def fig_hero():
@@ -244,6 +270,32 @@ def fig_cable():
     f = Fig(4.0)
     usb_plug(f, 0, 0, 0, tail=34, tone="")
     return f.svg("Micro-USB data cable", pad=6)
+
+
+def fig_sugar():
+    f = Fig(3.6)
+    pisugar(f, 0, 0, 5.5)
+    return f.svg("PiSugar 3 battery board with its battery underneath", pad=6)
+
+
+def fig_battery():
+    """Exploded view: the PiSugar goes under the Pi, its pogo pins touch the header pads."""
+    f = Fig(4.0)
+    pisugar(f, 0, 0, 0)
+    gap = 34
+    for i in (0, 2):
+        px = HEADER_X + PITCH / 2 + i * PITCH
+        f.line((px, HEADER_Y + PITCH / 2, SUGAR_PCB + 1.6), (px, HEADER_Y + PITCH / 2, gap), "bp-dash")
+    for hx, hy in ((61.5, 26.5), (3.5, 26.5), (61.5, 3.5)):
+        f.line((hx, hy, SUGAR_PCB), (hx, hy, gap), "bp-dash")
+    pi_zero(f, 0, 0, gap)
+    f.label((HEADER_X + PITCH, HEADER_Y + 2 * PITCH, SUGAR_PCB + 1.6), "POGO PINS\n5 V · GND · SDA · SCL", -125, -14, accent=True)
+    f.label((61.5, 3.5, gap * 0.45), "SCREWS + SPACERS", 70, -20)
+    f.label((PI_W, 16, SUGAR_PCB + 3.2), "USB-C: CHARGING", 60, 34)
+    f.label((48, PI_D - 1, SUGAR_PCB + 1.4), "POWER BUTTON", 40, 70)
+    f.label((20, BATTERY[1] + BATTERY[3], -3), "BATTERY", -60, 40)
+    f.label((62, 4, gap + PCB), "PI ZERO 2 W\n(HAT GOES ON TOP)", 52, -16)
+    return f.svg("Exploded view: the PiSugar 3 screws under the Pi Zero; its pogo pins touch the header from below")
 
 
 def fig_ports():
@@ -324,6 +376,8 @@ FIGURES = {
     "part-hat": fig_hat,
     "part-sd": fig_sd,
     "part-cable": fig_cable,
+    "part-sugar": fig_sugar,
+    "battery": fig_battery,
     "ports": fig_ports,
     "system": fig_system,
 }
