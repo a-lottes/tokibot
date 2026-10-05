@@ -5,24 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Docs · Claudegotchi</title>
   <meta name="description" content="Setup, settings, cloud relay, updates and reference for Claudegotchi.">
+  <meta name="color-scheme" content="light dark">
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="./">claude<span>gotchi</span></a>
-      <nav class="site-nav">
-        <a href="./">Home</a>
-        <a href="parts.html">Shopping list</a>
-        <a href="build.html">Assembly</a>
-        <a href="download.html">Download</a>
-        <a href="docs.html" aria-current="page">Docs</a>
-      </nav>
+      <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
+      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="download.html">Download</a><a href="docs.html" aria-current="page">Docs</a></nav>
+      <span class="sys"><span class="dot">●</span> v0.2.0 · 192.168.77.1:8765</span>
     </div>
   </header>
 
-    <main class="wrap docs">
+  <main class="wrap docs">
     <nav class="toc" aria-label="On this page">
       <ul>
         <li><a href="#overview">Overview</a></li>
@@ -42,18 +39,20 @@
     </nav>
 
     <div class="docs-body">
-      <h1>Docs</h1>
+      <span class="kicker"><b>§ docs</b> / reference</span>
+      <h1>The <em>manual</em>.</h1>
       <p class="lead">How the Claudegotchi works, how to set it up and how to change it.</p>
 
-      <h2 id="overview">Overview</h2>
+      <h2 id="overview" data-n="01">Overview</h2>
       <p>The Claudegotchi has two halves:</p>
       <ul>
         <li><strong>The gotchi</strong>: a Raspberry Pi Zero with an e-paper display, running its own small Buildroot image. A Python service receives events, works out a mood and draws it.</li>
         <li><strong>The client</strong>: a small Python script on your computer. Claude Code runs it as a hook on every event and as the status line. It sends metadata to the gotchi and never blocks Claude Code: sending happens in a detached background process.</li>
       </ul>
+      <figure class="plate"><div class="art"><!-- fig:system --><svg class="bp" viewBox="-322 -218 633 344" role="img" aria-label="Claude Code on your computer sends events over the USB cable or Wi-Fi to the gotchi"><polygon class="bp-l bp-pcb" points="-216.2,-54.4 -99.8,12.8 -99.8,8.0 -216.2,-59.2"/><polygon class="bp-r bp-pcb" points="-19.4,-33.6 -99.8,12.8 -99.8,8.0 -19.4,-38.4"/><polygon class="bp-t bp-pcb" points="-135.8,-105.6 -19.4,-38.4 -99.8,8.0 -216.2,-59.2"/><polygon class="bp-l bp-plastic" points="-176.0,-76.0 -70.7,-15.2 -70.7,-16.0 -176.0,-76.8"/><polygon class="bp-r bp-plastic" points="-31.9,-37.6 -70.7,-15.2 -70.7,-16.0 -31.9,-38.4"/><polygon class="bp-t bp-plastic" points="-137.2,-99.2 -31.9,-38.4 -70.7,-16.0 -176.0,-76.8"/><polygon class="bp-l" points="-167.7,-39.2 -134.4,-20.0 -134.4,-20.5 -167.7,-39.7"/><polygon class="bp-r" points="-115.0,-31.2 -134.4,-20.0 -134.4,-20.5 -115.0,-31.7"/><polygon class="bp-t" points="-148.3,-50.9 -115.0,-31.7 -134.4,-20.5 -167.7,-39.7"/><polygon class="bp-l" points="-135.8,-105.6 -19.4,-38.4 -19.4,-124.8 -135.8,-192.0"/><polygon class="bp-r" points="-15.2,-40.8 -19.4,-38.4 -19.4,-124.8 -15.2,-127.2"/><polygon class="bp-t" points="-131.6,-194.4 -15.2,-127.2 -19.4,-124.8 -135.8,-192.0"/><polygon class="bp-paper" points="-130.3,-108.8 -24.9,-48.0 -24.9,-121.6 -130.3,-182.4"/><line class="bp-code" x1="-123.3" y1="-170.4" x2="-67.9" y2="-138.4"/><line class="bp-code" x1="-123.3" y1="-160.0" x2="-43.0" y2="-113.6"/><line class="bp-code" x1="-123.3" y1="-149.6" x2="-87.3" y2="-128.8"/><line class="bp-code bp-accent" x1="-123.3" y1="-139.2" x2="-54.0" y2="-99.2"/><line class="bp-code" x1="-123.3" y1="-128.8" x2="-76.2" y2="-101.6"/><line class="bp-code" x1="-123.3" y1="-118.4" x2="-37.4" y2="-68.8"/><path class="bp-cable bp-accent" d="M-66.5,-8.8 C-16.6,20.0 -67.3,102.7 -9.8,69.5"/><polygon class="bp-l bp-pcb" points="-41.6,24.0 48.5,76.0 48.5,73.8 -41.6,21.8"/><polygon class="bp-r bp-pcb" points="90.1,52.0 48.5,76.0 48.5,73.8 90.1,49.8"/><polygon class="bp-t bp-pcb" points="0.0,-2.2 90.1,49.8 48.5,73.8 -41.6,21.8"/><polygon class="bp-hole" points="1.9,4.5 1.2,4.8 0.4,4.9 -0.4,4.9 -1.2,4.8 -1.9,4.5 -2.4,4.1 -2.7,3.6 -2.7,3.1 -2.4,2.6 -1.9,2.2 -1.2,1.9 -0.4,1.8 0.4,1.8 1.2,1.9 1.9,2.2 2.4,2.6 2.7,3.1 2.7,3.6 2.4,4.1"/><polygon class="bp-hole" points="82.3,50.9 81.6,51.2 80.8,51.3 79.9,51.3 79.1,51.2 78.4,50.9 77.9,50.5 77.7,50.0 77.7,49.5 77.9,49.0 78.4,48.6 79.1,48.3 79.9,48.2 80.8,48.2 81.6,48.3 82.3,48.6 82.8,49.0 83.1,49.5 83.1,50.0 82.8,50.5"/><polygon class="bp-hole" points="-29.9,22.9 -30.6,23.2 -31.4,23.3 -32.3,23.3 -33.1,23.2 -33.8,22.9 -34.3,22.5 -34.6,22.0 -34.6,21.5 -34.3,21.0 -33.8,20.6 -33.1,20.3 -32.3,20.2 -31.4,20.2 -30.6,20.3 -29.9,20.6 -29.4,21.0 -29.2,21.5 -29.2,22.0 -29.4,22.5"/><polygon class="bp-hole" points="50.4,69.3 49.7,69.6 48.9,69.7 48.1,69.7 47.3,69.6 46.6,69.3 46.1,68.9 45.8,68.4 45.8,67.9 46.1,67.4 46.6,67.0 47.3,66.7 48.1,66.6 48.9,66.6 49.7,66.7 50.4,67.0 50.9,67.4 51.2,67.9 51.2,68.4 50.9,68.9"/><text class="bp-silk" font-size="2.3" transform="matrix(1.386 0.800 -1.386 0.800 -6.2 33.4)">Raspberry Pi Zero 2 W</text><polygon class="bp-l bp-metal" points="-28.4,16.6 -12.5,25.8 -12.5,23.7 -28.4,14.5"/><polygon class="bp-r bp-metal" points="4.2,16.2 -12.5,25.8 -12.5,23.7 4.2,14.1"/><polygon class="bp-t bp-metal" points="-11.8,4.9 4.2,14.1 -12.5,23.7 -28.4,14.5"/><polygon class="bp-l" points="54.0,64.2 58.5,66.7 58.5,64.8 54.0,62.2"/><polygon class="bp-r" points="77.9,55.5 58.5,66.7 58.5,64.8 77.9,53.6"/><polygon class="bp-t" points="73.4,51.0 77.9,53.6 58.5,64.8 54.0,62.2"/><polygon class="bp-l bp-chip" points="2.1,36.6 21.5,47.8 21.5,45.8 2.1,34.6"/><polygon class="bp-r bp-chip" points="40.9,36.6 21.5,47.8 21.5,45.8 40.9,34.6"/><polygon class="bp-t bp-chip" points="21.5,23.4 40.9,34.6 21.5,45.8 2.1,34.6"/><text class="bp-silk-chip" font-size="2.6" transform="matrix(1.386 0.800 -1.386 0.800 13.6 31.5)">RP3A0</text><polygon class="bp-l bp-chip" points="0.0,23.4 5.5,26.6 5.5,25.3 0.0,22.1"/><polygon class="bp-r bp-chip" points="11.1,23.4 5.5,26.6 5.5,25.3 11.1,22.1"/><polygon class="bp-t bp-chip" points="5.5,18.9 11.1,22.1 5.5,25.3 0.0,22.1"/><polygon class="bp-l bp-chip" points="38.8,45.8 45.7,49.8 45.7,48.5 38.8,44.5"/><polygon class="bp-r bp-chip" points="49.9,47.4 45.7,49.8 45.7,48.5 49.9,46.1"/><polygon class="bp-t bp-chip" points="43.0,42.1 49.9,46.1 45.7,48.5 38.8,44.5"/><polygon class="bp-l bp-plastic" points="1.4,8.3 71.8,48.9 71.8,44.9 1.4,4.3"/><polygon class="bp-r bp-plastic" points="78.8,44.9 71.8,48.9 71.8,44.9 78.8,40.9"/><polygon class="bp-t bp-plastic" points="8.5,0.2 78.8,40.9 71.8,44.9 1.4,4.3"/><line class="bp-pin" x1="8.5" y1="2.3" x2="8.5" y2="-7.3"/><line class="bp-pin" x1="12.0" y1="4.3" x2="12.0" y2="-5.3"/><line class="bp-pin" x1="15.5" y1="6.3" x2="15.5" y2="-3.3"/><line class="bp-pin" x1="19.0" y1="8.4" x2="19.0" y2="-1.2"/><line class="bp-pin" x1="22.5" y1="10.4" x2="22.5" y2="0.8"/><line class="bp-pin" x1="26.1" y1="12.4" x2="26.1" y2="2.8"/><line class="bp-pin" x1="29.6" y1="14.5" x2="29.6" y2="4.9"/><line class="bp-pin" x1="33.1" y1="16.5" x2="33.1" y2="6.9"/><line class="bp-pin" x1="36.6" y1="18.5" x2="36.6" y2="8.9"/><line class="bp-pin" x1="40.1" y1="20.6" x2="40.1" y2="11.0"/><line class="bp-pin" x1="43.6" y1="22.6" x2="43.6" y2="13.0"/><line class="bp-pin" x1="47.2" y1="24.6" x2="47.2" y2="15.0"/><line class="bp-pin" x1="50.7" y1="26.7" x2="50.7" y2="17.1"/><line class="bp-pin" x1="54.2" y1="28.7" x2="54.2" y2="19.1"/><line class="bp-pin" x1="57.7" y1="30.7" x2="57.7" y2="21.1"/><line class="bp-pin" x1="61.2" y1="32.8" x2="61.2" y2="23.2"/><line class="bp-pin" x1="64.8" y1="34.8" x2="64.8" y2="25.2"/><line class="bp-pin" x1="68.3" y1="36.8" x2="68.3" y2="27.2"/><line class="bp-pin" x1="71.8" y1="38.8" x2="71.8" y2="29.2"/><line class="bp-pin" x1="75.3" y1="40.9" x2="75.3" y2="31.3"/><line class="bp-pin" x1="4.9" y1="4.3" x2="4.9" y2="-5.3"/><line class="bp-pin" x1="8.5" y1="6.3" x2="8.5" y2="-3.3"/><line class="bp-pin" x1="12.0" y1="8.4" x2="12.0" y2="-1.2"/><line class="bp-pin" x1="15.5" y1="10.4" x2="15.5" y2="0.8"/><line class="bp-pin" x1="19.0" y1="12.4" x2="19.0" y2="2.8"/><line class="bp-pin" x1="22.5" y1="14.5" x2="22.5" y2="4.9"/><line class="bp-pin" x1="26.1" y1="16.5" x2="26.1" y2="6.9"/><line class="bp-pin" x1="29.6" y1="18.5" x2="29.6" y2="8.9"/><line class="bp-pin" x1="33.1" y1="20.6" x2="33.1" y2="11.0"/><line class="bp-pin" x1="36.6" y1="22.6" x2="36.6" y2="13.0"/><line class="bp-pin" x1="40.1" y1="24.6" x2="40.1" y2="15.0"/><line class="bp-pin" x1="43.6" y1="26.7" x2="43.6" y2="17.1"/><line class="bp-pin" x1="47.2" y1="28.7" x2="47.2" y2="19.1"/><line class="bp-pin" x1="50.7" y1="30.7" x2="50.7" y2="21.1"/><line class="bp-pin" x1="54.2" y1="32.8" x2="54.2" y2="23.2"/><line class="bp-pin" x1="57.7" y1="34.8" x2="57.7" y2="25.2"/><line class="bp-pin" x1="61.2" y1="36.8" x2="61.2" y2="27.2"/><line class="bp-pin" x1="64.8" y1="38.8" x2="64.8" y2="29.2"/><line class="bp-pin" x1="68.3" y1="40.9" x2="68.3" y2="31.3"/><line class="bp-pin" x1="71.8" y1="42.9" x2="71.8" y2="33.3"/><polygon class="bp-l bp-metal" points="-32.8,27.6 -17.3,36.6 -17.3,31.3 -32.8,22.3"/><polygon class="bp-r bp-metal" points="-9.0,31.8 -17.3,36.6 -17.3,31.3 -9.0,26.5"/><polygon class="bp-t bp-metal" points="-24.5,17.5 -9.0,26.5 -17.3,31.3 -32.8,22.3"/><polygon class="bp-l bp-metal bp-accent" points="9.7,52.2 20.5,58.4 20.5,53.9 9.7,47.7"/><polygon class="bp-r bp-metal bp-accent" points="28.8,53.6 20.5,58.4 20.5,53.9 28.8,49.1"/><polygon class="bp-t bp-metal bp-accent" points="18.0,42.9 28.8,49.1 20.5,53.9 9.7,47.7"/><polygon class="bp-l bp-metal" points="27.2,62.2 38.0,68.5 38.0,64.0 27.2,57.8"/><polygon class="bp-r bp-metal" points="46.3,63.7 38.0,68.5 38.0,64.0 46.3,59.2"/><polygon class="bp-t bp-metal" points="35.5,53.0 46.3,59.2 38.0,64.0 27.2,57.8"/><polygon class="bp-l bp-plastic" points="1.4,4.3 71.8,44.9 71.8,31.3 1.4,-9.3"/><polygon class="bp-r bp-plastic" points="78.8,40.9 71.8,44.9 71.8,31.3 78.8,27.3"/><polygon class="bp-t bp-plastic" points="8.5,-13.4 78.8,27.3 71.8,31.3 1.4,-9.3"/><polygon class="bp-l bp-pcb" points="-41.6,4.2 48.5,56.2 48.5,53.6 -41.6,1.6"/><polygon class="bp-r bp-pcb" points="90.1,32.2 48.5,56.2 48.5,53.6 90.1,29.6"/><polygon class="bp-t bp-pcb" points="0.0,-22.4 90.1,29.6 48.5,53.6 -41.6,1.6"/><polygon class="bp-hole" points="1.9,-15.7 1.2,-15.4 0.4,-15.2 -0.4,-15.2 -1.2,-15.4 -1.9,-15.7 -2.4,-16.1 -2.7,-16.6 -2.7,-17.0 -2.4,-17.5 -1.9,-17.9 -1.2,-18.2 -0.4,-18.4 0.4,-18.4 1.2,-18.2 1.9,-17.9 2.4,-17.5 2.7,-17.0 2.7,-16.6 2.4,-16.1"/><polygon class="bp-hole" points="82.3,30.7 81.6,31.0 80.8,31.2 79.9,31.2 79.1,31.0 78.4,30.7 77.9,30.3 77.7,29.8 77.7,29.4 77.9,28.9 78.4,28.5 79.1,28.2 79.9,28.0 80.8,28.0 81.6,28.2 82.3,28.5 82.8,28.9 83.1,29.4 83.1,29.8 82.8,30.3"/><polygon class="bp-hole" points="-29.9,2.7 -30.6,3.0 -31.4,3.2 -32.3,3.2 -33.1,3.0 -33.8,2.7 -34.3,2.3 -34.6,1.8 -34.6,1.4 -34.3,0.9 -33.8,0.5 -33.1,0.2 -32.3,0.0 -31.4,0.0 -30.6,0.2 -29.9,0.5 -29.4,0.9 -29.2,1.4 -29.2,1.8 -29.4,2.3"/><polygon class="bp-hole" points="50.4,49.1 49.7,49.4 48.9,49.6 48.1,49.6 47.3,49.4 46.6,49.1 46.1,48.7 45.8,48.2 45.8,47.8 46.1,47.3 46.6,46.9 47.3,46.6 48.1,46.4 48.9,46.4 49.7,46.6 50.4,46.9 50.9,47.3 51.2,47.8 51.2,48.2 50.9,48.7"/><polygon class="bp-l bp-glass" points="-36.4,2.6 43.2,48.6 43.2,47.0 -36.4,1.0"/><polygon class="bp-r bp-glass" points="81.5,26.6 43.2,48.6 43.2,47.0 81.5,25.0"/><polygon class="bp-t bp-glass" points="1.8,-21.0 81.5,25.0 43.2,47.0 -36.4,1.0"/><polygon class="bp-l bp-flex" points="52.7,43.2 57.5,46.0 57.5,45.4 52.7,42.6"/><polygon class="bp-r bp-flex" points="76.9,34.8 57.5,46.0 57.5,45.4 76.9,34.2"/><polygon class="bp-t bp-flex" points="72.1,31.4 76.9,34.2 57.5,45.4 52.7,42.6"/><polygon class="bp-paper" points="3.9,-17.6 72.7,22.2 38.2,42.1 -30.6,2.3"/><image class="bp-screen" href="img/moods/done.png" width="500" height="244" preserveAspectRatio="none" transform="matrix(0.1344 0.0776 -0.1346 0.0777 3.9 -16.6)"/><polygon class="bp-l bp-metal bp-accent" points="1.8,56.9 11.8,62.6 11.8,58.8 1.8,53.0"/><polygon class="bp-r bp-metal bp-accent" points="20.8,57.4 11.8,62.6 11.8,58.8 20.8,53.6"/><polygon class="bp-t bp-metal bp-accent" points="10.8,47.8 20.8,53.6 11.8,58.8 1.8,53.0"/><polygon class="bp-l bp-accent" points="-17.5,67.5 -2.2,76.3 -2.2,67.4 -17.5,58.6"/><polygon class="bp-r bp-accent" points="14.4,66.7 -2.2,76.3 -2.2,67.4 14.4,57.8"/><polygon class="bp-t bp-accent" points="-0.8,49.0 14.4,57.8 -2.2,67.4 -17.5,58.6"/><g class="bp-callout"><circle cx="-130.9" cy="-172.4" r="2.6"/><polyline points="-130.9,-172.4 -143.5,-196.4 -166.9,-196.4"/><text text-anchor="end" y="-192.4"><tspan x="-172.9" dy="0">CLAUDE CODE</tspan><tspan x="-172.9" dy="13">HOOKS + STATUS LINE</tspan></text></g><g class="bp-callout bp-accent"><circle cx="-47.1" cy="12.0" r="2.6"/><polyline points="-47.1,12.0 -63.2,86.0 -93.1,86.0"/><text text-anchor="end" y="90.0"><tspan x="-99.1" dy="0">USB CABLE OR WI-FI</tspan><tspan x="-99.1" dy="13">HTTP · METADATA ONLY</tspan></text></g><g class="bp-callout"><circle cx="84.5" cy="26.4" r="2.6"/><polyline points="84.5,26.4 95.0,-19.6 114.5,-19.6"/><text text-anchor="start" y="-15.6"><tspan x="120.5" dy="0">CLAUDEGOTCHI</tspan><tspan x="120.5" dy="13">ONE MOOD FOR ALL SESSIONS</tspan></text></g></svg><!-- /fig:system --></div><figcaption><span>Fig. 06 — data flow</span><span>usb or wi-fi</span></figcaption></figure>
       <p>The gotchi listens on port <code>8765</code>. Over the USB cable it is at <code>192.168.77.1</code>, on Wi-Fi at <code>claudegotchi.local</code>. A live preview of the display is at <code>http://claudegotchi.local:8765/</code>.</p>
 
-      <h2 id="moods">Moods</h2>
+      <h2 id="moods" data-n="02">Moods</h2>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Mood</th><th>When</th></tr></thead>
@@ -75,7 +74,7 @@
       </div>
       <p>With several sessions (for example worktrees), the state that needs you most wins. The footer shows how many sessions are working (▶), waiting for you (?) or done (✓), plus bars for the 5-hour and 7-day budget. The header shows the level and the number of sessions.</p>
 
-      <h2 id="growing">Growing up</h2>
+      <h2 id="growing" data-n="03">Growing up</h2>
       <p>The critter earns experience from your work:</p>
       <ul>
         <li>10 XP per finished reply</li>
@@ -86,57 +85,57 @@
       <p>Levels get further apart as it grows: level 2 at 50 XP, level 3 at 150, level 4 at 300, and so on. Every day with at least one finished reply extends the streak; skip a day and it starts over. In the evening it shows what you did today, and when you leave it alone for two days it gets hungry.</p>
       <p>The progress lives in <code>life.json</code> on the image's small writable <code>data</code> partition, so it survives reboots and updates. In the simulator it is in <code>~/.claudegotchi/</code>.</p>
 
-      <h2 id="client">The client</h2>
+      <h2 id="client" data-n="04">The client</h2>
       <p>Install it from a copy of the repository. It works on macOS and Linux.</p>
-      <pre><code>python3 client/install_mac.py                                  # automatic: USB cable, then Wi-Fi
-python3 client/install_mac.py --url http://192.168.1.50:8765   # a fixed address
-python3 client/install_mac.py --token my-secret                # with a token
-python3 client/install_mac.py --uninstall                      # remove it again</code></pre>
+      <pre><code><span class="p">$ </span>python3 client/install_mac.py<span class="c">                                  # automatic: USB cable, then Wi-Fi</span>
+<span class="p">$ </span>python3 client/install_mac.py --url http://192.168.1.50:8765<span class="c">   # a fixed address</span>
+<span class="p">$ </span>python3 client/install_mac.py --token my-secret<span class="c">                # with a token</span>
+<span class="p">$ </span>python3 client/install_mac.py --uninstall<span class="c">                      # remove it again</span></code></pre>
       <p>The installer copies <code>claudegotchi_client.py</code> to <code>~/.claude/claudegotchi/</code> and adds the hooks and the status line to <code>~/.claude/settings.json</code>. It backs up the old file as <code>settings.json.claudegotchi-backup</code>. Existing hooks stay, and an existing status line is still shown.</p>
       <p>To check the connection, play the test sequence. It walks through the moods over about a minute and prints which address answered:</p>
-      <pre><code>python3 ~/.claude/claudegotchi/claudegotchi_client.py test</code></pre>
+      <pre><code><span class="p">$ </span>python3 ~/.claude/claudegotchi/claudegotchi_client.py test</code></pre>
 
-      <h2 id="settings">Settings</h2>
+      <h2 id="settings" data-n="05">Settings</h2>
       <p>Open <code>http://claudegotchi.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. The page changes Wi-Fi, time zone, rotation, token and relay. It writes <code>claudegotchi.toml</code> on the boot partition, keeps the comments in it, and restarts the gotchi. Once a token is set, the page asks for it.</p>
       <p>You can also edit the file directly: put the card into your computer and open <code>claudegotchi.toml</code> on the <code>GOTCHI</code> drive.</p>
-      <pre><code>[device]
+      <pre data-title="claudegotchi.toml"><code>[device]
 display = "waveshare_2in13_v4"
-rotate = 0                    # 180 if the picture is upside down
+rotate = 0<span class="c">                    # 180 if the picture is upside down</span>
 timezone = "Europe/Berlin"
 
 [server]
 port = 8765
-token = ""                    # only accept clients that send this token
+token = ""<span class="c">                    # only accept clients that send this token</span>
 
 [usb]
-enabled = true                # network adapter on the USB data port
+enabled = true<span class="c">                # network adapter on the USB data port</span>
 address = "192.168.77.1"
 
 [wifi]
-ssid = ""                     # empty: USB cable only
+ssid = ""<span class="c">                     # empty: USB cable only</span>
 psk = ""
 country = "DE"
 
 [relay]
-url = ""                      # ntfy topic for Claude Code in the cloud
-auth = ""                     # access token for a protected ntfy server</code></pre>
+url = ""<span class="c">                      # ntfy topic for Claude Code in the cloud</span>
+auth = ""<span class="c">                     # access token for a protected ntfy server</span></code></pre>
       <p>Without Wi-Fi the gotchi takes the time from your computer. With Wi-Fi it uses NTP.</p>
 
-      <h2 id="security">Security</h2>
+      <h2 id="security" data-n="06">Security</h2>
       <p>By default anyone who can reach the gotchi on port 8765 can send it events. On your desk over USB that is just your computer. On a shared Wi-Fi, set a token: put it under <code>[server] token</code> on the gotchi and install the client with <code>--token</code>. The settings page and app updates then need the token too.</p>
       <p>The image has no SSH. The root filesystem is read-only.</p>
 
-      <h2 id="cloud">Claude in the cloud</h2>
+      <h2 id="cloud" data-n="07">Claude in the cloud</h2>
       <p>Hooks run wherever Claude Code runs. A session in the cloud, for example in a Claude Project, runs in a container that cannot see your local network. For that case the gotchi can listen to a relay: an <a href="https://ntfy.sh">ntfy</a> topic. Cloud hooks publish to the topic, and the gotchi keeps one outgoing connection to it, so it works behind any Wi-Fi, even a phone hotspot.</p>
       <ol>
         <li>
           <p>Create a relay topic and a token on your computer:</p>
-          <pre><code>python3 client/install_mac.py --new-relay</code></pre>
+          <pre><code><span class="p">$ </span>python3 client/install_mac.py --new-relay</code></pre>
           <p>It prints a <code>[server]</code> token and a <code>[relay]</code> url. Put both into the gotchi's settings and give it Wi-Fi.</p>
         </li>
         <li>
           <p>Print a setup script for the cloud environment and paste it into the environment's setup script:</p>
-          <pre><code>python3 client/install_mac.py --cloud-setup &gt; cloud-setup.sh</code></pre>
+          <pre><code><span class="p">$ </span>python3 client/install_mac.py --cloud-setup &gt; cloud-setup.sh</code></pre>
           <p>The script carries the client inline and installs it so that it only publishes to the relay.</p>
         </li>
         <li><p>Allow <code>ntfy.sh</code> in the cloud environment's network access settings. Without it, the hooks cannot reach the relay.</p></li>
@@ -145,25 +144,25 @@ auth = ""                     # access token for a protected ntfy server</code><
         <p>The topic name is the secret: anyone who knows it can read the events (metadata only) and could publish to it. The gotchi ignores relay messages without the right token. You can run your own ntfy server and point <code>--relay</code> at it; set <code>[relay] auth</code> if it needs an access token.</p>
       </div>
 
-      <h2 id="updates">Updates</h2>
+      <h2 id="updates" data-n="08">Updates</h2>
       <p>The Python app updates in place. Only kernel or system changes need a new image.</p>
-      <pre><code>make update GOTCHI=http://claudegotchi.local:8765 TOKEN=your-token</code></pre>
+      <pre><code><span class="p">$ </span>make update GOTCHI=http://claudegotchi.local:8765 TOKEN=your-token</code></pre>
       <p>This packs <code>app/</code> into <code>output/claudegotchi-app.tar.gz</code> and sends it to the gotchi. You can also upload that file on the settings page; the <a href="download.html">download page</a> has the one from the latest release.</p>
       <p>The gotchi checks that the new version starts, keeps it in <code>/data/app</code>, and restarts. If it crashes three times in a row right after starting, it falls back to the version built into the image. "Back to the built-in version" on the settings page does the same by hand.</p>
 
-      <h2 id="simulator">Simulator</h2>
+      <h2 id="simulator" data-n="09">Simulator</h2>
       <p>Try everything without hardware. You need Python 3.9 or newer and Pillow.</p>
-      <pre><code>python3 -m pip install pillow
-make test
-make sim                    # preview at http://localhost:8765/  (other port: make sim PORT=8766)
-CLAUDEGOTCHI_URL=http://localhost:8765 python3 client/claudegotchi_client.py test
-make mockups                # every mood in docs/mockups.png</code></pre>
+      <pre><code><span class="p">$ </span>python3 -m pip install pillow
+<span class="p">$ </span>make test
+<span class="p">$ </span>make sim<span class="c">                    # preview at http://localhost:8765/  (other port: make sim PORT=8766)</span>
+<span class="p">$ </span>CLAUDEGOTCHI_URL=http://localhost:8765 python3 client/claudegotchi_client.py test
+<span class="p">$ </span>make mockups<span class="c">                # every mood in docs/mockups.png</span></code></pre>
       <p>The simulator keeps its own copy of the settings in <code>~/.claudegotchi/claudegotchi.toml</code>, so the settings page does not change the template in the repository.</p>
 
-      <h2 id="image">The image</h2>
+      <h2 id="image" data-n="10">The image</h2>
       <p>The operating system is built with Buildroot from the <code>os/</code> folder. There is one configuration per board:</p>
-      <pre><code>make zero2w     # Raspberry Pi Zero 2 W (64-bit)
-make zerow      # Raspberry Pi Zero W</code></pre>
+      <pre><code><span class="p">$ </span>make zero2w<span class="c">     # Raspberry Pi Zero 2 W (64-bit)</span>
+<span class="p">$ </span>make zerow<span class="c">      # Raspberry Pi Zero W</span></code></pre>
       <p>On GitHub, the workflow <code>image.yml</code> builds both images for every <code>v*</code> tag and attaches them to the release, together with the app bundle. The website then picks them up for the <a href="download.html">download page</a>.</p>
       <ul>
         <li>Read-only root filesystem, <code>/tmp</code> and <code>/run</code> in RAM. Pulling the plug does not hurt the card.</li>
@@ -174,10 +173,10 @@ make zerow      # Raspberry Pi Zero W</code></pre>
         <li>No SSH, no Debian, no Wi-Fi hacking tools.</li>
       </ul>
 
-      <h2 id="privacy">Privacy</h2>
+      <h2 id="privacy" data-n="11">Privacy</h2>
       <p>Only metadata is sent: event name, session ID, project folder name, tool name, notification or error type and limit percentages. Prompts, code and replies never leave your computer. With a relay, that metadata passes through the ntfy server you chose.</p>
 
-      <h2 id="troubleshooting">Troubleshooting</h2>
+      <h2 id="troubleshooting" data-n="12">Troubleshooting</h2>
       <h3>The display stays blank</h3>
       <ul>
         <li>Check that the HAT sits flush on all 40 pins.</li>
@@ -199,8 +198,8 @@ make zerow      # Raspberry Pi Zero W</code></pre>
       <h3>The picture is upside down</h3>
       <p>Set <code>rotate = 180</code> on the settings page.</p>
 
-      <h2 id="repository">Repository</h2>
-      <pre><code>app/       the service on the device (Python, Pillow)
+      <h2 id="repository" data-n="13">Repository</h2>
+      <pre data-title="tree"><code>app/       the service on the device (Python, Pillow)
 client/    hook and status line client for your computer, plus installer
 os/        Buildroot extension (br2-external): defconfigs, board files, package
 docs/      this website</code></pre>
@@ -210,8 +209,8 @@ docs/      this website</code></pre>
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>Claudegotchi is a hobby project, inspired by Pwnagotchi. Not affiliated with Anthropic.</p>
-      <p>MIT licensed. Fonts: DejaVu.</p>
+      <span><b>▚</b> claudegotchi · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
     </div>
   </footer>
 </body>
