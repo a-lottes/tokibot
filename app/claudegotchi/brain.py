@@ -6,11 +6,11 @@ from datetime import datetime
 
 from .feeling import Feeling
 from .life import Life
-from .mood import (CONTEXT_FULL_PCT, DONE_DECAY, ERROR_LABELS, FILL_DEFAULTS, FOCUS_WEIGHT,
-                   HUNGRY_AFTER_DAYS, JUGGLING_FROM, LEVELUP_SHOW, LIMIT_FALLBACK, LIMIT_WARN_PCT,
-                   MESSAGES, MOMENT_SHOW, MOOD_HOLD, PERMISSION_DECAY, PRIORITY, SESSION_FORGET,
-                   SUMMARY_FROM_HOUR, SUMMARY_UNTIL_HOUR, WAITING_NOTIFICATIONS, WORKING_EVENTS,
-                   WORKING_STALE)
+from .mood import (BADGES, CONTEXT_FULL_PCT, DONE_DECAY, ERROR_LABELS, FILL_DEFAULTS,
+                   FOCUS_WEIGHT, HUNGRY_AFTER_DAYS, JUGGLING_FROM, LABELS, LEVELUP_SHOW,
+                   LIMIT_FALLBACK, LIMIT_WARN_PCT, MESSAGES, MOMENT_SHOW, MOOD_HOLD,
+                   PERMISSION_DECAY, PRIORITY, SESSION_FORGET, SOCIAL_SHOW, SUMMARY_FROM_HOUR,
+                   SUMMARY_UNTIL_HOUR, WAITING_NOTIFICATIONS, WORKING_EVENTS, WORKING_STALE)
 
 # Moods a level-up celebration may cover; anything that needs you wins over it.
 CELEBRATE_OVER = {"working", "done", "ready", "idle", "error"}
@@ -18,15 +18,18 @@ CELEBRATE_OVER = {"working", "done", "ready", "idle", "error"}
 TINTABLE = {"working", "done", "ready", "idle"}
 # Tints of "working": they swap among each other at most every MOOD_HOLD seconds.
 WORKING_MOODS = {"working", "flow", "struggling", "juggling", "tired"}
+# Every mood the feeling layer can produce
+TINTS = {"flow", "struggling", "stuck", "juggling", "oops", "proud", "relieved"}
 
 
 class Brain:
-    def __init__(self, life=None, battery=None):
+    def __init__(self, life=None, social=None, battery=None):
         self.life = life or Life()
         self.feeling = Feeling()
-        self.context = {}         # session id → context window used, in percent
+        self.context = {}             # session id → context window used, in percent
         self.shown, self.shown_since = "", 0.0
-        self.battery = battery    # battery.BatteryMonitor, or None without a battery
+        self.social = social          # social.Social, or None when Bluetooth social is off
+        self.battery = battery        # battery.BatteryMonitor, or None without a battery
         self.lock = threading.Lock()
         self.sessions = {}
         self.limits = {}          # {"five_hour": {"pct":.., "reset":..}, ...}
@@ -169,11 +172,26 @@ class Brain:
 
         life = self.life.summary(now)
         hour = datetime.fromtimestamp(now).hour
+        soc = {"nearby": 0, "friends_nearby": [], "event": None, "invite": None}
+        if self.social:
+            # Friends nearby see the situation, not how it is going (social.MOOD_CODES)
+            self.social.my_mood = state if mood in TINTS else mood
+            soc = self.social.view(now)
+        event = soc["event"] or {}
+        celebrate = state in CELEBRATE_OVER
         battery = self.battery.state if self.battery else None
-        if self.battery and self.battery.low() and state in CELEBRATE_OVER:
+        if self.battery and self.battery.low() and celebrate:
             mood = "lowbattery"
-        elif now - life["level_up_at"] < LEVELUP_SHOW and state in CELEBRATE_OVER:
+        elif now - life["level_up_at"] < LEVELUP_SHOW and celebrate:
             mood = "levelup"
+        elif event.get("kind") == "newfriend" and celebrate:
+            mood = "newfriend"
+        elif soc["invite"] and celebrate:
+            mood = "invite"
+        elif now - life["badge_at"] < SOCIAL_SHOW["badge"] and celebrate:
+            mood = "badge"
+        elif event.get("kind") in ("encounter", "encounter_anon", "friend") and celebrate:
+            mood = "friend" if event["kind"] == "friend" else "encounter"
         elif state == "idle" and (life["idle_days"] or 0) >= HUNGRY_AFTER_DAYS:
             mood = "hungry"
         elif (state == "idle" and life["today"]["turns"]
@@ -189,6 +207,9 @@ class Brain:
             "level": life["level"], "streak": life["streak"], "idle_days": life["idle_days"] or 0,
             "turns": life["today"]["turns"], "tools": life["today"]["tools"],
             "errors": life["today"]["errors"], "xp": life["today"]["xp"],
+            "peer": soc["invite"] if mood == "invite" else (event.get("name") or LABELS["stranger"]),
+            "peer_level": event.get("level") or "?",
+            "badge": BADGES.get(life["last_badge"], ("?",))[0],
             "battery": battery["pct"] if battery else "?",
             "n": counts.get("working", 0), "commits": life["today"].get("commits", 0),
         }
@@ -197,11 +218,15 @@ class Brain:
         key = mood
         if mood == "proud":
             key = "proud_" + (feel["kind"] or "commit")
+        if mood == "encounter" and event.get("kind") == "encounter_anon":
+            key = "encounter_anon"
         if mood == "working" and s.get("tool") and (int(now // 20) % 2):
             key = "working_tool"
         if mood == "permission" and not s.get("tool"):
             key = "permission_notool"
         seed = datetime.fromtimestamp(now).date() if mood in ("summary", "hungry") else s.get("since")
+        if mood in ("encounter", "friend", "newfriend"):
+            seed = event.get("at")
         rng = random.Random(f"{sid}|{state}|{seed}|{key}|{life['level_up_at']}")
         message = rng.choice(MESSAGES[key]).format(**fill)
 
@@ -210,6 +235,8 @@ class Brain:
             "project": s.get("project", ""), "counts": counts,
             "sessions": len(eff), "limits": limits, "tools_today": tools_today,
             "level": life["level"], "streak": life["streak"], "life": life,
+            "nearby": soc["nearby"], "friends_nearby": len(soc["friends_nearby"]),
+            "accessory": self.social.accessory() if self.social else "none",
             "battery": dict(battery) if battery else None,
             "feeling": {"valence": round(valence, 2), "energy": round(energy, 2)},
             "context_pct": context_pct,

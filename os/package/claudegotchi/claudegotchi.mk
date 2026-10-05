@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-CLAUDEGOTCHI_VERSION = 0.2.0
+CLAUDEGOTCHI_VERSION = 0.3.0
 CLAUDEGOTCHI_SITE = $(BR2_EXTERNAL_CLAUDEGOTCHI_PATH)/../app
 CLAUDEGOTCHI_SITE_METHOD = local
 CLAUDEGOTCHI_LICENSE = MIT

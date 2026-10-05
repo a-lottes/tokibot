@@ -49,6 +49,7 @@ class Renderer(threading.Thread):
         key = (view["mood"], frame, view["message"], view["project"], json.dumps(view["counts"], sort_keys=True),
                json.dumps({k: int(v["pct"]) for k, v in view["limits"].items()}, sort_keys=True),
                datetime.now().strftime("%H:%M"), view["sessions"], view.get("level"), view.get("streak"),
+               view.get("nearby"), view.get("friends_nearby"), view.get("accessory"),
                json.dumps(view.get("battery") and {k: view["battery"][k] for k in ("pct", "plugged")}),
                tuple(view.get("props") or ()))
         if key == self.last_key or now - self.last_draw < self.MIN_INTERVAL:

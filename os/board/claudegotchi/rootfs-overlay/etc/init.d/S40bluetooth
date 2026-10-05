@@ -1,0 +1,22 @@
+#!/bin/sh
+# Bluetooth LE for meeting other gotchis. Loads the UART Bluetooth driver; the
+# chip's firmware comes from /lib/firmware/brcm. The Claudegotchi service talks to
+# the controller directly over HCI (no bluetoothd).
+
+. /run/claudegotchi.env 2>/dev/null
+
+case "$1" in
+start)
+	[ "$SOCIAL_ENABLED" = "1" ] || exit 0
+	modprobe hci_uart 2>/dev/null || { echo "Bluetooth: no hci_uart driver"; exit 0; }
+	# The chip shows up as hci0 once its firmware is loaded
+	for _ in 1 2 3 4 5 6 7 8 9 10; do
+		[ -e /sys/class/bluetooth/hci0 ] && exit 0
+		sleep 1
+	done
+	echo "Bluetooth: no hci0"
+	;;
+stop)
+	;;
+esac
+exit 0

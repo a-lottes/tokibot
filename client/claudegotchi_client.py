@@ -51,16 +51,26 @@ def classify(command):
 
 # "auto": try the USB cable first, then Wi-Fi.
 AUTO_URLS = ["http://192.168.77.1:8765", "http://claudegotchi.local:8765"]
-LAST_URL = os.path.join(HERE, "last_url")
+# As a Claude Code plugin the client lives in the plugin cache, which is replaced on
+# every update; keep the little state it writes in the plugin's data folder instead.
+LAST_URL = os.path.join(os.environ.get("CLAUDE_PLUGIN_DATA") or HERE, "last_url")
+# Where install_mac.py keeps the settings; the plugin reads them from there as well.
+INSTALLED_CFG = os.path.expanduser("~/.claude/claudegotchi/claudegotchi.json")
 
 
 def load_config():
     cfg = {"url": "auto", "token": "", "relay": "", "statusline_chain": ""}
-    try:
-        with open(os.path.join(HERE, "claudegotchi.json")) as f:
-            cfg.update(json.load(f))
-    except (OSError, ValueError):
-        pass
+    for path in dict.fromkeys((INSTALLED_CFG, os.path.join(HERE, "claudegotchi.json"))):
+        try:
+            with open(path) as f:
+                cfg.update(json.load(f))
+        except (OSError, ValueError):
+            pass
+    # Options set in the plugin's settings (/config) win over the file, if they are set
+    for key in ("url", "token", "relay"):
+        value = os.environ.get("CLAUDE_PLUGIN_OPTION_" + key.upper(), "").strip()
+        if value:
+            cfg[key] = value
     cfg["url"] = os.environ.get("CLAUDEGOTCHI_URL", cfg["url"]).rstrip("/")
     cfg["token"] = os.environ.get("CLAUDEGOTCHI_TOKEN", cfg["token"])
     cfg["relay"] = os.environ.get("CLAUDEGOTCHI_RELAY", cfg["relay"]).rstrip("/")

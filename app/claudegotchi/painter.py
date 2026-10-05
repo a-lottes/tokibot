@@ -70,22 +70,36 @@ class Painter:
     def header(self, d, view):
         d.rectangle((0, 0, W - 1, HEADER_H - 1), fill=0)
         d.text((4, 1), "claudegotchi", font=self.f_brand, fill=255)
+        left = 4 + self.f_brand.getlength("claudegotchi")
         if view.get("level"):
-            x = 8 + self.f_brand.getlength("claudegotchi")
+            x = left + 4
             lv = LABELS["level"].format(level=view["level"])
             w = self.f_small_bold.getlength(lv) + 6
             d.rounded_rectangle((x, 2, x + w, HEADER_H - 3), radius=3, fill=255)
             d.text((x + 3, 1), lv, font=self.f_small_bold, fill=0)
+            left = x + w
         clock = datetime.now().strftime("%H:%M")
-        cx = W - 4 - self.f_brand.getlength(clock)
-        d.text((cx, 1), clock, font=self.f_brand, fill=255)
+        right = W - 4 - self.f_brand.getlength(clock)
+        d.text((right, 1), clock, font=self.f_brand, fill=255)
+        # battery (PiSugar), then gotchis nearby left of it: ♥ for friends, ● for others
         if view.get("battery"):
-            self.battery_icon(d, int(cx) - 6, view["battery"])
+            right = self.battery_icon(d, int(right) - 6, view["battery"])
+        near, friends = view.get("nearby", 0), view.get("friends_nearby", 0)
+        if near:
+            label = f"♥{friends}" if friends else f"●{near}"
+            right -= 5 + self.f_small_bold.getlength(label)
+            d.text((right, 2), label, font=self.f_small_bold, fill=255)
+        # Sessions in the space that is left; shortened or dropped when it gets tight
+        # (the footer counts them too).
         n = view["sessions"]
         if n:
-            label = f"{n} {LABELS['session'] if n == 1 else LABELS['sessions']}"
-            x = (W - self.f_small.getlength(label)) / 2 + 18
-            d.text((x, 2), label, font=self.f_small, fill=255)
+            room = right - left - 10
+            for label in (f"{n} {LABELS['session'] if n == 1 else LABELS['sessions']}", str(n)):
+                w = self.f_small.getlength(label)
+                if w <= room:
+                    x = min(max((W - w) / 2 + 18, left + 5), right - 5 - w)
+                    d.text((x, 2), label, font=self.f_small, fill=255)
+                    break
 
     @staticmethod
     def battery_icon(d, right, bat):
@@ -173,7 +187,8 @@ class Painter:
         img = Image.new("1", (W, H), 255)
         d = ImageDraw.Draw(img)
         self.header(d, view)
-        critter.draw(d, *CRITTER_XY, view["mood"], frame, view.get("props") or ())
+        critter.draw(d, *CRITTER_XY, view["mood"], frame, view.get("accessory", "none"),
+                     view.get("props") or ())
         self.bubble(d, view)
         self.footer(d, view)
         return img
