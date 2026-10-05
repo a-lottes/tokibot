@@ -11,7 +11,7 @@ start() {
 	[ -f /run/claudegotchi.env ] && . /run/claudegotchi.env
 	[ -n "$TIMEZONE" ] && [ -e "/usr/share/zoneinfo/$TIMEZONE" ] && export TZ=":/usr/share/zoneinfo/$TIMEZONE"
 	start-stop-daemon -S -q -b -m -p "$PIDFILE" -x /bin/sh -- \
-		-c "exec /usr/bin/python3 -m claudegotchi --config $CONFIG >>$LOG 2>&1"
+		-c "exec /usr/bin/claudegotchi-run --config $CONFIG >>$LOG 2>&1"
 	[ $? = 0 ] && echo "OK" || echo "FAIL"
 }
 

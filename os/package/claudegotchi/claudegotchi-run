@@ -1,0 +1,46 @@
+#!/bin/sh
+# Keeps the Claudegotchi service running.
+#
+# Prefers an app update in /data/app over the copy built into the image. If the
+# update keeps dying right after start (3 times within 30 s), it is moved aside
+# to /data/app.failed and the built-in version runs again.
+# Exit code 75 from the app means "restart me" (after an update or reset).
+
+APP=${CLAUDEGOTCHI_APP:-/data/app}
+PYTHON=${CLAUDEGOTCHI_PYTHON:-/usr/bin/python3}
+FAILS=0
+PID=
+
+cd /
+
+trap '[ -n "$PID" ] && kill -TERM "$PID" 2>/dev/null; wait "$PID"; exit 0' TERM INT
+
+while :; do
+	if [ -f "$APP/claudegotchi/__init__.py" ]; then
+		export PYTHONPATH="$APP"
+	else
+		unset PYTHONPATH
+	fi
+	START=$(date +%s)
+	"$PYTHON" -m claudegotchi "$@" &
+	PID=$!
+	wait "$PID"
+	CODE=$?
+	PID=
+	if [ "$CODE" = 75 ]; then
+		FAILS=0
+		continue
+	fi
+	echo "claudegotchi-run: app exited with $CODE"
+	if [ -n "$PYTHONPATH" ] && [ $(( $(date +%s) - START )) -lt 30 ]; then
+		FAILS=$((FAILS + 1))
+		if [ "$FAILS" -ge 3 ]; then
+			echo "claudegotchi-run: the update keeps crashing, back to the built-in version"
+			rm -rf "$APP.failed"
+			mv "$APP" "$APP.failed"
+			sync
+			FAILS=0
+		fi
+	fi
+	sleep 3
+done

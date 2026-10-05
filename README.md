@@ -67,6 +67,8 @@ app/       the service on the device (Python, Pillow)
   claudegotchi/config.py     reads claudegotchi.toml
   claudegotchi/relay.py      listens to an ntfy topic for cloud sessions
   claudegotchi/life.py       experience, levels, streaks and daily stats
+  claudegotchi/settings.py   the settings page in the browser
+  claudegotchi/update.py     app updates without flashing
   tools/mockups.py           renders docs/mockups.png
 client/    hook and status line client for your computer, plus installer
 os/        Buildroot extension (br2-external): defconfigs, board files, package
@@ -117,6 +119,30 @@ The installer adds hooks and a status line to `~/.claude/settings.json`, backs u
 the old file, and leaves your existing hooks and status line alone.
 Remove it with `python3 client/install_mac.py --uninstall`.
 
+## Settings in the browser
+
+Open `http://claudegotchi.local:8765/settings` (or `http://192.168.77.1:8765/settings`
+over USB) to change Wi-Fi, time zone, rotation, token and relay. The page writes
+`claudegotchi.toml` on the boot partition, keeps its comments, and restarts the
+gotchi. Once a token is set, the page asks for it. Editing the file on the SD
+card still works too.
+
+## Updates without flashing
+
+The Python app can be updated in place; only kernel or system changes need a new
+image.
+
+```bash
+make update GOTCHI=http://claudegotchi.local:8765 TOKEN=your-token
+```
+
+This packs `app/` into `output/claudegotchi-app.tar.gz` and sends it to the gotchi.
+You can also upload that file on the settings page; every GitHub release carries
+one. The gotchi checks that the new version starts, keeps it in `/data/app`, and
+restarts. If it crashes three times in a row right after starting, it falls back
+to the version built into the image. "Back to the built-in version" on the
+settings page does the same by hand.
+
 ## On the go and with Claude in the cloud
 
 Hooks run wherever Claude Code runs. A session on your laptop reaches the gotchi
@@ -154,7 +180,7 @@ without the right token. You can also run your own ntfy server and point
 ## What is in the image
 
 * Read-only root filesystem, `/tmp` and `/run` in RAM. Pulling the plug does not hurt the card.
-* A 16 MB writable `data` partition at `/data`, only for the critter's progress.
+* A 16 MB writable `data` partition at `/data` for the critter's progress and app updates.
 * BusyBox init with a few scripts (`os/board/claudegotchi/rootfs-overlay/etc/init.d/`):
   read settings, USB gadget, Wi-Fi, then the service.
 * USB gadget as a CDC-ECM network adapter with a DHCP server for your computer.
@@ -170,6 +196,6 @@ that metadata passes through the ntfy server you chose.
 
 ## Status
 
-Version 0.1.0. The app runs in the simulator and the Buildroot defconfigs are
+Version 0.2.0. The app runs in the simulator and the Buildroot defconfigs are
 checked against Buildroot 2026.02.3. A full image build and a test on real
 hardware are still open.

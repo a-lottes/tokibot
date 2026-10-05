@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-CLAUDEGOTCHI_VERSION = 0.1.0
+CLAUDEGOTCHI_VERSION = 0.2.0
 CLAUDEGOTCHI_SITE = $(BR2_EXTERNAL_CLAUDEGOTCHI_PATH)/../app
 CLAUDEGOTCHI_SITE_METHOD = local
 CLAUDEGOTCHI_LICENSE = MIT
@@ -16,6 +16,7 @@ define CLAUDEGOTCHI_INSTALL_TARGET_CMDS
 	rm -rf $(CLAUDEGOTCHI_PYLIB)/claudegotchi
 	cp -r $(@D)/claudegotchi $(CLAUDEGOTCHI_PYLIB)/claudegotchi
 	find $(CLAUDEGOTCHI_PYLIB)/claudegotchi -name '__pycache__' -prune -exec rm -rf {} +
+	$(INSTALL) -D -m 0755 $(CLAUDEGOTCHI_PKGDIR)/claudegotchi-run $(TARGET_DIR)/usr/bin/claudegotchi-run
 endef
 
 define CLAUDEGOTCHI_INSTALL_INIT_SYSV

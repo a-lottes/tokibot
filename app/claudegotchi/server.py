@@ -5,6 +5,8 @@ Endpoints:
   POST /limits  rate_limits from the status line
   GET  /        live preview in the browser
   GET  /frame.png, GET /state
+  GET  /settings, POST /settings   settings page (writes claudegotchi.toml, then restarts)
+  POST /update, POST /update/reset app update bundle (see update.py)
 
 With [relay] url set, the same events also arrive through an ntfy topic (see relay.py).
 """
@@ -16,13 +18,14 @@ import os
 import signal
 import threading
 import time
+import urllib.parse
 from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from io import BytesIO
 
 from PIL import Image
 
-from . import config
+from . import config, settings, update
 from .brain import Brain
 from .displays import open_display
 from .life import Life
@@ -33,9 +36,9 @@ from .renderer import Renderer
 log = logging.getLogger("claudegotchi")
 
 PREVIEW_HTML = b"""<!doctype html><meta charset=utf-8><title>Claudegotchi</title>
-<style>body{font-family:system-ui;background:#eee;display:grid;place-items:center;height:100vh;margin:0}
+<style>body{font-family:system-ui;background:#eee;display:grid;place-items:center;min-height:100vh;margin:0}
 img{image-rendering:pixelated;width:750px;max-width:95vw;border:12px solid #222;border-radius:10px;background:#fff}</style>
-<img id=f src=/frame.png><script>setInterval(()=>f.src='/frame.png?'+Date.now(),2000)</script>"""
+<div><img id=f src=/frame.png><p style="text-align:center"><a href=/settings>Settings</a></p></div><script>setInterval(()=>f.src='/frame.png?'+Date.now(),2000)</script>"""
 
 # The Pi has no real-time clock. When it only hangs off the USB cable (no NTP), we take
 # the time from the timestamp the client sends along.
@@ -83,7 +86,28 @@ def make_dispatch(brain, set_clock):
     return dispatch
 
 
-def make_handler(brain, renderer, token, dispatch):
+RESTART = 75          # exit code that asks claudegotchi-run to start the app again
+
+
+class Control:
+    """What the web pages may do to the running service."""
+    def __init__(self, cfg_path, cfg, on_device):
+        self.cfg_path, self.cfg, self.on_device = cfg_path, cfg, on_device
+        self.exit_code = 0
+        self.stop = lambda: None
+
+    def restart(self, reboot=False):
+        def later():
+            time.sleep(1.5)
+            if reboot and self.on_device:
+                os.system("reboot")
+            else:
+                self.exit_code = RESTART
+                self.stop()
+        threading.Thread(target=later, daemon=True).start()
+
+
+def make_handler(brain, renderer, token, dispatch, control=None):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
             log.debug("%s %s", self.address_string(), fmt % args)
@@ -96,7 +120,23 @@ def make_handler(brain, renderer, token, dispatch):
             self.end_headers()
             self.wfile.write(body)
 
+        def _same_origin(self):
+            origin = self.headers.get("Origin")
+            return not origin or urllib.parse.urlparse(origin).netloc == self.headers.get("Host")
+
+        def _form(self):
+            length = int(self.headers.get("Content-Length") or 0)
+            if length > 65536:
+                return None
+            raw = self.rfile.read(length).decode("utf-8", "replace")
+            return {k: v[-1] for k, v in urllib.parse.parse_qs(raw, keep_blank_values=True).items()}
+
+        def _html(self, code, body):
+            self._send(code, body.encode(), "text/html; charset=utf-8")
+
         def do_POST(self):
+            if control and self.path in ("/settings", "/update", "/update/reset"):
+                return self.web_post()
             if token and self.headers.get("X-Claudegotchi-Token") != token:
                 return self._send(401, b'{"error":"token"}')
             length = int(self.headers.get("Content-Length") or 0)
@@ -110,9 +150,62 @@ def make_handler(brain, renderer, token, dispatch):
                 return self._send(404)
             self._send(204)
 
+        def web_post(self):
+            if not self._same_origin():
+                return self._send(403, b"cross-site request refused", "text/plain")
+            if self.path.startswith("/update") and not control.on_device:
+                return self._send(400, b"App updates only work on the device, not in the simulator.",
+                                  "text/plain")
+            if self.path == "/update":
+                if token and self.headers.get("X-Claudegotchi-Token") != token:
+                    return self._send(401, b"Wrong token.", "text/plain")
+                length = int(self.headers.get("Content-Length") or 0)
+                if length > update.MAX_BUNDLE:
+                    return self._send(413, b"Bundle too large.", "text/plain")
+                try:
+                    version = update.install(self.rfile.read(length))
+                except (update.UpdateError, OSError) as e:
+                    return self._send(400, f"Update failed: {e}".encode(), "text/plain")
+                log.info("App update %s installed, restarting", version)
+                self._send(200, f"Version {version} installed. Restarting …".encode(), "text/plain")
+                return control.restart()
+
+            form = self._form()
+            if form is None:
+                return self._send(413)
+            if token and form.get("_token") != token:
+                return self._html(401, settings.page(control.cfg, True, "Wrong token.",
+                                                     update.running_from(), error=True))
+            if self.path == "/update/reset":
+                update.reset()
+                self._html(200, settings.page(control.cfg, bool(token),
+                                              "Back to the built-in version. Restarting …"))
+                return control.restart()
+            changes = settings.changes_from_form(form, control.cfg)
+            if not changes:
+                return self._html(200, settings.page(control.cfg, bool(token), "Nothing changed.",
+                                                     update.running_from()))
+            try:
+                settings.write_config(control.cfg_path, changes)
+            except Exception as e:
+                log.exception("Saving settings failed")
+                return self._html(500, settings.page(control.cfg, bool(token), f"Saving failed: {e}",
+                                                     update.running_from(), error=True))
+            for (sec, key), value in changes.items():
+                control.cfg.setdefault(sec, {})[key] = value
+            log.info("Settings changed: %s", ", ".join(f"{s}.{k}" for s, k in changes))
+            note = ("Saved. Restarting the gotchi …" if control.on_device
+                    else "Saved. Restart the simulator to apply.")
+            self._html(200, settings.page(control.cfg, bool(control.cfg["server"]["token"]), note,
+                                          update.running_from()))
+            if control.on_device:
+                control.restart(reboot=True)
+
         def do_GET(self):
             path = self.path.split("?")[0]
-            if path == "/":
+            if path == "/settings" and control:
+                self._html(200, settings.page(control.cfg, bool(token), "", update.running_from()))
+            elif path == "/":
                 self._send(200, PREVIEW_HTML, "text/html; charset=utf-8")
             elif path == "/state":
                 self._send(200, json.dumps(brain.view(), ensure_ascii=False).encode())
@@ -166,7 +259,9 @@ def main(argv=None):
     renderer = Renderer(brain, display)
     renderer.start()
     dispatch = make_dispatch(brain, set_clock=not args.sim)
-    handler = make_handler(brain, renderer, srv["token"], dispatch)
+    cfg_path = args.config or os.environ.get("CLAUDEGOTCHI_CONFIG", config.DEFAULT_PATH)
+    control = Control(cfg_path, cfg, on_device=not args.sim and cfg_path.startswith("/boot/"))
+    handler = make_handler(brain, renderer, srv["token"], dispatch, control)
     try:
         server = ThreadingHTTPServer((srv["host"], port), handler)
     except OSError as e:
@@ -182,6 +277,8 @@ def main(argv=None):
         log.info("Bye!")
         threading.Thread(target=server.shutdown, daemon=True).start()
 
+    control.stop = shutdown
+
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGINT, shutdown)
     relay = cfg["relay"]
@@ -189,5 +286,9 @@ def main(argv=None):
         Relay(relay["url"], srv["token"], dispatch, relay["auth"]).start()
     log.info("Claudegotchi listening on http://%s:%d", srv["host"], port)
     server.serve_forever()
+    if control.exit_code == RESTART:
+        renderer.stop_evt.set()
+        brain.life.maybe_save(force=True)
+        return RESTART
     renderer.goodbye()
     return 0
