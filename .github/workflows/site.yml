@@ -39,6 +39,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Check that faq.html matches faq.md
+        run: |
+          (cd app && python3 tools/faq.py ../docs)
+          git diff --exit-code docs/faq.html || { echo "::error::docs/faq.html is out of date, run make faq"; exit 1; }
       - name: Add the client, so install.sh works without access to the repository
         run: |
           mkdir -p docs/client

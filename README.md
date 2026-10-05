@@ -208,6 +208,10 @@ Add the status line with `python3 client/install.py --statusline-only`. Use
 the plugin or the full installer, not both. `plugin/build.py` packs the plugin
 for the website.
 
+Problems during setup? [docs/faq.md](docs/faq.md) answers the common ones per
+operating system (also at https://claudegotchi.lottes.dev/faq.html). After editing it,
+run `make faq` to rebuild the page.
+
 ## Settings in the browser
 
 Open `http://claudegotchi.local:8765/settings` (or `http://192.168.77.1:8765/settings`
@@ -258,8 +262,11 @@ the gotchi keeps one outgoing connection to it, so it works behind any hotspot.
 
    The script carries the client inline and installs it with `url = none`, so it
    only publishes to the relay.
-3. Allow `ntfy.sh` in the cloud environment's network access settings. Without it,
-   the hooks cannot reach the relay.
+3. On claude.ai, add your own cloud environment (in a Claude Project: Project
+   settings → Cloud environment → Add cloud environment). Under Network access
+   choose Custom and add `ntfy.sh` to the allowed domains; paste `cloud-setup.sh`
+   as the setup script. The built-in environment blocks ntfy.sh. New sessions then
+   report through the relay. Full walkthrough: https://claudegotchi.lottes.dev/docs.html#cloud
 
 The topic name is the secret: anyone who knows it can read the events (metadata
 only, see below) and could publish to it. The gotchi ignores relay messages

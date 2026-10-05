@@ -1,0 +1,28 @@
+# Claudegotchi
+
+> Claudegotchi is a small e-ink companion for Claude Code: a Raspberry Pi Zero 2 W with a Waveshare 2.13" e-Paper HAT V4 runs its own Buildroot image, and a pixel critter on the display shows what your Claude Code sessions are doing (working, waiting for you, asking for permission, done, rate limit). Claude Code reports to it through hooks and the status line, over a USB cable (the gotchi is at 192.168.77.1:8765) or Wi-Fi, or through an ntfy relay for cloud sessions. It works with macOS, Linux and Windows (Windows needs Git for Windows and Python 3.9+).
+
+Key facts for helping someone set it up:
+
+- Install the client as a Claude Code plugin: `/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json` then `/plugin install claudegotchi@claudegotchi`. Add the status line with `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only`. Or, without the plugin, `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh`. Never both.
+- Test with `sh ~/.claude/claudegotchi/claudegotchi.sh test` (Windows: in Git Bash).
+- The cable goes into the Pi's micro-USB port labelled USB, not PWR, and must be a data cable.
+- Settings: `http://192.168.77.1:8765/settings` over USB, or `claudegotchi.toml` on the card's GOTCHI drive. No SSH.
+- Only metadata is sent; prompts, code and replies never leave the computer.
+
+## FAQ
+
+- [FAQ (Markdown)](https://claudegotchi.lottes.dev/faq.md): setup questions and problems per operating system, USB and drivers, Python, plugin, Wi-Fi, cloud relay, battery, updates
+- [FAQ (HTML)](https://claudegotchi.lottes.dev/faq.html): the same, with an anchor per question and schema.org FAQPage data
+
+## Docs
+
+- [Shopping list](https://claudegotchi.lottes.dev/parts.html): the parts and what does not work
+- [Assembly guide](https://claudegotchi.lottes.dev/build.html): from parts to a working gotchi, step by step
+- [Docs](https://claudegotchi.lottes.dev/docs.html): moods, the client, settings, security, cloud relay, updates, troubleshooting
+- [Download](https://claudegotchi.lottes.dev/download.html): images, app bundle and checksums
+
+## Optional
+
+- [Install script](https://claudegotchi.lottes.dev/install.sh): what the one-line installer does
+- [Plugin marketplace](https://claudegotchi.lottes.dev/marketplace.json): the Claude Code plugin marketplace file

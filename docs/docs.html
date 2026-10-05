@@ -14,8 +14,8 @@
   <header class="site-header">
     <div class="wrap">
       <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
-      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="download.html">Download</a><a href="docs.html" aria-current="page">Docs</a></nav>
-      <span class="sys"><span class="dot">●</span> v0.2.0 · 192.168.77.1:8765</span>
+      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="download.html">Download</a><a href="docs.html" aria-current="page">Docs</a><a href="faq.html">FAQ</a></nav>
+      <span class="sys"><span class="dot">●</span> v0.3.0 · 192.168.77.1:8765</span>
     </div>
   </header>
 
@@ -138,19 +138,32 @@ auth = ""<span class="c">                     # access token for a protected ntf
 
       <h2 id="cloud" data-n="07">Claude in the cloud</h2>
       <p>Hooks run wherever Claude Code runs. A session in the cloud, for example in a Claude Project, runs in a container that cannot see your local network. For that case the gotchi can listen to a relay: an <a href="https://ntfy.sh">ntfy</a> topic. Cloud hooks publish to the topic, and the gotchi keeps one outgoing connection to it, so it works behind any Wi-Fi, even a phone hotspot.</p>
+      <p>This is how sessions in a Claude Project, or in Claude Code on the web, reach the gotchi. It takes four steps, once.</p>
       <ol>
         <li>
-          <p>Create a relay topic and a token on your computer:</p>
-          <pre><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --new-relay</code></pre>
-          <p>It prints a <code>[server]</code> token and a <code>[relay]</code> url. Put both into the gotchi's settings and give it Wi-Fi.</p>
+          <p><strong>Give the gotchi Wi-Fi.</strong> It needs internet to listen to the relay; a phone hotspot is fine. See <a href="build.html#wifi">step 5 of the assembly guide</a> or the <a href="#settings">settings page</a>.</p>
         </li>
         <li>
-          <p>Print a setup script for the cloud environment and paste it into the environment's setup script:</p>
-          <pre><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --cloud-setup &gt; cloud-setup.sh</code></pre>
-          <p>The script carries the client inline and installs it so that it only publishes to the relay.</p>
+          <p><strong>Create a relay on your computer.</strong> This makes a random topic on ntfy.sh and a token, and sets up your local client to use them:</p>
+          <pre><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --new-relay
+<span class="c"># if your hooks come from the plugin, only add the status line:</span>
+<span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --new-relay --statusline-only</code></pre>
+          <p>It prints a <code>[server]</code> token and a <code>[relay]</code> url. Enter both on the gotchi's <a href="#settings">settings page</a> (fields <em>Token</em> and <em>Relay URL</em>) or in <code>claudegotchi.toml</code>. With the plugin, also enter the token in <code>/plugin</code>, because the gotchi now expects it from your computer too.</p>
         </li>
-        <li><p>Allow <code>ntfy.sh</code> in the cloud environment's network access settings. Without it, the hooks cannot reach the relay.</p></li>
+        <li>
+          <p><strong>Print the setup script for the cloud.</strong> It takes the relay and token from step 2 and carries the client inline, so the cloud needs no access to anything else:</p>
+          <pre><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --cloud-setup &gt; cloud-setup.sh</code></pre>
+        </li>
+        <li>
+          <p><strong>Add a cloud environment on claude.ai.</strong> The built-in environment has no settings and blocks ntfy.sh, so make your own. In a Claude Project, open <em>Project settings</em>, open the <em>Cloud environment</em> menu and choose <em>Add cloud environment</em>. In that dialog:</p>
+          <ul>
+            <li><em>Network access</em>: choose <em>Custom</em>, keep the default package managers and add <code>ntfy.sh</code> under <em>Allowed domains</em>.</li>
+            <li><em>Setup script</em>: paste the whole content of <code>cloud-setup.sh</code>.</li>
+          </ul>
+          <p>Adding it also selects it for the project. Sessions started after that install the client and report to the gotchi through the relay; sessions that are already running are not affected. For Claude Code on the web outside a project, the same dialog is described in the <a href="https://code.claude.com/docs/en/cloud-environments">cloud environments docs</a>.</p>
+        </li>
       </ol>
+      <p>To check it, start a new thread or session and give it something to do. The critter gets busy, and the footer counts the cloud session like a local one.</p>
       <div class="note">
         <p>The topic name is the secret: anyone who knows it can read the events (metadata only) and could publish to it. The gotchi ignores relay messages without the right token. You can run your own ntfy server and point <code>--relay</code> at it; set <code>[relay] auth</code> if it needs an access token.</p>
       </div>
@@ -188,6 +201,7 @@ auth = ""<span class="c">                     # access token for a protected ntf
       <p>Only metadata is sent: event name, session ID, project folder name, tool name, notification or error type and limit percentages. Prompts, code and replies never leave your computer. With a relay, that metadata passes through the ntfy server you chose.</p>
 
       <h2 id="troubleshooting" data-n="12">Troubleshooting</h2>
+      <p>The most common problems are below. Many more, sorted by system, are in the <a href="faq.html">FAQ</a>.</p>
       <h3>The display stays blank</h3>
       <ul>
         <li>Check that the HAT sits flush on all 40 pins.</li>

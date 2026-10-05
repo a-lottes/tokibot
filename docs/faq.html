@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FAQ · Claudegotchi</title>
+  <meta name="description" content="Answers to setup questions and problems with Claudegotchi on macOS, Linux and Windows: USB, drivers, Python, the Claude Code plugin, Wi-Fi, the cloud relay, battery and updates.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <link rel="canonical" href="https://claudegotchi.lottes.dev/faq.html">
+  <link rel="alternate" type="text/markdown" href="faq.md" title="FAQ as Markdown">
+  <script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "name": "Claudegotchi FAQ",
+ "url": "https://claudegotchi.lottes.dev/faq.html",
+ "inLanguage": "en",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "What is a Claudegotchi?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#what-is-it",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>A Claudegotchi is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your Claude Code sessions are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. Claude Code reports to it through hooks and its status line. The gotchi runs its own small operating system image, built with Buildroot.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Do I need Claude Code?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#need-claude-code",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Yes. The gotchi only shows what Claude Code is doing, so without Claude Code there is nothing to show. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see <a href=\"https://claudegotchi.lottes.dev/faq.html#cloud-relay\">How do cloud sessions reach the gotchi?<\/a>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Which computers are supported?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#supported-systems",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>macOS, Linux and Windows. All of them need Python 3.9 or newer for the small client that talks to the gotchi. Windows also needs Git for Windows, because Claude Code runs hooks and the status line in Git Bash there. Over the USB cable the gotchi works without a driver on all three: Windows uses its built-in RNDIS driver, macOS and Linux use CDC-ECM.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Which hardware do I need?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#hardware",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT <strong>V4<\/strong>, a microSD card with 8 GB or more and a micro-USB <strong>data<\/strong> cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at <a href=\"https://claudegotchi.lottes.dev/parts.html\">https://claudegotchi.lottes.dev/parts.html<\/a>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Does it work with a Raspberry Pi 3, 4 or 5, or another display?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#other-hardware",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>No. The image targets the Pi Zero 2 W and the Pi Zero W only, and it ships a driver only for the V4 revision of the Waveshare 2.13 inch e-Paper HAT. Older revisions (V1, V2, V3) and other sizes need drivers that are not in the image yet. The revision is printed on the back of the display board.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "What data does the gotchi get? Does it see my code?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#privacy",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Only metadata: the event name, session ID, project folder name, tool name, error or notification type, limit and context percentages, and categories of shell commands (test run, commit, push, pull request) that the client recognises on your computer. Prompts, code, commands and replies never leave your computer. With the cloud relay, that metadata passes through the ntfy server you chose.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Which image do I download?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#which-image",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p><code>claudegotchi-zero2w.img.xz<\/code> for the Raspberry Pi Zero 2 W and <code>claudegotchi-zerow.img.xz<\/code> for the first-generation Pi Zero W. Both are on <a href=\"https://claudegotchi.lottes.dev/download.html\">https://claudegotchi.lottes.dev/download.html<\/a> with SHA-256 checksums. Flash the <code>.img.xz<\/code> file as it is; Raspberry Pi Imager unpacks it.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I flash the card?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#flash",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Open Raspberry Pi Imager, choose <em>Choose OS<\/em> → <em>Use custom<\/em>, pick the <code>.img.xz<\/code> file, choose the microSD card and write. Skip Imager's OS customisation (user, Wi-Fi, SSH): the Claudegotchi image does not use it and has its own settings file, <code>claudegotchi.toml<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Windows says \"You need to format the disk\" after flashing. What do I do?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#windows-format-prompt",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Click <strong>Cancel<\/strong>. Do not format. The card has partitions that Windows cannot read, which is normal for a Linux image. Formatting would erase the image. The partition Windows can read is called <code>GOTCHI<\/code> and holds <code>claudegotchi.toml<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "macOS says \"The disk you inserted was not readable by this computer\".",
+   "url": "https://claudegotchi.lottes.dev/faq.html#mac-disk-not-readable",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Click <strong>Ignore<\/strong>. The card has a Linux partition that macOS cannot read, which is normal. The <code>GOTCHI<\/code> drive with <code>claudegotchi.toml<\/code> shows up next to it.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I check the download?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#checksum",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Compare the SHA-256 checksum with the one on the download page. On macOS run <code>shasum -a 256 claudegotchi-zero2w.img.xz<\/code>, on Linux <code>sha256sum claudegotchi-zero2w.img.xz<\/code>, on Windows in PowerShell <code>Get-FileHash claudegotchi-zero2w.img.xz<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Which USB port do I use?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#which-port",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>The micro-USB port labelled <strong>USB<\/strong>, the middle one of the three ports. Not the one labelled <strong>PWR<\/strong> at the edge. On the USB port the gotchi gets power and shows up on your computer as a network adapter; on PWR it only gets power and your computer does not see it.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "My computer does not see the gotchi at all.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#not-detected",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Check these in order:<\/p>\n<ul><li>The cable is in the port labelled <strong>USB<\/strong>, not <strong>PWR<\/strong>.<\/li><li>The cable carries data. Many micro-USB cables only charge. Try another cable, or one you have used for data before.<\/li><li>The first boot takes a little while. Wait until the critter is on the display.<\/li><li>Open <code>http://192.168.77.1:8765/<\/code> in a browser. If the preview of the display loads, the connection works and the problem is in the client setup.<\/li><\/ul>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "What address does the gotchi have?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#address",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Over the USB cable it is always <code>192.168.77.1<\/code>, port <code>8765<\/code>. Your computer gets an address from the gotchi automatically (DHCP, <code>192.168.77.2<\/code> to <code>.10<\/code>). On Wi-Fi the gotchi is <code>claudegotchi.local<\/code>. The gotchi does not route your internet traffic; your normal connection keeps working.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Windows: the gotchi does not show up as a network adapter.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#windows-rndis",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Open Device Manager. The gotchi should be under <em>Network adapters<\/em> as a USB RNDIS adapter (for example <em>Remote NDIS Compatible Device<\/em>). If it is under <em>Other devices<\/em> with a warning sign instead, Windows did not pick the driver itself: right-click it, choose <em>Update driver<\/em> → <em>Browse my computer<\/em> → <em>Let me pick<\/em>, then <em>Network adapters<\/em> → <em>Microsoft<\/em> → <em>Remote NDIS Compatible Device<\/em>. Some company laptops block RNDIS adapters by policy; then use Wi-Fi instead.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Windows shows \"Unidentified network\" for the gotchi. Is that a problem?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#windows-unidentified-network",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>No. The gotchi's USB network has no internet and no gateway on purpose, so Windows calls it unidentified. Your internet connection is not affected. The client reaches the gotchi at <code>192.168.77.1<\/code> anyway.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "macOS asks \"Allow accessory to connect?\"",
+   "url": "https://claudegotchi.lottes.dev/faq.html#mac-allow-accessory",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Click <strong>Allow<\/strong>. Newer macOS versions ask before a new USB device may connect. If you clicked <em>Don't Allow<\/em>, unplug and plug the gotchi in again, or allow it under System Settings → Privacy &amp; Security.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "macOS shows a self-assigned IP address (169.254.x.x) for the gotchi.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#mac-self-assigned",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>The gotchi's DHCP server has not answered yet. Wait until the critter is on the display, then unplug and plug in the cable again. In System Settings → Network the gotchi's adapter should get an address from <code>192.168.77.2<\/code> to <code>.10<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Linux: the adapter shows up but gets no address.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#linux-no-address",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Set the new wired connection to DHCP. With NetworkManager it is usually automatic; if not, set IPv4 to <em>Automatic (DHCP)<\/em> for the adapter (<code>nmcli device<\/code> lists it, often named <code>usb0<\/code> or <code>enx…<\/code>). With systemd-networkd or a manual setup, run a DHCP client on that interface. The gotchi itself is always <code>192.168.77.1<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "claudegotchi.local does not resolve.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#mdns",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p><code>.local<\/code> names need mDNS. On Linux install and start avahi with nss-mdns (on Debian and Ubuntu: <code>libnss-mdns<\/code>). On Windows <code>.local<\/code> lookups are often unreliable. Over the USB cable this does not matter: the client tries <code>192.168.77.1<\/code> first. On Wi-Fi you can set a fixed address instead, for example <code>--url http://192.168.1.50:8765<\/code> or the <em>Gotchi address<\/em> setting of the plugin.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Plugin or install script: which one should I use?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#plugin-or-script",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Either one, never both, or every event reaches the gotchi twice. The Claude Code plugin is the usual way: in Claude Code run <code>/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json<\/code> and <code>/plugin install claudegotchi@claudegotchi<\/code>. Plugins cannot set the status line, so add it with <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only<\/code>. Without the plugin, <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh<\/code> installs hooks and status line in one go.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why does the plugin need an extra step for the status line?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#statusline",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Claude Code plugins can add hooks but cannot set the status line. The gotchi learns how much of your 5-hour and 7-day budget is used only from the status line, so without it the budget bars stay empty and the critter cannot get tired or show the limit in advance. <code>install.sh --statusline-only<\/code> adds just the status line and keeps an existing one: it is still shown.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "/plugin marketplace add with the URL fails.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#plugin-url-fails",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Update Claude Code. The plugin is served as a zip archive from the website, and archive sources need Claude Code 2.1.224 or newer. Also check that your network can reach <code>claudegotchi.lottes.dev<\/code>. As an alternative, <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh<\/code> installs the same client without the plugin system.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "I installed both the plugin and install.sh.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#both-installed",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Remove the hooks from one of them, or every event is counted twice. To keep the plugin, run <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --uninstall<\/code> and then <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only<\/code>. To keep the script instead, remove the plugin in <code>/plugin<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Windows: which terminal do I use for the commands?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#windows-terminal",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Git Bash, which comes with Git for Windows. The <code>curl … | sh<\/code> commands and <code>sh ~/.claude/claudegotchi/claudegotchi.sh test<\/code> are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Windows: \"python3\" opens the Microsoft Store or is not found.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#windows-python",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Install Python from <a href=\"https://www.python.org/downloads/\">https://www.python.org/downloads/<\/a> and keep the option that adds Python to PATH. On Windows <code>python3<\/code> is often only a stub that opens the Store. The Claudegotchi client and <code>install.sh<\/code> do not depend on it: in Git Bash they try <code>py -3<\/code>, then <code>python<\/code>, then <code>python3<\/code>, and take the first one that is Python 3.9 or newer.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Windows: hooks do nothing, and Git for Windows is not installed.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#windows-no-git-bash",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Install Git for Windows from <a href=\"https://git-scm.com/downloads/win\">https://git-scm.com/downloads/win<\/a> and restart Claude Code. Without Git Bash, Claude Code runs hooks in PowerShell, where the gotchi's hook command (<code>sh …<\/code>) does not exist, so nothing is sent.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "macOS: \"python3\" asks me to install the command line developer tools.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#mac-python",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Install them: click <em>Install<\/em>, or run <code>xcode-select --install<\/code>. They bring Python 3, which the client needs. Then run the install command again.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I test the connection?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#test",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Run <code>sh ~/.claude/claudegotchi/claudegotchi.sh test<\/code> (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and <code>--statusline-only<\/code> put this file there.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "The critter does not react to Claude Code.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#not-reacting",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Check these in order:<\/p>\n<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.<\/li><li>Run the test: <code>sh ~/.claude/claudegotchi/claudegotchi.sh test<\/code>.<\/li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin<\/code> (plugin) or run the install script again with <code>--token<\/code>.<\/li><li>Check that plugin and install script are not both installed, see <a href=\"https://claudegotchi.lottes.dev/faq.html#both-installed\">I installed both<\/a>.<\/li><\/ul>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Does it work with Claude Code in VS Code or JetBrains?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#ide",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>The IDE extensions run Claude Code with the same <code>~/.claude<\/code> settings, so the hooks reach the gotchi there as well. The terminal and the IDE can run at the same time; the gotchi counts every session.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Several sessions at once: what does the gotchi show?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#several-sessions",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>The state that needs you most wins: a permission request or a session waiting for you beats a working one. The footer shows how many sessions are working (▶), waiting for you (?) or done (✓). With three or more sessions working at once the critter juggles.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I remove the client?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#uninstall",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Remove the plugin in <code>/plugin<\/code>, and the status line or full install with <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --uninstall<\/code>. The uninstall puts your previous status line back. A backup of your original settings is in <code>~/.claude/settings.json.claudegotchi-backup<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I put the gotchi on Wi-Fi?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#wifi",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Either before the first start: put the card into your computer, open <code>claudegotchi.toml<\/code> on the <code>GOTCHI<\/code> drive and fill in <code>ssid<\/code>, <code>psk<\/code> and <code>country<\/code> under <code>[wifi]<\/code>. Or later in the browser: open <code>http://192.168.77.1:8765/settings<\/code> over the USB cable. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Where are the settings?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#settings",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>On the settings page at <code>http://claudegotchi.local:8765/settings<\/code>, or <code>http://192.168.77.1:8765/settings<\/code> over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes <code>claudegotchi.toml<\/code> on the card. You can also edit that file directly on the <code>GOTCHI<\/code> drive.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Should I set a token?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#token",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token, anyone who can reach the gotchi on port 8765 can send it events and open the settings page. Set the token on the settings page, then give the client the same one: in <code>/plugin<\/code> for the plugin, or with <code>--token<\/code> for the install script.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "The picture is upside down.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#upside-down",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Set <em>Rotate display<\/em> to 180 on the settings page, or <code>rotate = 180<\/code> under <code>[device]<\/code> in <code>claudegotchi.toml<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "The clock is wrong.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#clock",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Set your time zone on the settings page (<code>timezone<\/code>, for example <code>Europe/Berlin<\/code>). On Wi-Fi the gotchi gets the time from the internet (NTP); without Wi-Fi it takes the time from your computer.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can I log in to the gotchi with SSH?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#ssh",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>No. The image has no SSH, and its root filesystem is read-only. Everything you can change is on the settings page or in <code>claudegotchi.toml<\/code>. App updates are uploaded on the settings page.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do cloud sessions reach the gotchi?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#cloud-relay",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Sessions in a Claude Project or in Claude Code on the web run in a cloud container that cannot see your desk. They send their events to a relay, an ntfy topic, and the gotchi listens to that topic over Wi-Fi. Setup, once: give the gotchi Wi-Fi; create a relay with <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --new-relay<\/code> and enter the printed token and relay URL on the gotchi's settings page; print the setup script with <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --cloud-setup &gt; cloud-setup.sh<\/code>; on claude.ai add your own cloud environment that allows <code>ntfy.sh<\/code> and runs that script. The full walkthrough is at <a href=\"https://claudegotchi.lottes.dev/docs.html#cloud\">https://claudegotchi.lottes.dev/docs.html#cloud<\/a>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Cloud sessions do not reach the gotchi.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#cloud-not-working",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Check these in order:<\/p>\n<ul><li>The gotchi is on Wi-Fi with internet. The relay does not work over the USB cable alone.<\/li><li>The token and relay URL on the gotchi's settings page match what <code>--new-relay<\/code> printed.<\/li><li>The cloud environment allows <code>ntfy.sh<\/code> under Network access. The built-in environment of a Claude Project blocks it and has no settings, so you need your own environment (Project settings → Cloud environment → Add cloud environment).<\/li><li>The setup script is pasted in that environment, and the project uses that environment. Only sessions started after the change use it.<\/li><\/ul>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Is the relay secure?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#relay-security",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>The topic name is the secret: anyone who knows it can read the events, which are metadata only, and could publish to it. The gotchi ignores relay messages without the right token. You can run your own ntfy server and point <code>--relay<\/code> at it; set <code>[relay] auth<\/code> on the gotchi if your server needs an access token.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I fit the PiSugar 3 battery?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#pisugar-fit",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Screw it under the Pi, battery side down, with the screws and spacers that come with it. Its pogo pins press against the pads of the first pins of the 40-pin header from below and carry power and I2C, so no soldering is needed. The display still goes on top. Step by step: <a href=\"https://claudegotchi.lottes.dev/build.html#battery\">https://claudegotchi.lottes.dev/build.html#battery<\/a>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "The gotchi does not show the battery.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#pisugar-not-detected",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>The gotchi looks for the PiSugar on I2C (address 0x57) when it starts. If no battery shows in the header: check that the PiSugar is screwed on firmly so the pogo pins touch the header pads, then restart the gotchi. In <code>claudegotchi.toml<\/code>, <code>model<\/code> under <code>[battery]<\/code> must be <code>auto<\/code> or <code>pisugar3<\/code>, not <code>none<\/code>. Only the PiSugar 3 and 3 Plus are supported.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Why did the gotchi switch itself off?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#battery-shutdown",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>On battery, at 15 % the critter asks to be plugged in, and at 5 % it says good night and shuts down cleanly so the SD card is not cut off mid-write. Charge it through the PiSugar's USB-C port and switch it on with the PiSugar's power button. The threshold is <code>shutdown_at<\/code> under <code>[battery]<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "The display stays blank.",
+   "url": "https://claudegotchi.lottes.dev/faq.html#blank-display",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Check that the HAT sits flush on all 40 pins, and that it is the <strong>V4<\/strong> revision of the 2.13 inch display (printed on the back). Give it a moment: e-paper refreshes slowly and the first boot takes a little while. Faint traces of the previous picture are normal for e-paper.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do gotchis become friends?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#friends",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at <code>http://claudegotchi.local:8765/social<\/code>, tick <em>Open for new friends<\/em>, and press <em>Befriend<\/em> next to a gotchi nearby; its owner presses <em>Accept<\/em> on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (<em>Meet other gotchis<\/em>) or with <code>[social] enabled = false<\/code>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I keep my critter's progress when I change the card?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#backup",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Download a backup on the social page. It is encrypted with a passphrase you choose and holds the identity, friends and progress. Restore it on the new card or gotchi. Without a backup, all of that lives only on the SD card.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I update the gotchi?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#update",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Download <code>claudegotchi-app.tar.gz<\/code> from <a href=\"https://claudegotchi.lottes.dev/download.html\">https://claudegotchi.lottes.dev/download.html<\/a> and upload it on the settings page. The gotchi checks that the new version starts and keeps it; if it crashes three times in a row right after starting, it goes back to the version built into the image. Kernel or system changes need a new image on the card.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How do I update the client on my computer?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#update-client",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>The plugin updates through <code>/plugin<\/code> when a new version is out. For the install script, run the same install command again; it keeps your address, token and relay.<\/p>"
+   }
+  }
+ ]
+}
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
+      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html" aria-current="page">FAQ</a></nav>
+      <span class="sys"><span class="dot">●</span> v0.3.0 · 192.168.77.1:8765</span>
+    </div>
+  </header>
+
+  <main class="wrap docs">
+    <nav class="toc" aria-label="On this page">
+      <ul>
+        <li><a href="#basics">Basics</a></li>
+        <li><a href="#image-and-flashing">Image and flashing</a></li>
+        <li><a href="#connecting-over-usb">Connecting over USB</a></li>
+        <li><a href="#installing-the-client">Installing the client</a></li>
+        <li><a href="#wi-fi-settings-and-security">Wi-Fi, settings and security</a></li>
+        <li><a href="#claude-code-in-the-cloud">Claude Code in the cloud</a></li>
+        <li><a href="#battery-and-hardware">Battery and hardware</a></li>
+        <li><a href="#friends-over-bluetooth">Friends over Bluetooth</a></li>
+        <li><a href="#updates">Updates</a></li>
+      </ul>
+    </nav>
+
+    <div class="docs-body">
+      <h1>FAQ</h1>
+      <p class="lead">Answers to common questions and problems when setting up a Claudegotchi, an e-ink companion for Claude Code that runs on a Raspberry Pi Zero, on macOS, Linux and Windows. Every answer stands on its own.</p>
+      <p class="mono faq-src">Also as plain Markdown: <a href="faq.md">faq.md</a> · for agents: <a href="llms.txt">llms.txt</a></p>
+
+      <h2 id="basics" data-n="01">Basics</h2>
+      <section class="faq-q" id="what-is-it">
+        <h3><a class="anchor" href="#what-is-it">What is a Claudegotchi?</a></h3>
+        <p>A Claudegotchi is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your Claude Code sessions are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. Claude Code reports to it through hooks and its status line. The gotchi runs its own small operating system image, built with Buildroot.</p>
+      </section>
+      <section class="faq-q" id="need-claude-code">
+        <h3><a class="anchor" href="#need-claude-code">Do I need Claude Code?</a></h3>
+        <p>Yes. The gotchi only shows what Claude Code is doing, so without Claude Code there is nothing to show. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see <a href="#cloud-relay">How do cloud sessions reach the gotchi?</a>.</p>
+      </section>
+      <section class="faq-q" id="supported-systems">
+        <h3><a class="anchor" href="#supported-systems">Which computers are supported?</a></h3>
+        <p>macOS, Linux and Windows. All of them need Python 3.9 or newer for the small client that talks to the gotchi. Windows also needs Git for Windows, because Claude Code runs hooks and the status line in Git Bash there. Over the USB cable the gotchi works without a driver on all three: Windows uses its built-in RNDIS driver, macOS and Linux use CDC-ECM.</p>
+      </section>
+      <section class="faq-q" id="hardware">
+        <h3><a class="anchor" href="#hardware">Which hardware do I need?</a></h3>
+        <p>A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT <strong>V4</strong>, a microSD card with 8 GB or more and a micro-USB <strong>data</strong> cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at <a href="https://claudegotchi.lottes.dev/parts.html">https://claudegotchi.lottes.dev/parts.html</a>.</p>
+      </section>
+      <section class="faq-q" id="other-hardware">
+        <h3><a class="anchor" href="#other-hardware">Does it work with a Raspberry Pi 3, 4 or 5, or another display?</a></h3>
+        <p>No. The image targets the Pi Zero 2 W and the Pi Zero W only, and it ships a driver only for the V4 revision of the Waveshare 2.13 inch e-Paper HAT. Older revisions (V1, V2, V3) and other sizes need drivers that are not in the image yet. The revision is printed on the back of the display board.</p>
+      </section>
+      <section class="faq-q" id="privacy">
+        <h3><a class="anchor" href="#privacy">What data does the gotchi get? Does it see my code?</a></h3>
+        <p>Only metadata: the event name, session ID, project folder name, tool name, error or notification type, limit and context percentages, and categories of shell commands (test run, commit, push, pull request) that the client recognises on your computer. Prompts, code, commands and replies never leave your computer. With the cloud relay, that metadata passes through the ntfy server you chose.</p>
+      </section>
+      <h2 id="image-and-flashing" data-n="02">Image and flashing</h2>
+      <section class="faq-q" id="which-image">
+        <h3><a class="anchor" href="#which-image">Which image do I download?</a></h3>
+        <p><code>claudegotchi-zero2w.img.xz</code> for the Raspberry Pi Zero 2 W and <code>claudegotchi-zerow.img.xz</code> for the first-generation Pi Zero W. Both are on <a href="https://claudegotchi.lottes.dev/download.html">https://claudegotchi.lottes.dev/download.html</a> with SHA-256 checksums. Flash the <code>.img.xz</code> file as it is; Raspberry Pi Imager unpacks it.</p>
+      </section>
+      <section class="faq-q" id="flash">
+        <h3><a class="anchor" href="#flash">How do I flash the card?</a></h3>
+        <p>Open Raspberry Pi Imager, choose <em>Choose OS</em> → <em>Use custom</em>, pick the <code>.img.xz</code> file, choose the microSD card and write. Skip Imager's OS customisation (user, Wi-Fi, SSH): the Claudegotchi image does not use it and has its own settings file, <code>claudegotchi.toml</code>.</p>
+      </section>
+      <section class="faq-q" id="windows-format-prompt">
+        <h3><a class="anchor" href="#windows-format-prompt">Windows says "You need to format the disk" after flashing. What do I do?</a></h3>
+        <p>Click <strong>Cancel</strong>. Do not format. The card has partitions that Windows cannot read, which is normal for a Linux image. Formatting would erase the image. The partition Windows can read is called <code>GOTCHI</code> and holds <code>claudegotchi.toml</code>.</p>
+      </section>
+      <section class="faq-q" id="mac-disk-not-readable">
+        <h3><a class="anchor" href="#mac-disk-not-readable">macOS says "The disk you inserted was not readable by this computer".</a></h3>
+        <p>Click <strong>Ignore</strong>. The card has a Linux partition that macOS cannot read, which is normal. The <code>GOTCHI</code> drive with <code>claudegotchi.toml</code> shows up next to it.</p>
+      </section>
+      <section class="faq-q" id="checksum">
+        <h3><a class="anchor" href="#checksum">How do I check the download?</a></h3>
+        <p>Compare the SHA-256 checksum with the one on the download page. On macOS run <code>shasum -a 256 claudegotchi-zero2w.img.xz</code>, on Linux <code>sha256sum claudegotchi-zero2w.img.xz</code>, on Windows in PowerShell <code>Get-FileHash claudegotchi-zero2w.img.xz</code>.</p>
+      </section>
+      <h2 id="connecting-over-usb" data-n="03">Connecting over USB</h2>
+      <section class="faq-q" id="which-port">
+        <h3><a class="anchor" href="#which-port">Which USB port do I use?</a></h3>
+        <p>The micro-USB port labelled <strong>USB</strong>, the middle one of the three ports. Not the one labelled <strong>PWR</strong> at the edge. On the USB port the gotchi gets power and shows up on your computer as a network adapter; on PWR it only gets power and your computer does not see it.</p>
+      </section>
+      <section class="faq-q" id="not-detected">
+        <h3><a class="anchor" href="#not-detected">My computer does not see the gotchi at all.</a></h3>
+        <p>Check these in order:</p>
+<ul><li>The cable is in the port labelled <strong>USB</strong>, not <strong>PWR</strong>.</li><li>The cable carries data. Many micro-USB cables only charge. Try another cable, or one you have used for data before.</li><li>The first boot takes a little while. Wait until the critter is on the display.</li><li>Open <code>http://192.168.77.1:8765/</code> in a browser. If the preview of the display loads, the connection works and the problem is in the client setup.</li></ul>
+      </section>
+      <section class="faq-q" id="address">
+        <h3><a class="anchor" href="#address">What address does the gotchi have?</a></h3>
+        <p>Over the USB cable it is always <code>192.168.77.1</code>, port <code>8765</code>. Your computer gets an address from the gotchi automatically (DHCP, <code>192.168.77.2</code> to <code>.10</code>). On Wi-Fi the gotchi is <code>claudegotchi.local</code>. The gotchi does not route your internet traffic; your normal connection keeps working.</p>
+      </section>
+      <section class="faq-q" id="windows-rndis">
+        <h3><a class="anchor" href="#windows-rndis">Windows: the gotchi does not show up as a network adapter.</a></h3>
+        <p>Open Device Manager. The gotchi should be under <em>Network adapters</em> as a USB RNDIS adapter (for example <em>Remote NDIS Compatible Device</em>). If it is under <em>Other devices</em> with a warning sign instead, Windows did not pick the driver itself: right-click it, choose <em>Update driver</em> → <em>Browse my computer</em> → <em>Let me pick</em>, then <em>Network adapters</em> → <em>Microsoft</em> → <em>Remote NDIS Compatible Device</em>. Some company laptops block RNDIS adapters by policy; then use Wi-Fi instead.</p>
+      </section>
+      <section class="faq-q" id="windows-unidentified-network">
+        <h3><a class="anchor" href="#windows-unidentified-network">Windows shows "Unidentified network" for the gotchi. Is that a problem?</a></h3>
+        <p>No. The gotchi's USB network has no internet and no gateway on purpose, so Windows calls it unidentified. Your internet connection is not affected. The client reaches the gotchi at <code>192.168.77.1</code> anyway.</p>
+      </section>
+      <section class="faq-q" id="mac-allow-accessory">
+        <h3><a class="anchor" href="#mac-allow-accessory">macOS asks "Allow accessory to connect?"</a></h3>
+        <p>Click <strong>Allow</strong>. Newer macOS versions ask before a new USB device may connect. If you clicked <em>Don't Allow</em>, unplug and plug the gotchi in again, or allow it under System Settings → Privacy &amp; Security.</p>
+      </section>
+      <section class="faq-q" id="mac-self-assigned">
+        <h3><a class="anchor" href="#mac-self-assigned">macOS shows a self-assigned IP address (169.254.x.x) for the gotchi.</a></h3>
+        <p>The gotchi's DHCP server has not answered yet. Wait until the critter is on the display, then unplug and plug in the cable again. In System Settings → Network the gotchi's adapter should get an address from <code>192.168.77.2</code> to <code>.10</code>.</p>
+      </section>
+      <section class="faq-q" id="linux-no-address">
+        <h3><a class="anchor" href="#linux-no-address">Linux: the adapter shows up but gets no address.</a></h3>
+        <p>Set the new wired connection to DHCP. With NetworkManager it is usually automatic; if not, set IPv4 to <em>Automatic (DHCP)</em> for the adapter (<code>nmcli device</code> lists it, often named <code>usb0</code> or <code>enx…</code>). With systemd-networkd or a manual setup, run a DHCP client on that interface. The gotchi itself is always <code>192.168.77.1</code>.</p>
+      </section>
+      <section class="faq-q" id="mdns">
+        <h3><a class="anchor" href="#mdns"><code>claudegotchi.local</code> does not resolve.</a></h3>
+        <p><code>.local</code> names need mDNS. On Linux install and start avahi with nss-mdns (on Debian and Ubuntu: <code>libnss-mdns</code>). On Windows <code>.local</code> lookups are often unreliable. Over the USB cable this does not matter: the client tries <code>192.168.77.1</code> first. On Wi-Fi you can set a fixed address instead, for example <code>--url http://192.168.1.50:8765</code> or the <em>Gotchi address</em> setting of the plugin.</p>
+      </section>
+      <h2 id="installing-the-client" data-n="04">Installing the client</h2>
+      <section class="faq-q" id="plugin-or-script">
+        <h3><a class="anchor" href="#plugin-or-script">Plugin or install script: which one should I use?</a></h3>
+        <p>Either one, never both, or every event reaches the gotchi twice. The Claude Code plugin is the usual way: in Claude Code run <code>/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json</code> and <code>/plugin install claudegotchi@claudegotchi</code>. Plugins cannot set the status line, so add it with <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only</code>. Without the plugin, <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh</code> installs hooks and status line in one go.</p>
+      </section>
+      <section class="faq-q" id="statusline">
+        <h3><a class="anchor" href="#statusline">Why does the plugin need an extra step for the status line?</a></h3>
+        <p>Claude Code plugins can add hooks but cannot set the status line. The gotchi learns how much of your 5-hour and 7-day budget is used only from the status line, so without it the budget bars stay empty and the critter cannot get tired or show the limit in advance. <code>install.sh --statusline-only</code> adds just the status line and keeps an existing one: it is still shown.</p>
+      </section>
+      <section class="faq-q" id="plugin-url-fails">
+        <h3><a class="anchor" href="#plugin-url-fails"><code>/plugin marketplace add</code> with the URL fails.</a></h3>
+        <p>Update Claude Code. The plugin is served as a zip archive from the website, and archive sources need Claude Code 2.1.224 or newer. Also check that your network can reach <code>claudegotchi.lottes.dev</code>. As an alternative, <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh</code> installs the same client without the plugin system.</p>
+      </section>
+      <section class="faq-q" id="both-installed">
+        <h3><a class="anchor" href="#both-installed">I installed both the plugin and install.sh.</a></h3>
+        <p>Remove the hooks from one of them, or every event is counted twice. To keep the plugin, run <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --uninstall</code> and then <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only</code>. To keep the script instead, remove the plugin in <code>/plugin</code>.</p>
+      </section>
+      <section class="faq-q" id="windows-terminal">
+        <h3><a class="anchor" href="#windows-terminal">Windows: which terminal do I use for the commands?</a></h3>
+        <p>Git Bash, which comes with Git for Windows. The <code>curl … | sh</code> commands and <code>sh ~/.claude/claudegotchi/claudegotchi.sh test</code> are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.</p>
+      </section>
+      <section class="faq-q" id="windows-python">
+        <h3><a class="anchor" href="#windows-python">Windows: "python3" opens the Microsoft Store or is not found.</a></h3>
+        <p>Install Python from <a href="https://www.python.org/downloads/">https://www.python.org/downloads/</a> and keep the option that adds Python to PATH. On Windows <code>python3</code> is often only a stub that opens the Store. The Claudegotchi client and <code>install.sh</code> do not depend on it: in Git Bash they try <code>py -3</code>, then <code>python</code>, then <code>python3</code>, and take the first one that is Python 3.9 or newer.</p>
+      </section>
+      <section class="faq-q" id="windows-no-git-bash">
+        <h3><a class="anchor" href="#windows-no-git-bash">Windows: hooks do nothing, and Git for Windows is not installed.</a></h3>
+        <p>Install Git for Windows from <a href="https://git-scm.com/downloads/win">https://git-scm.com/downloads/win</a> and restart Claude Code. Without Git Bash, Claude Code runs hooks in PowerShell, where the gotchi's hook command (<code>sh …</code>) does not exist, so nothing is sent.</p>
+      </section>
+      <section class="faq-q" id="mac-python">
+        <h3><a class="anchor" href="#mac-python">macOS: "python3" asks me to install the command line developer tools.</a></h3>
+        <p>Install them: click <em>Install</em>, or run <code>xcode-select --install</code>. They bring Python 3, which the client needs. Then run the install command again.</p>
+      </section>
+      <section class="faq-q" id="test">
+        <h3><a class="anchor" href="#test">How do I test the connection?</a></h3>
+        <p>Run <code>sh ~/.claude/claudegotchi/claudegotchi.sh test</code> (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and <code>--statusline-only</code> put this file there.</p>
+      </section>
+      <section class="faq-q" id="not-reacting">
+        <h3><a class="anchor" href="#not-reacting">The critter does not react to Claude Code.</a></h3>
+        <p>Check these in order:</p>
+<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.</li><li>Run the test: <code>sh ~/.claude/claudegotchi/claudegotchi.sh test</code>.</li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin</code> (plugin) or run the install script again with <code>--token</code>.</li><li>Check that plugin and install script are not both installed, see <a href="#both-installed">I installed both</a>.</li></ul>
+      </section>
+      <section class="faq-q" id="ide">
+        <h3><a class="anchor" href="#ide">Does it work with Claude Code in VS Code or JetBrains?</a></h3>
+        <p>The IDE extensions run Claude Code with the same <code>~/.claude</code> settings, so the hooks reach the gotchi there as well. The terminal and the IDE can run at the same time; the gotchi counts every session.</p>
+      </section>
+      <section class="faq-q" id="several-sessions">
+        <h3><a class="anchor" href="#several-sessions">Several sessions at once: what does the gotchi show?</a></h3>
+        <p>The state that needs you most wins: a permission request or a session waiting for you beats a working one. The footer shows how many sessions are working (▶), waiting for you (?) or done (✓). With three or more sessions working at once the critter juggles.</p>
+      </section>
+      <section class="faq-q" id="uninstall">
+        <h3><a class="anchor" href="#uninstall">How do I remove the client?</a></h3>
+        <p>Remove the plugin in <code>/plugin</code>, and the status line or full install with <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --uninstall</code>. The uninstall puts your previous status line back. A backup of your original settings is in <code>~/.claude/settings.json.claudegotchi-backup</code>.</p>
+      </section>
+      <h2 id="wi-fi-settings-and-security" data-n="05">Wi-Fi, settings and security</h2>
+      <section class="faq-q" id="wifi">
+        <h3><a class="anchor" href="#wifi">How do I put the gotchi on Wi-Fi?</a></h3>
+        <p>Either before the first start: put the card into your computer, open <code>claudegotchi.toml</code> on the <code>GOTCHI</code> drive and fill in <code>ssid</code>, <code>psk</code> and <code>country</code> under <code>[wifi]</code>. Or later in the browser: open <code>http://192.168.77.1:8765/settings</code> over the USB cable. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk.</p>
+      </section>
+      <section class="faq-q" id="settings">
+        <h3><a class="anchor" href="#settings">Where are the settings?</a></h3>
+        <p>On the settings page at <code>http://claudegotchi.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes <code>claudegotchi.toml</code> on the card. You can also edit that file directly on the <code>GOTCHI</code> drive.</p>
+      </section>
+      <section class="faq-q" id="token">
+        <h3><a class="anchor" href="#token">Should I set a token?</a></h3>
+        <p>Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token, anyone who can reach the gotchi on port 8765 can send it events and open the settings page. Set the token on the settings page, then give the client the same one: in <code>/plugin</code> for the plugin, or with <code>--token</code> for the install script.</p>
+      </section>
+      <section class="faq-q" id="upside-down">
+        <h3><a class="anchor" href="#upside-down">The picture is upside down.</a></h3>
+        <p>Set <em>Rotate display</em> to 180 on the settings page, or <code>rotate = 180</code> under <code>[device]</code> in <code>claudegotchi.toml</code>.</p>
+      </section>
+      <section class="faq-q" id="clock">
+        <h3><a class="anchor" href="#clock">The clock is wrong.</a></h3>
+        <p>Set your time zone on the settings page (<code>timezone</code>, for example <code>Europe/Berlin</code>). On Wi-Fi the gotchi gets the time from the internet (NTP); without Wi-Fi it takes the time from your computer.</p>
+      </section>
+      <section class="faq-q" id="ssh">
+        <h3><a class="anchor" href="#ssh">Can I log in to the gotchi with SSH?</a></h3>
+        <p>No. The image has no SSH, and its root filesystem is read-only. Everything you can change is on the settings page or in <code>claudegotchi.toml</code>. App updates are uploaded on the settings page.</p>
+      </section>
+      <h2 id="claude-code-in-the-cloud" data-n="06">Claude Code in the cloud</h2>
+      <section class="faq-q" id="cloud-relay">
+        <h3><a class="anchor" href="#cloud-relay">How do cloud sessions reach the gotchi?</a></h3>
+        <p>Sessions in a Claude Project or in Claude Code on the web run in a cloud container that cannot see your desk. They send their events to a relay, an ntfy topic, and the gotchi listens to that topic over Wi-Fi. Setup, once: give the gotchi Wi-Fi; create a relay with <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --new-relay</code> and enter the printed token and relay URL on the gotchi's settings page; print the setup script with <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --cloud-setup &gt; cloud-setup.sh</code>; on claude.ai add your own cloud environment that allows <code>ntfy.sh</code> and runs that script. The full walkthrough is at <a href="https://claudegotchi.lottes.dev/docs.html#cloud">https://claudegotchi.lottes.dev/docs.html#cloud</a>.</p>
+      </section>
+      <section class="faq-q" id="cloud-not-working">
+        <h3><a class="anchor" href="#cloud-not-working">Cloud sessions do not reach the gotchi.</a></h3>
+        <p>Check these in order:</p>
+<ul><li>The gotchi is on Wi-Fi with internet. The relay does not work over the USB cable alone.</li><li>The token and relay URL on the gotchi's settings page match what <code>--new-relay</code> printed.</li><li>The cloud environment allows <code>ntfy.sh</code> under Network access. The built-in environment of a Claude Project blocks it and has no settings, so you need your own environment (Project settings → Cloud environment → Add cloud environment).</li><li>The setup script is pasted in that environment, and the project uses that environment. Only sessions started after the change use it.</li></ul>
+      </section>
+      <section class="faq-q" id="relay-security">
+        <h3><a class="anchor" href="#relay-security">Is the relay secure?</a></h3>
+        <p>The topic name is the secret: anyone who knows it can read the events, which are metadata only, and could publish to it. The gotchi ignores relay messages without the right token. You can run your own ntfy server and point <code>--relay</code> at it; set <code>[relay] auth</code> on the gotchi if your server needs an access token.</p>
+      </section>
+      <h2 id="battery-and-hardware" data-n="07">Battery and hardware</h2>
+      <section class="faq-q" id="pisugar-fit">
+        <h3><a class="anchor" href="#pisugar-fit">How do I fit the PiSugar 3 battery?</a></h3>
+        <p>Screw it under the Pi, battery side down, with the screws and spacers that come with it. Its pogo pins press against the pads of the first pins of the 40-pin header from below and carry power and I2C, so no soldering is needed. The display still goes on top. Step by step: <a href="https://claudegotchi.lottes.dev/build.html#battery">https://claudegotchi.lottes.dev/build.html#battery</a>.</p>
+      </section>
+      <section class="faq-q" id="pisugar-not-detected">
+        <h3><a class="anchor" href="#pisugar-not-detected">The gotchi does not show the battery.</a></h3>
+        <p>The gotchi looks for the PiSugar on I2C (address 0x57) when it starts. If no battery shows in the header: check that the PiSugar is screwed on firmly so the pogo pins touch the header pads, then restart the gotchi. In <code>claudegotchi.toml</code>, <code>model</code> under <code>[battery]</code> must be <code>auto</code> or <code>pisugar3</code>, not <code>none</code>. Only the PiSugar 3 and 3 Plus are supported.</p>
+      </section>
+      <section class="faq-q" id="battery-shutdown">
+        <h3><a class="anchor" href="#battery-shutdown">Why did the gotchi switch itself off?</a></h3>
+        <p>On battery, at 15 % the critter asks to be plugged in, and at 5 % it says good night and shuts down cleanly so the SD card is not cut off mid-write. Charge it through the PiSugar's USB-C port and switch it on with the PiSugar's power button. The threshold is <code>shutdown_at</code> under <code>[battery]</code>.</p>
+      </section>
+      <section class="faq-q" id="blank-display">
+        <h3><a class="anchor" href="#blank-display">The display stays blank.</a></h3>
+        <p>Check that the HAT sits flush on all 40 pins, and that it is the <strong>V4</strong> revision of the 2.13 inch display (printed on the back). Give it a moment: e-paper refreshes slowly and the first boot takes a little while. Faint traces of the previous picture are normal for e-paper.</p>
+      </section>
+      <h2 id="friends-over-bluetooth" data-n="08">Friends over Bluetooth</h2>
+      <section class="faq-q" id="friends">
+        <h3><a class="anchor" href="#friends">How do gotchis become friends?</a></h3>
+        <p>Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at <code>http://claudegotchi.local:8765/social</code>, tick <em>Open for new friends</em>, and press <em>Befriend</em> next to a gotchi nearby; its owner presses <em>Accept</em> on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (<em>Meet other gotchis</em>) or with <code>[social] enabled = false</code>.</p>
+      </section>
+      <section class="faq-q" id="backup">
+        <h3><a class="anchor" href="#backup">How do I keep my critter's progress when I change the card?</a></h3>
+        <p>Download a backup on the social page. It is encrypted with a passphrase you choose and holds the identity, friends and progress. Restore it on the new card or gotchi. Without a backup, all of that lives only on the SD card.</p>
+      </section>
+      <h2 id="updates" data-n="09">Updates</h2>
+      <section class="faq-q" id="update">
+        <h3><a class="anchor" href="#update">How do I update the gotchi?</a></h3>
+        <p>Download <code>claudegotchi-app.tar.gz</code> from <a href="https://claudegotchi.lottes.dev/download.html">https://claudegotchi.lottes.dev/download.html</a> and upload it on the settings page. The gotchi checks that the new version starts and keeps it; if it crashes three times in a row right after starting, it goes back to the version built into the image. Kernel or system changes need a new image on the card.</p>
+      </section>
+      <section class="faq-q" id="update-client">
+        <h3><a class="anchor" href="#update-client">How do I update the client on my computer?</a></h3>
+        <p>The plugin updates through <code>/plugin</code> when a new version is out. For the install script, run the same install command again; it keeps your address, token and relay.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span><b>▚</b> claudegotchi · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
+    </div>
+  </footer>
+</body>
+</html>

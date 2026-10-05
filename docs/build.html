@@ -14,8 +14,8 @@
   <header class="site-header">
     <div class="wrap">
       <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
-      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html" aria-current="page">Assembly</a><a href="download.html">Download</a><a href="docs.html">Docs</a></nav>
-      <span class="sys"><span class="dot">●</span> v0.2.0 · 192.168.77.1:8765</span>
+      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html" aria-current="page">Assembly</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
+      <span class="sys"><span class="dot">●</span> v0.3.0 · 192.168.77.1:8765</span>
     </div>
   </header>
 
@@ -59,7 +59,7 @@
         <h3>Flash the card</h3>
         <p>In Raspberry Pi Imager, pick <em>Choose OS</em> → <em>Use custom</em> and select the <code>.img.xz</code> file. Choose the microSD card and write. Skip Imager's OS customisation: the gotchi has its own settings file.</p>
       </div></li>
-      <li><div>
+      <li id="wifi"><div>
         <h3>Optional: Wi-Fi and settings</h3>
         <p>After flashing, the card shows up on your computer as a drive called <code>GOTCHI</code>. It holds <code>claudegotchi.toml</code>. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk. To use it over Wi-Fi or with the cloud relay, fill in the <code>[wifi]</code> section:</p>
         <pre data-title="GOTCHI/claudegotchi.toml"><code>[wifi]
@@ -98,7 +98,7 @@ country = "DE"</code></pre>
       <span class="kicker"><b>§ next</b> / where to go from here</span>
       <div class="cols">
         <div><h3>Upside down?</h3><p>Set <code>rotate = 180</code> on the <a href="docs.html#settings">settings page</a>.</p></div>
-        <div><h3>Claude in the cloud?</h3><p>Set up the <a href="docs.html#cloud">relay</a> so cloud sessions reach the gotchi.</p></div>
+        <div><h3>Claude in the cloud?</h3><p>Sessions in a Claude Project or Claude Code on the web reach the gotchi through a <a href="docs.html#cloud">relay</a>. Four steps, once.</p></div>
         <div><h3>Shared Wi-Fi?</h3><p>Set a token so only your computer can talk to the gotchi, see <a href="docs.html#security">security</a>.</p></div>
       </div>
     </section>
