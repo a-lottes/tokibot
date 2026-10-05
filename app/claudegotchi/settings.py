@@ -23,6 +23,8 @@ FIELDS = [
     ("server", "token", "Token", "secret", "Clients and this page need it. Strongly recommended."),
     ("relay", "url", "Relay URL", "text", "ntfy topic for cloud sessions, e.g. https://ntfy.sh/claudegotchi-…"),
     ("relay", "auth", "Relay access token", "secret", "Only for a protected or self-hosted ntfy server."),
+    ("social", "enabled", "Meet other gotchis (Bluetooth)", "bool",
+     "Your gotchi stays anonymous until you open it on the social page."),
 ]
 
 STYLE = """body{font-family:system-ui;max-width:560px;margin:2em auto;padding:0 16px;color:#222;background:#f6f6f4}
@@ -157,4 +159,4 @@ async function upload(){{
   up.textContent=await r.text();
 }}
 </script>
-<p><a href=/>Live preview</a></p>"""
+<p><a href=/>Live preview</a> · <a href=/social>Friends</a></p>"""

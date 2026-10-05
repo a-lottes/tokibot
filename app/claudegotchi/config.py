@@ -24,6 +24,7 @@ DEFAULTS = {
     "wifi": {"ssid": "", "psk": "", "country": "DE"},
     "usb": {"enabled": True, "address": "192.168.77.1"},
     "relay": {"url": "", "auth": ""},
+    "social": {"enabled": True, "radio": "auto"},
 }
 
 
@@ -85,6 +86,7 @@ def shell(cfg):
         "USB_ENABLED": "1" if cfg["usb"]["enabled"] else "0",
         "USB_ADDRESS": cfg["usb"]["address"],
         "TIMEZONE": cfg["device"]["timezone"],
+        "SOCIAL_ENABLED": "1" if cfg["social"]["enabled"] and cfg["social"]["radio"] != "off" else "0",
     }
     return "\n".join(f"{k}={shlex.quote(str(v))}" for k, v in pairs.items())
 

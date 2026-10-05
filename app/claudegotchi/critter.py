@@ -73,6 +73,73 @@ PROPS = {
     "arrow":    ["  #  ", " ### ", "#####", "  #  ", "  #  "],
     "heart":    [" # # ", "#####", "#####", " ### ", "  #  "],
     "crumb":    ["# ", " #"],
+    "star":     ["  #  ", " ### ", "#####", " ### ", " # # "],
+    "bubble":   [" ### ", "#   #", "#   #", " ### "],
+}
+
+# Accessories, unlocked by badges and levels (mood.ACCESSORIES). Face cells,
+# (pattern, x, y) in px relative to the sprite's top-left corner; y is relative to
+# the top of the body, so they move with it. "." paints white.
+ACCESSORIES = {
+    "cap": ([
+        "   ##########     ",
+        "  ############    ",
+        "  ############    ",
+        "  ################",
+    ], 22, -8),
+    "bow": ([
+        "##   ##",
+        "### ###",
+        "#######",
+        "### ###",
+        "##   ##",
+    ], 52, -6),
+    "glasses": ([
+        "########.......########",
+        "#......#.......#......#",
+        "#......#########......#",
+        "#......#.......#......#",
+        "#......#.......#......#",
+        "#......#.......#......#",
+        "#......#.......#......#",
+        "########.......########",
+    ], 18, 14),
+    "headphones": ([
+        "     ##################     ",
+        "   ##                  ##   ",
+        "  #                      #  ",
+        " #                        # ",
+        " #                        # ",
+        "###                      ###",
+        "###                      ###",
+        "###                      ###",
+        "###                      ###",
+        "###                      ###",
+    ], 12, -6),
+    "nightcap": ([
+        "          ######        ",
+        "       ###########      ",
+        "    ################ ## ",
+        "  ######################",
+        "  ################## ## ",
+    ], 18, -10),
+    "party": ([
+        "   ##   ",
+        "    #   ",
+        "   ###  ",
+        "   #.#  ",
+        "  #.#.# ",
+        "  #...# ",
+        " #.#.#.#",
+        "########",
+    ], 32, -16),
+    "crown": ([
+        "#    ##    #",
+        "##  ####  ##",
+        "############",
+        "#.##.##.##.#",
+        "############",
+    ], 28, -10),
 }
 
 # What each mood looks like: eyes per animation frame, mouth, arms, legs, props.
@@ -106,6 +173,21 @@ LOOKS = {
                    "props": [[("heart", 70, -12)], [("heart", 70, -14)], [("heart", 70, -12)]]},
     "hungry":     {"eyes": ["tired", "left"], "mouth": "o", "arms": ("out", "down"),
                    "props": [[("crumb", 70, 0)], [("crumb", 72, 4)]]},
+    # social: another gotchi nearby, a friend, a new friendship, a request, a badge
+    "encounter":  {"eyes": ["open", "happy"], "mouth": "smile",
+                   "arm_frames": [("up", "down"), ("out", "down")],
+                   "props": [[("sparkle", 72, -10)], [("sparkle", 70, -6)]]},
+    "friend":     {"eyes": ["happy", "happy", "closed"], "mouth": "grin",
+                   "arm_frames": [("up", "up"), ("up", "out"), ("up", "up")],
+                   "props": [[("heart", 70, -12)], [("heart", 72, -16)], [("heart", 70, -12)]]},
+    "newfriend":  {"eyes": ["happy"], "mouth": "grin", "arms": ("up", "up"),
+                   "props": [[("heart", 70, -12), ("heart", -2, -8)],
+                             [("heart", 72, -18), ("heart", 0, -14), ("sparkle", 62, -2)]]},
+    "invite":     {"eyes": ["wide", "open", "wide"], "mouth": "small", "arms": ("out", "out"),
+                   "props": [[("heart", 70, -12)], [("question", 70, -16)], [("heart", 70, -14)]]},
+    "badge":      {"eyes": ["happy"], "mouth": "grin", "arms": ("up", "up"),
+                   "props": [[("star", 72, -14), ("sparkle", -2, -6)],
+                             [("star", 72, -20), ("sparkle", 2, -12), ("sparkle", 62, -4)]]},
     "offline":    {"eyes": ["closed"], "mouth": "dot", "arms": ("down", "down"),
                    "props": [[("z_small", 66, -6), ("z_big", 74, -18)]]},
 }
@@ -113,7 +195,8 @@ LOOKS = {
 
 def frames(mood):
     look = LOOKS.get(mood, LOOKS["idle"])
-    return max(len(look["eyes"]), len(look["props"]), len(look.get("legs", ["stand"])))
+    return max(len(look["eyes"]), len(look["props"]), len(look.get("legs", ["stand"])),
+               len(look.get("arm_frames", [None])))
 
 
 def _blit(draw, pattern, x, y, cell, mirror=False):
@@ -129,17 +212,17 @@ def _blit(draw, pattern, x, y, cell, mirror=False):
                                 x + (c + 1) * cell - 1, y + (r + 1) * cell - 1), fill=255)
 
 
-def draw(draw, x, y, mood, frame=0):
+def draw(draw, x, y, mood, frame=0, accessory="none"):
     """Draw the critter with its top-left corner at (x, y)."""
     look = LOOKS.get(mood, LOOKS["idle"])
     pick = lambda seq: seq[frame % len(seq)]
     b, f = BODY_CELL, FACE_CELL
-    bounce = -b if mood in ("done", "permission", "levelup") and frame % 2 else 0
+    bounce = -b if mood in ("done", "permission", "levelup", "newfriend", "badge") and frame % 2 else 0
     y0 = y + bounce
 
     _blit(draw, BODY, x + 2 * b, y0, b)
     _blit(draw, LEGS[pick(look.get("legs", ["stand"]))], x + 2 * b, y0 + 11 * b, b)
-    left, right = look["arms"]
+    left, right = pick(look["arm_frames"]) if "arm_frames" in look else look["arms"]
     for side, name in (("left", left), ("right", right)):
         pattern, row = ARMS[name]
         if side == "left":
@@ -151,6 +234,9 @@ def draw(draw, x, y, mood, frame=0):
     _blit(draw, eyes, x + 10 * f, y0 + 8 * f, f)
     _blit(draw, eyes, x + 26 * f, y0 + 8 * f, f)
     _blit(draw, MOUTHS[look["mouth"]], x + 16 * f, y0 + 16 * f, f)
+    if accessory in ACCESSORIES:
+        pattern, ax, ay = ACCESSORIES[accessory]
+        _blit(draw, pattern, x + ax, y0 + ay, f)
 
     for name, px, py in pick(look["props"]) if look["props"] else []:
         _blit(draw, PROPS[name], x + px, y + py, f)

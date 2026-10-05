@@ -23,19 +23,32 @@ CASES = [
     ("levelup", "Level up! I'm level 4 now!", "claudegotchi", {"done": 1}),
     ("summary", "Today: 23 tasks, 412 tools, 2 errors. Streak: 5 days.", "", {}),
     ("hungry", "3 days without code. *stomach growls*", "", {}),
+    ("encounter", "Hello Tofu42! (Lv6)", "", {}, "cap", 1, 0),
+    ("friend", "Mochi07 is here! Hi friend!", "claudegotchi", {"working": 1}, "bow", 2, 1),
+    ("newfriend", "Mochi07 and I are friends now!", "", {}, "bow", 1, 1),
+    ("invite", "Tofu42 wants to be friends! Say yes on the social page.", "", {}, "none", 1, 0),
+    ("badge", "New badge: Co-working!", "", {}, "glasses", 1, 1),
 ]
+ACCESSORY_CASES = ["cap", "bow", "glasses", "headphones", "nightcap", "party", "crown"]
 SCALE, PAD, COLS = 2, 16, 3
 
 
 def main(out):
     painter = Painter()
     tiles = []
-    for mood, msg, project, counts in CASES:
+    for mood, msg, project, counts, *social in CASES:
+        accessory, nearby, friends = social or ("none", 0, 0)
         for frame in range(critter.frames(mood)):
             view = {"mood": mood, "message": msg, "project": project, "counts": counts,
                     "sessions": sum(counts.values()), "tools_today": 12, "level": 4, "streak": 5,
-                    "limits": {} if mood == "idle" else LIMITS}
+                    "limits": {} if mood == "idle" else LIMITS, "accessory": accessory,
+                    "nearby": nearby, "friends_nearby": friends}
             tiles.append((f"{mood} {frame + 1}/{critter.frames(mood)}", painter.render(view, frame)))
+    for accessory in ACCESSORY_CASES:
+        view = {"mood": "ready", "message": f"Look, my {accessory}!", "project": "", "counts": {},
+                "sessions": 0, "tools_today": 12, "level": 4, "streak": 5, "limits": LIMITS,
+                "accessory": accessory}
+        tiles.append((f"accessory: {accessory}", painter.render(view, 0)))
     rows = (len(tiles) + COLS - 1) // COLS
     tw, th = W * SCALE, H * SCALE + 18
     sheet = Image.new("L", (COLS * (tw + PAD) + PAD, rows * (th + PAD) + PAD), 225)

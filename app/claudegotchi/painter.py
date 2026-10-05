@@ -77,7 +77,14 @@ class Painter:
             d.rounded_rectangle((x, 2, x + w, HEADER_H - 3), radius=3, fill=255)
             d.text((x + 3, 1), lv, font=self.f_small_bold, fill=0)
         clock = datetime.now().strftime("%H:%M")
-        d.text((W - 4 - self.f_brand.getlength(clock), 1), clock, font=self.f_brand, fill=255)
+        cx = W - 4 - self.f_brand.getlength(clock)
+        d.text((cx, 1), clock, font=self.f_brand, fill=255)
+        # gotchis nearby: ♥ for friends, ● for others
+        near, friends = view.get("nearby", 0), view.get("friends_nearby", 0)
+        if near:
+            label = f"♥{friends}" if friends else f"●{near}"
+            d.text((cx - 5 - self.f_small_bold.getlength(label), 2), label,
+                   font=self.f_small_bold, fill=255)
         n = view["sessions"]
         if n:
             label = f"{n} {LABELS['session'] if n == 1 else LABELS['sessions']}"
@@ -154,7 +161,7 @@ class Painter:
         img = Image.new("1", (W, H), 255)
         d = ImageDraw.Draw(img)
         self.header(d, view)
-        critter.draw(d, *CRITTER_XY, view["mood"], frame)
+        critter.draw(d, *CRITTER_XY, view["mood"], frame, view.get("accessory", "none"))
         self.bubble(d, view)
         self.footer(d, view)
         return img

@@ -35,3 +35,10 @@ country = "DE"
 url = ""
 # Optional access token for a protected or self-hosted ntfy server
 auth = ""
+
+[social]
+# Meet other gotchis over Bluetooth LE and make friends (see docs/social-concept.md).
+# Your gotchi stays anonymous until you open it on the social page (/social).
+enabled = true
+# "auto" (Bluetooth on the device, a simulated radio in the simulator), "ble", "udp" or "off"
+radio = "auto"

@@ -7,6 +7,8 @@ Endpoints:
   GET  /frame.png, GET /state
   GET  /settings, POST /settings   settings page (writes claudegotchi.toml, then restarts)
   POST /update, POST /update/reset app update bundle (see update.py)
+  GET  /social, POST /social        friends, gotchis nearby, profile (see social.py)
+  POST /social/backup, /social/restore, /social/reset   the gotchi's identity
 
 With [relay] url set, the same events also arrive through an ntfy topic (see relay.py).
 """
@@ -15,7 +17,9 @@ import errno
 import json
 import logging
 import os
+import re
 import signal
+import tempfile
 import threading
 import time
 import urllib.parse
@@ -25,20 +29,23 @@ from io import BytesIO
 
 from PIL import Image
 
-from . import config, settings, update
+from . import config, identity, settings, socialpage, update
 from .brain import Brain
 from .displays import open_display
+from .identity import Identity
 from .life import Life
 from .painter import H, W
+from .radio import UdpRadio, open_radio
 from .relay import Relay
 from .renderer import Renderer
+from .social import FakePeer, Social
 
 log = logging.getLogger("claudegotchi")
 
 PREVIEW_HTML = b"""<!doctype html><meta charset=utf-8><title>Claudegotchi</title>
 <style>body{font-family:system-ui;background:#eee;display:grid;place-items:center;min-height:100vh;margin:0}
 img{image-rendering:pixelated;width:750px;max-width:95vw;border:12px solid #222;border-radius:10px;background:#fff}</style>
-<div><img id=f src=/frame.png><p style="text-align:center"><a href=/settings>Settings</a></p></div><script>setInterval(()=>f.src='/frame.png?'+Date.now(),2000)</script>"""
+<div><img id=f src=/frame.png><p style="text-align:center"><a href=/settings>Settings</a> &middot; <a href=/social>Friends</a></p></div><script>setInterval(()=>f.src='/frame.png?'+Date.now(),2000)</script>"""
 
 # The Pi has no real-time clock. When it only hangs off the USB cable (no NTP), we take
 # the time from the timestamp the client sends along.
@@ -91,8 +98,9 @@ RESTART = 75          # exit code that asks claudegotchi-run to start the app ag
 
 class Control:
     """What the web pages may do to the running service."""
-    def __init__(self, cfg_path, cfg, on_device):
+    def __init__(self, cfg_path, cfg, on_device, social=None, data_dir=None):
         self.cfg_path, self.cfg, self.on_device = cfg_path, cfg, on_device
+        self.social, self.data_dir = social, data_dir
         self.exit_code = 0
         self.stop = lambda: None
 
@@ -135,7 +143,8 @@ def make_handler(brain, renderer, token, dispatch, control=None):
             self._send(code, body.encode(), "text/html; charset=utf-8")
 
         def do_POST(self):
-            if control and self.path in ("/settings", "/update", "/update/reset"):
+            if control and (self.path in ("/settings", "/update", "/update/reset")
+                            or self.path.startswith("/social")):
                 return self.web_post()
             if token and self.headers.get("X-Claudegotchi-Token") != token:
                 return self._send(401, b'{"error":"token"}')
@@ -153,6 +162,8 @@ def make_handler(brain, renderer, token, dispatch, control=None):
         def web_post(self):
             if not self._same_origin():
                 return self._send(403, b"cross-site request refused", "text/plain")
+            if self.path.startswith("/social"):
+                return self.social_post()
             if self.path.startswith("/update") and not control.on_device:
                 return self._send(400, b"App updates only work on the device, not in the simulator.",
                                   "text/plain")
@@ -201,9 +212,96 @@ def make_handler(brain, renderer, token, dispatch, control=None):
             if control.on_device:
                 control.restart(reboot=True)
 
+        def _social_page(self, code=200, message="", error=False):
+            self._html(code, socialpage.page(control.social.page_data(), bool(token), message, error))
+
+        def social_post(self):
+            soc = control.social
+            if not soc:
+                return self._send(404, b"Social features are off (see the settings).", "text/plain")
+            restart_note = ("Restarting …" if control.on_device
+                            else "Restart the simulator to load it.")
+            if self.path == "/social/restore":
+                if token and self.headers.get("X-Claudegotchi-Token") != token:
+                    return self._send(401, b"Wrong token.", "text/plain")
+                length = int(self.headers.get("Content-Length") or 0)
+                if length > 1_000_000:
+                    return self._send(413, b"File too large.", "text/plain")
+                blob = self.rfile.read(length)
+                passphrase = urllib.parse.unquote(self.headers.get("X-Passphrase") or "")
+                if not control.data_dir:
+                    return self._send(400, b"No writable data folder.", "text/plain")
+                try:
+                    gid = identity.restore_backup(control.data_dir, blob, passphrase)
+                except (identity.BackupError, ValueError) as e:
+                    return self._send(400, str(e).encode(), "text/plain")
+                soc.path = brain.life.path = None      # do not overwrite the restored files
+                log.info("Backup of %s restored", gid)
+                self._send(200, f"Restored gotchi {gid}. {restart_note}".encode(), "text/plain")
+                return control.restart()
+
+            form = self._form()
+            if form is None:
+                return self._send(413)
+            if token and form.get("_token") != token:
+                return self._social_page(401, "Wrong token.", True)
+
+            if self.path == "/social/backup":
+                if not control.data_dir:
+                    return self._social_page(400, "No writable data folder.", True)
+                soc.save(force=True)
+                brain.life.maybe_save(force=True)
+                try:
+                    blob = identity.make_backup(control.data_dir, form.get("passphrase", ""))
+                except identity.BackupError as e:
+                    return self._social_page(400, str(e), True)
+                name = f"claudegotchi-{soc.me.id}-{time.strftime('%Y-%m-%d')}.json"
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Disposition", f'attachment; filename="{name}"')
+                self.send_header("Content-Length", str(len(blob)))
+                self.end_headers()
+                return self.wfile.write(blob)
+
+            if self.path == "/social/reset":
+                if not control.data_dir:
+                    return self._social_page(400, "No writable data folder.", True)
+                soc.path = None
+                identity.reset(control.data_dir)
+                log.info("Identity reset")
+                self._html(200, f"<!doctype html><meta charset=utf-8><p>Identity reset. "
+                                f"{restart_note}</p><p><a href=/>Back</a></p>")
+                return control.restart()
+
+            action, pub = form.get("action"), form.get("pub", "")
+            if action == "profile":
+                soc.set_profile(name=form.get("name", ""), accessory=form.get("accessory"),
+                                open_="open" in form, auto="auto" in form)
+                return self._social_page(200, "Saved.")
+            if not re.fullmatch(r"[0-9a-f]{64}", pub):
+                return self._social_page(400, "Unknown gotchi.", True)
+            if action == "befriend":
+                result = soc.befriend(pub)
+                note = {"asked": "Asked. You are friends once they say yes too.",
+                        "friends": "You are friends now!", "already": "You are friends already.",
+                        "unknown": "That gotchi is not around any more."}[result]
+                return self._social_page(200, note, result == "unknown")
+            if action == "decline":
+                soc.decline(pub)
+                return self._social_page(200, "Declined.")
+            if action == "unfriend":
+                soc.unfriend(pub)
+                return self._social_page(200, "Unfriended.")
+            return self._social_page(400, "Unknown action.", True)
+
         def do_GET(self):
             path = self.path.split("?")[0]
-            if path == "/settings" and control:
+            if path == "/social" and control:
+                if not control.social:
+                    return self._html(200, "<!doctype html><meta charset=utf-8><p>Social features are "
+                                           "off. Turn them on in the <a href=/settings>settings</a>.</p>")
+                self._social_page()
+            elif path == "/settings" and control:
                 self._html(200, settings.page(control.cfg, bool(token), "", update.running_from()))
             elif path == "/":
                 self._send(200, PREVIEW_HTML, "text/html; charset=utf-8")
@@ -233,6 +331,27 @@ def life_path(data_dir):
     return None
 
 
+def start_social(cfg, brain, data_dir, args):
+    """Encounters and friends over Bluetooth (or a simulated radio in the simulator)."""
+    soc = cfg["social"]
+    if not soc["enabled"]:
+        log.info("Social features are off")
+        return None
+    social = Social(Identity.load_or_create(data_dir), brain.life,
+                    os.path.join(data_dir, "social.json") if data_dir else None,
+                    open_radio(soc["radio"], args.sim))
+    brain.social = social.start()
+    if args.fake_peer and args.sim:
+        name = re.sub(r"[^A-Za-z0-9_-]", "", args.fake_peer)[:12] or "Fake"
+        base = os.path.join(data_dir or tempfile.mkdtemp(), f"fake-{name}")
+        try:
+            FakePeer(name, base, UdpRadio()).start()
+            log.info("A pretend gotchi called %s is nearby", name)
+        except OSError as e:
+            log.warning("Could not start the pretend gotchi: %s", e)
+    return social
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="claudegotchi",
                                  description="Claudegotchi: an e-ink companion for Claude Code")
@@ -241,6 +360,8 @@ def main(argv=None):
     ap.add_argument("--relay", default=None, help="ntfy topic URL to subscribe to (overrides [relay] url)")
     ap.add_argument("--sim", action="store_true", help="no e-paper, browser preview only")
     ap.add_argument("--png", default="", help="in sim mode, save every frame to this file")
+    ap.add_argument("--fake-peer", default="", metavar="NAME",
+                    help="in sim mode, add a pretend gotchi nearby to make friends with")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
@@ -256,11 +377,14 @@ def main(argv=None):
     path = life_path(dev["data_dir"])
     log.info("Progress file: %s", path or "none (kept in memory)")
     brain = Brain(Life(path))
+    data_dir = os.path.dirname(path) if path else None
+    social = start_social(cfg, brain, data_dir, args)
     renderer = Renderer(brain, display)
     renderer.start()
     dispatch = make_dispatch(brain, set_clock=not args.sim)
     cfg_path = args.config or os.environ.get("CLAUDEGOTCHI_CONFIG", config.DEFAULT_PATH)
-    control = Control(cfg_path, cfg, on_device=not args.sim and cfg_path.startswith("/boot/"))
+    control = Control(cfg_path, cfg, on_device=not args.sim and cfg_path.startswith("/boot/"),
+                      social=social, data_dir=data_dir)
     handler = make_handler(brain, renderer, srv["token"], dispatch, control)
     try:
         server = ThreadingHTTPServer((srv["host"], port), handler)
@@ -270,6 +394,8 @@ def main(argv=None):
         log.error("Port %d is already in use. Is another server running? "
                   "Stop it or pick another port with --port.", port)
         renderer.stop_evt.set()
+        if social:
+            social.close()
         return 1
     server.daemon_threads = True
 
@@ -286,6 +412,8 @@ def main(argv=None):
         Relay(relay["url"], srv["token"], dispatch, relay["auth"]).start()
     log.info("Claudegotchi listening on http://%s:%d", srv["host"], port)
     server.serve_forever()
+    if social:
+        social.close()
     if control.exit_code == RESTART:
         renderer.stop_evt.set()
         brain.life.maybe_save(force=True)
