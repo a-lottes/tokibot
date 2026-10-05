@@ -65,7 +65,7 @@ PORT = 8765
 STATE_DIR = os.environ.get("CLAUDE_PLUGIN_DATA") or HERE
 LAST_URL = os.path.join(STATE_DIR, "last_url")
 LEARNED = os.path.join(STATE_DIR, "gotchi")     # name learned on first contact over USB
-# Where install_mac.py keeps the settings; the plugin reads them from there as well.
+# Where install.py keeps the settings; the plugin reads them from there as well.
 INSTALLED_CFG = os.path.expanduser("~/.claude/claudegotchi/claudegotchi.json")
 
 
@@ -238,7 +238,10 @@ def cmd_statusline(cfg):
     out = ""
     if cfg.get("statusline_chain"):
         try:
-            out = subprocess.run(cfg["statusline_chain"], shell=True, input=raw, text=True,
+            chain = cfg["statusline_chain"]
+            # Claude Code ran it in Git Bash on Windows; shell=True there would mean cmd.exe
+            cmd = ["sh", "-c", chain] if os.name == "nt" else chain
+            out = subprocess.run(cmd, shell=os.name != "nt", input=raw, text=True,
                                  capture_output=True, timeout=5).stdout.rstrip("\n")
         except Exception:
             out = ""

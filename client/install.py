@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Sets up the Claudegotchi client in Claude Code (or removes it again). Mac and Linux.
+"""Sets up the Claudegotchi client in Claude Code (or removes it again).
+macOS, Linux, and Windows with Git for Windows (run it from Git Bash).
 
-  python3 install_mac.py                         # default: automatic (USB cable, then Wi-Fi)
-  python3 install_mac.py --gotchi claudegotchi-3f2a   # pair over Wi-Fi by the name on its screen
-  python3 install_mac.py --url http://192.168.1.50:8765 --token secret
-  python3 install_mac.py --new-relay             # also send through a new ntfy relay topic
-  python3 install_mac.py --cloud-setup > setup.sh   # script for a cloud environment
-  python3 install_mac.py --statusline-only       # only the status line, when the hooks come from the plugin
-  python3 install_mac.py --uninstall
+  python3 install.py                         # default: automatic (USB cable, then Wi-Fi)
+  python3 install.py --gotchi claudegotchi-3f2a   # pair over Wi-Fi by the name on its screen
+  python3 install.py --url http://192.168.1.50:8765 --token secret
+  python3 install.py --new-relay             # also send through a new ntfy relay topic
+  python3 install.py --cloud-setup > setup.sh   # script for a cloud environment
+  python3 install.py --statusline-only       # only the status line, when the hooks come from the plugin
+  python3 install.py --uninstall
 
 What happens:
   * claudegotchi_client.py is copied to ~/.claude/claudegotchi/
@@ -29,7 +30,12 @@ CLAUDE_DIR = os.path.expanduser("~/.claude")
 TARGET_DIR = os.path.join(CLAUDE_DIR, "claudegotchi")
 SETTINGS = os.path.join(CLAUDE_DIR, "settings.json")
 CLIENT = os.path.join(TARGET_DIR, "claudegotchi_client.py")
-MARK = "claudegotchi_client.py"
+LAUNCHER = os.path.join(TARGET_DIR, "claudegotchi.sh")
+MARKS = ("claudegotchi_client.py", "claudegotchi/claudegotchi.sh")
+
+
+def ours(command):
+    return any(m in command for m in MARKS)
 DEFAULT_URL = "auto"
 RELAY_SERVER = "https://ntfy.sh"
 
@@ -60,7 +66,7 @@ def strip_ours(settings):
         groups = []
         for g in hooks[ev]:
             g = dict(g)
-            g["hooks"] = [h for h in g.get("hooks", []) if MARK not in h.get("command", "")]
+            g["hooks"] = [h for h in g.get("hooks", []) if not ours(h.get("command", ""))]
             if g["hooks"]:
                 groups.append(g)
         if groups:
@@ -102,8 +108,10 @@ def gotchi_settings(token, relay):
 
 def install(args):
     os.makedirs(TARGET_DIR, exist_ok=True)
-    shutil.copy2(os.path.join(os.path.dirname(os.path.abspath(__file__)), "claudegotchi_client.py"), CLIENT)
-    os.chmod(CLIENT, 0o755)
+    here = os.path.dirname(os.path.abspath(__file__))
+    for src, dst in (("claudegotchi_client.py", CLIENT), ("claudegotchi.sh", LAUNCHER)):
+        shutil.copy2(os.path.join(here, src), dst)
+        os.chmod(dst, 0o755)
 
     settings = load_settings()
     if os.path.exists(SETTINGS) and not os.path.exists(SETTINGS + ".claudegotchi-backup"):
@@ -115,7 +123,7 @@ def install(args):
     # Chain an existing status line instead of replacing it
     chain = old_cfg.get("statusline_chain", "")
     sl = settings.get("statusLine") or {}
-    if sl.get("command") and MARK not in sl["command"]:
+    if sl.get("command") and not ours(sl["command"]):
         chain = sl["command"]
 
     url, token, relay = resolve(args, old_cfg)
@@ -123,7 +131,8 @@ def install(args):
         json.dump({"url": url, "token": token, "relay": relay, "gotchi": resolve_gotchi(args, old_cfg),
                    "statusline_chain": chain}, f, indent=2)
 
-    cmd = f'python3 "{CLIENT}"'
+    # Forward slashes: on Windows the command runs in Git Bash, which eats backslashes
+    cmd = 'sh "{}"'.format(LAUNCHER.replace(os.sep, "/"))
     strip_ours(settings)
     if not args.statusline_only:
         hooks = settings.setdefault("hooks", {})
@@ -151,8 +160,8 @@ def install(args):
     if url != "none":
         print("→ Pairing with your gotchi …")
         if subprocess.run([sys.executable, CLIENT, "pair", resolve_gotchi(args, old_cfg)]).returncode:
-            print(f'→ Pair later:  python3 "{CLIENT}" pair [claudegotchi-xxxx]')
-    print(f'→ Test:  python3 "{CLIENT}" test')
+            print(f"→ Pair later:  {cmd} pair [claudegotchi-xxxx]")
+    print(f"→ Test:  {cmd} test")
     print("→ Restart running Claude Code sessions once so the hooks take effect.")
 
 
@@ -166,7 +175,7 @@ def cloud_setup(args):
                  "(or install locally with a relay first).")
     here = os.path.dirname(os.path.abspath(__file__))
     files = {}
-    for name in ("claudegotchi_client.py", "install_mac.py"):
+    for name in ("claudegotchi_client.py", "claudegotchi.sh", "install.py"):
         with open(os.path.join(here, name)) as f:
             files[name] = f.read()
     out = ["#!/bin/sh", "# Claudegotchi: install the hook client in this cloud environment.",
@@ -175,7 +184,7 @@ def cloud_setup(args):
         mark = "END_OF_" + name.replace(".", "_").upper()
         assert mark not in text
         out += [f"cat > \"$d/{name}\" <<'{mark}'", text.rstrip("\n"), mark]
-    out.append(f'python3 "$d/install_mac.py" --url none --token "{token}" --relay "{relay}" >/dev/null')
+    out.append(f'python3 "$d/install.py" --url none --token "{token}" --relay "{relay}" >/dev/null')
     out.append('rm -rf "$d"')
     print("\n".join(out))
     print("Paste the script above into the cloud environment's setup script.\n"
@@ -192,7 +201,7 @@ def uninstall():
         with open(cfg_path) as f:
             chain = json.load(f).get("statusline_chain", "")
     sl = settings.get("statusLine") or {}
-    if MARK in sl.get("command", ""):
+    if ours(sl.get("command", "")):
         if chain:
             settings["statusLine"] = {"type": "command", "command": chain}
         else:
