@@ -1,0 +1,15 @@
+{
+  "name": "claudegotchi",
+  "description": "The Claudegotchi plugin for Claude Code",
+  "owner": {
+    "name": "Andreas Lottes",
+    "url": "https://claudegotchi.lottes.dev"
+  },
+  "plugins": [
+    {
+      "name": "claudegotchi",
+      "source": "./plugin/claudegotchi",
+      "description": "Reports Claude Code events to your Claudegotchi e-ink companion"
+    }
+  ]
+}

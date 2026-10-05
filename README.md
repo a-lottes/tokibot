@@ -171,6 +171,19 @@ The installer adds hooks and a status line to `~/.claude/settings.json`, backs u
 the old file, and leaves your existing hooks and status line alone.
 Remove it with `python3 client/install_mac.py --uninstall`.
 
+Or install it as a Claude Code plugin from this repository (or from the
+website's `https://claudegotchi.lottes.dev/marketplace.json`):
+
+```
+/plugin marketplace add a-lottes/claudegotchi
+/plugin install claudegotchi@claudegotchi
+```
+
+The plugin brings the hooks only, because plugins cannot set the status line.
+Add the status line with `python3 client/install_mac.py --statusline-only`. Use
+the plugin or the full installer, not both. `plugin/build.py` packs the plugin
+for the website.
+
 ## Settings in the browser
 
 Open `http://claudegotchi.local:8765/settings` (or `http://192.168.77.1:8765/settings`

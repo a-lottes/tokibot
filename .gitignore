@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 .DS_Store
 /docs/downloads/
+/docs/client/
+/docs/plugin/
+/docs/marketplace.json

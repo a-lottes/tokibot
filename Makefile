@@ -6,6 +6,7 @@
 #                  with a pretend gotchi nearby to make friends with: make sim FAKE=Mochi
 #                  with a fake battery: make sim BATTERY=sim
 #   make mockups   render every mood into docs/mockups.png
+#   make figures   redraw the blueprint figures in the website (docs/*.html)
 #   make bundle    pack the app into output/claudegotchi-app.tar.gz (update without flashing)
 #   make update    send that bundle to a gotchi: make update GOTCHI=http://claudegotchi.local:8765 TOKEN=…
 #   make zero2w    build the image for the Raspberry Pi Zero 2 W
@@ -24,7 +25,7 @@ BR_DIR     ?= $(CURDIR)/.buildroot
 OUT        ?= $(CURDIR)/output
 BR_MAKE     = $(MAKE) -C $(BR_DIR) BR2_EXTERNAL=$(CURDIR)/os O=$(OUT)/$@
 
-.PHONY: test sim mockups bundle update zero2w zerow clean
+.PHONY: test sim mockups figures bundle update zero2w zerow clean
 
 test:
 	cd app && python3 -m unittest discover -s tests
@@ -38,6 +39,9 @@ sim:
 
 mockups:
 	cd app && PYTHONPATH=. python3 tools/mockups.py ../docs/mockups.png
+
+figures:
+	cd app && python3 tools/blueprints.py ../docs
 
 bundle:
 	@mkdir -p $(OUT)

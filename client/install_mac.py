@@ -5,6 +5,7 @@
   python3 install_mac.py --url http://192.168.1.50:8765 --token secret
   python3 install_mac.py --new-relay             # also send through a new ntfy relay topic
   python3 install_mac.py --cloud-setup > setup.sh   # script for a cloud environment
+  python3 install_mac.py --statusline-only       # only the status line, when the hooks come from the plugin
   python3 install_mac.py --uninstall
 
 What happens:
@@ -114,10 +115,13 @@ def install(args):
 
     cmd = f'python3 "{CLIENT}"'
     strip_ours(settings)
-    hooks = settings.setdefault("hooks", {})
-    for ev in EVENTS:
-        hooks.setdefault(ev, []).append({"hooks": [
-            {"type": "command", "command": f"{cmd} hook", "async": True, "timeout": 10}]})
+    if not args.statusline_only:
+        hooks = settings.setdefault("hooks", {})
+        for ev in EVENTS:
+            hooks.setdefault(ev, []).append({"hooks": [
+                {"type": "command", "command": f"{cmd} hook", "async": True, "timeout": 10}]})
+    if not settings.get("hooks"):
+        settings.pop("hooks", None)
     new_sl = {"type": "command", "command": f"{cmd} statusline"}
     if sl.get("padding") is not None:
         new_sl["padding"] = sl["padding"]
@@ -125,7 +129,8 @@ def install(args):
     save_settings(settings)
 
     print(f"✓ Client installed: {CLIENT}")
-    print(f"✓ Hooks and status line added to {SETTINGS} (backup: settings.json.claudegotchi-backup)")
+    what = "Status line" if args.statusline_only else "Hooks and status line"
+    print(f"✓ {what} added to {SETTINGS} (backup: settings.json.claudegotchi-backup)")
     if chain:
         print(f"✓ Your existing status line is still shown: {chain}")
     print(f"→ Gotchi address: {url}")
@@ -191,6 +196,8 @@ def main():
     ap.add_argument("--new-relay", action="store_true", help="create a random ntfy.sh topic (and a token)")
     ap.add_argument("--cloud-setup", action="store_true",
                     help="print a setup script for a cloud environment instead of installing")
+    ap.add_argument("--statusline-only", action="store_true",
+                    help="only the status line (for the budget bars), when the hooks come from the plugin")
     ap.add_argument("--uninstall", action="store_true")
     args = ap.parse_args()
     if args.uninstall:

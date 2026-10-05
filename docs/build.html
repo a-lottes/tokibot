@@ -5,95 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Assembly Guide · Claudegotchi</title>
   <meta name="description" content="Build, flash and connect a Claudegotchi step by step.">
+  <meta name="color-scheme" content="light dark">
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="./">claude<span>gotchi</span></a>
-      <nav class="site-nav">
-        <a href="./">Home</a>
-        <a href="parts.html">Shopping list</a>
-        <a href="build.html" aria-current="page">Assembly</a>
-        <a href="download.html">Download</a>
-        <a href="docs.html">Docs</a>
-      </nav>
+      <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
+      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html" aria-current="page">Assembly</a><a href="download.html">Download</a><a href="docs.html">Docs</a></nav>
+      <span class="sys"><span class="dot">●</span> v0.2.0 · 192.168.77.1:8765</span>
     </div>
   </header>
 
-    <main class="wrap">
-    <h1>Assembly guide</h1>
+  <main class="wrap">
+    <span class="kicker"><b>§ assembly</b> / 7 steps · about 30 minutes</span>
+    <h1>Assembly <em>guide</em>.</h1>
     <p class="lead">From a bag of parts to a critter that reacts to Claude Code. Plan about half an hour, plus the time to build the image if you build it yourself.</p>
 
-    <div class="note">
-      <p><strong>Early days.</strong> The image has not been tested on real hardware yet. If something below does not match what you see, the <a href="docs.html#troubleshooting">troubleshooting notes</a> may help.</p>
-    </div>
+    <div class="note"><p><span class="tag">early days</span>The image has not been tested on real hardware yet. If something below does not match what you see, the <a href="docs.html#troubleshooting">troubleshooting notes</a> may help.</p></div>
 
-    <h2>You need</h2>
+    <h3>You need</h3>
     <ul>
+      <li><strong><a href="https://claude.com/claude-code">Claude Code</a></strong>, set up and working on your computer. The gotchi shows what Claude Code is doing, so without it there is nothing to show. Claude Code needs a Claude subscription or an Anthropic API account.</li>
+      <li>A <strong>Mac or Linux computer</strong> with Python 3.9 or newer. macOS ships it with the command line tools (<code>xcode-select --install</code>). Windows is not supported yet.</li>
       <li>The parts from the <a href="parts.html">shopping list</a></li>
-      <li>A Mac or Linux computer with Python 3.9 or newer and Claude Code</li>
       <li><a href="https://www.raspberrypi.com/software/">Raspberry Pi Imager</a> to flash the card</li>
     </ul>
 
     <ol class="steps">
-      <li>
+      <li><div>
         <h3>Put the display on the Pi</h3>
         <p>Unplug everything first. Hold the Pi with the header pins facing up and press the e-Paper HAT onto the 40-pin header so the HAT lies right on top of the Pi and its outline matches the board. Push down evenly on both ends of the connector until it sits flush. Do not press on the glass of the display.</p>
+        <figure class="plate"><div class="art"><!-- fig:hero --><svg class="bp" viewBox="-270 -180 694 514" role="img" aria-label="Exploded view: e-paper HAT, Raspberry Pi Zero 2 W, microSD card and USB cable"><polygon class="bp-l bp-card" points="-165.5,-6.5 -110.9,25.0 -110.9,20.8 -165.5,-10.7"/><polygon class="bp-r bp-card" points="-70.9,1.9 -110.9,25.0 -110.9,20.8 -70.9,-2.3"/><polygon class="bp-t bp-card" points="-125.5,-33.8 -70.9,-2.3 -110.9,20.8 -165.5,-10.7"/><text class="bp-silk" font-size="2.2" transform="matrix(3.637 2.100 -3.637 2.100 -140.0 -12.8)">microSD</text><polygon class="bp-l bp-pcb" points="-109.1,63.0 127.3,199.5 127.3,193.6 -109.1,57.1"/><polygon class="bp-r bp-pcb" points="236.4,136.5 127.3,199.5 127.3,193.6 236.4,130.6"/><polygon class="bp-t bp-pcb" points="0.0,-5.9 236.4,130.6 127.3,193.6 -109.1,57.1"/><polygon class="bp-hole" points="5.1,11.8 3.3,12.5 1.1,12.9 -1.1,12.9 -3.3,12.5 -5.1,11.8 -6.4,10.7 -7.1,9.5 -7.1,8.2 -6.4,6.9 -5.1,5.9 -3.3,5.1 -1.1,4.7 1.1,4.7 3.3,5.1 5.1,5.9 6.4,6.9 7.1,8.2 7.1,9.5 6.4,10.7"/><polygon class="bp-hole" points="216.1,133.6 214.2,134.3 212.1,134.7 209.8,134.7 207.7,134.3 205.9,133.6 204.5,132.5 203.9,131.3 203.9,130.0 204.5,128.7 205.9,127.7 207.7,126.9 209.8,126.5 212.1,126.5 214.2,126.9 216.1,127.7 217.4,128.7 218.1,130.0 218.1,131.3 217.4,132.5"/><polygon class="bp-hole" points="-78.6,60.1 -80.4,60.8 -82.5,61.2 -84.8,61.2 -86.9,60.8 -88.8,60.1 -90.1,59.0 -90.8,57.8 -90.8,56.5 -90.1,55.2 -88.8,54.2 -86.9,53.4 -84.8,53.0 -82.5,53.0 -80.4,53.4 -78.6,54.2 -77.2,55.2 -76.5,56.5 -76.5,57.8 -77.2,59.0"/><polygon class="bp-hole" points="132.4,181.9 130.6,182.6 128.4,183.0 126.2,183.0 124.0,182.6 122.2,181.9 120.9,180.8 120.2,179.6 120.2,178.3 120.9,177.0 122.2,176.0 124.0,175.2 126.2,174.8 128.4,174.8 130.6,175.2 132.4,176.0 133.7,177.0 134.4,178.3 134.4,179.6 133.7,180.8"/><text class="bp-silk" font-size="2.3" transform="matrix(3.637 2.100 -3.637 2.100 -16.4 87.6)">Raspberry Pi Zero 2 W</text><polygon class="bp-l bp-metal" points="-74.6,43.5 -32.7,67.6 -32.7,62.2 -74.6,38.0"/><polygon class="bp-r bp-metal" points="10.9,42.4 -32.7,67.6 -32.7,62.2 10.9,37.0"/><polygon class="bp-t bp-metal" points="-30.9,12.8 10.9,37.0 -32.7,62.2 -74.6,38.0"/><polygon class="bp-l" points="141.9,168.4 153.5,175.1 153.5,170.1 141.9,163.4"/><polygon class="bp-r" points="204.4,145.7 153.5,175.1 153.5,170.1 204.4,140.7"/><polygon class="bp-t" points="192.8,134.0 204.4,140.7 153.5,170.1 141.9,163.4"/><polygon class="bp-l bp-chip" points="5.5,96.0 56.4,125.4 56.4,120.3 5.5,90.9"/><polygon class="bp-r bp-chip" points="107.3,96.0 56.4,125.4 56.4,120.3 107.3,90.9"/><polygon class="bp-t bp-chip" points="56.4,61.5 107.3,90.9 56.4,120.3 5.5,90.9"/><text class="bp-silk-chip" font-size="2.6" transform="matrix(3.637 2.100 -3.637 2.100 35.6 82.7)">RP3A0</text><polygon class="bp-l bp-chip" points="0.0,61.3 14.5,69.7 14.5,66.4 0.0,58.0"/><polygon class="bp-r bp-chip" points="29.1,61.3 14.5,69.7 14.5,66.4 29.1,58.0"/><polygon class="bp-t bp-chip" points="14.5,49.6 29.1,58.0 14.5,66.4 0.0,58.0"/><polygon class="bp-l bp-chip" points="101.8,120.1 120.0,130.6 120.0,127.3 101.8,116.8"/><polygon class="bp-r bp-chip" points="130.9,124.3 120.0,130.6 120.0,127.3 130.9,121.0"/><polygon class="bp-t bp-chip" points="112.8,110.5 130.9,121.0 120.0,127.3 101.8,116.8"/><polygon class="bp-l bp-plastic" points="3.7,21.8 188.5,128.5 188.5,118.0 3.7,11.3"/><polygon class="bp-r bp-plastic" points="207.0,117.8 188.5,128.5 188.5,118.0 207.0,107.3"/><polygon class="bp-t bp-plastic" points="22.2,0.6 207.0,107.3 188.5,118.0 3.7,11.3"/><line class="bp-pin" x1="22.2" y1="6.0" x2="22.2" y2="-19.2"/><line class="bp-pin" x1="31.4" y1="11.3" x2="31.4" y2="-13.9"/><line class="bp-pin" x1="40.7" y1="16.6" x2="40.7" y2="-8.6"/><line class="bp-pin" x1="49.9" y1="22.0" x2="49.9" y2="-3.2"/><line class="bp-pin" x1="59.1" y1="27.3" x2="59.1" y2="2.1"/><line class="bp-pin" x1="68.4" y1="32.6" x2="68.4" y2="7.4"/><line class="bp-pin" x1="77.6" y1="38.0" x2="77.6" y2="12.8"/><line class="bp-pin" x1="86.9" y1="43.3" x2="86.9" y2="18.1"/><line class="bp-pin" x1="96.1" y1="48.6" x2="96.1" y2="23.4"/><line class="bp-pin" x1="105.3" y1="54.0" x2="105.3" y2="28.8"/><line class="bp-pin" x1="114.6" y1="59.3" x2="114.6" y2="34.1"/><line class="bp-pin" x1="123.8" y1="64.6" x2="123.8" y2="39.4"/><line class="bp-pin" x1="133.1" y1="70.0" x2="133.1" y2="44.8"/><line class="bp-pin" x1="142.3" y1="75.3" x2="142.3" y2="50.1"/><line class="bp-pin" x1="151.5" y1="80.6" x2="151.5" y2="55.4"/><line class="bp-pin" x1="160.8" y1="86.0" x2="160.8" y2="60.8"/><line class="bp-pin" x1="170.0" y1="91.3" x2="170.0" y2="66.1"/><line class="bp-pin" x1="179.2" y1="96.6" x2="179.2" y2="71.4"/><line class="bp-pin" x1="188.5" y1="102.0" x2="188.5" y2="76.8"/><line class="bp-pin" x1="197.7" y1="107.3" x2="197.7" y2="82.1"/><line class="bp-pin" x1="12.9" y1="11.3" x2="12.9" y2="-13.9"/><line class="bp-pin" x1="22.2" y1="16.6" x2="22.2" y2="-8.6"/><line class="bp-pin" x1="31.4" y1="22.0" x2="31.4" y2="-3.2"/><line class="bp-pin" x1="40.7" y1="27.3" x2="40.7" y2="2.1"/><line class="bp-pin" x1="49.9" y1="32.6" x2="49.9" y2="7.4"/><line class="bp-pin" x1="59.1" y1="38.0" x2="59.1" y2="12.8"/><line class="bp-pin" x1="68.4" y1="43.3" x2="68.4" y2="18.1"/><line class="bp-pin" x1="77.6" y1="48.6" x2="77.6" y2="23.4"/><line class="bp-pin" x1="86.9" y1="54.0" x2="86.9" y2="28.8"/><line class="bp-pin" x1="96.1" y1="59.3" x2="96.1" y2="34.1"/><line class="bp-pin" x1="105.3" y1="64.6" x2="105.3" y2="39.4"/><line class="bp-pin" x1="114.6" y1="70.0" x2="114.6" y2="44.8"/><line class="bp-pin" x1="123.8" y1="75.3" x2="123.8" y2="50.1"/><line class="bp-pin" x1="133.1" y1="80.6" x2="133.1" y2="55.4"/><line class="bp-pin" x1="142.3" y1="86.0" x2="142.3" y2="60.8"/><line class="bp-pin" x1="151.5" y1="91.3" x2="151.5" y2="66.1"/><line class="bp-pin" x1="160.8" y1="96.6" x2="160.8" y2="71.4"/><line class="bp-pin" x1="170.0" y1="102.0" x2="170.0" y2="76.8"/><line class="bp-pin" x1="179.2" y1="107.3" x2="179.2" y2="82.1"/><line class="bp-pin" x1="188.5" y1="112.6" x2="188.5" y2="87.4"/><polygon class="bp-l bp-metal" points="-86.2,72.5 -45.5,96.0 -45.5,82.1 -86.2,58.6"/><polygon class="bp-r bp-metal" points="-23.6,83.4 -45.5,96.0 -45.5,82.1 -23.6,69.5"/><polygon class="bp-t bp-metal" points="-64.4,46.0 -23.6,69.5 -45.5,82.1 -86.2,58.6"/><polygon class="bp-l bp-metal bp-accent" points="25.5,136.9 53.8,153.3 53.8,141.5 25.5,125.2"/><polygon class="bp-r bp-metal bp-accent" points="75.7,140.7 53.8,153.3 53.8,141.5 75.7,128.9"/><polygon class="bp-t bp-metal bp-accent" points="47.3,112.6 75.7,128.9 53.8,141.5 25.5,125.2"/><polygon class="bp-l bp-metal" points="71.3,163.4 99.7,179.8 99.7,168.0 71.3,151.6"/><polygon class="bp-r bp-metal" points="121.5,167.2 99.7,179.8 99.7,168.0 121.5,155.4"/><polygon class="bp-t bp-metal" points="93.1,139.0 121.5,155.4 99.7,168.0 71.3,151.6"/><polygon class="bp-l bp-metal bp-accent" points="-38.9,174.5 -12.7,189.6 -12.7,179.6 -38.9,164.4"/><polygon class="bp-r bp-metal bp-accent" points="10.9,176.0 -12.7,189.6 -12.7,179.6 10.9,165.9"/><polygon class="bp-t bp-metal bp-accent" points="-15.3,150.8 10.9,165.9 -12.7,179.6 -38.9,164.4"/><polygon class="bp-l bp-accent" points="-89.5,202.4 -49.5,225.5 -49.5,202.0 -89.5,178.9"/><polygon class="bp-r bp-accent" points="-5.8,200.3 -49.5,225.5 -49.5,202.0 -5.8,176.8"/><polygon class="bp-t bp-accent" points="-45.8,153.7 -5.8,176.8 -49.5,202.0 -89.5,178.9"/><path class="bp-cable bp-accent" d="M-69.5,202.2 C-135.7,240.5 -145.1,267.8 -64.7,319.6"/><line class="bp-dash" x1="22.2" y1="-26.7" x2="22.2" y2="-106.9"/><line class="bp-dash" x1="207.0" y1="80.0" x2="207.0" y2="-0.2"/><line class="bp-dash" x1="-92.8" y1="12.4" x2="-54.6" y2="34.4"/><line class="bp-dash" x1="37.8" y1="140.3" x2="-2.2" y2="163.4"/><polygon class="bp-l bp-plastic" points="3.7,-96.2 188.5,10.5 188.5,-25.2 3.7,-131.9"/><polygon class="bp-r bp-plastic" points="207.0,-0.2 188.5,10.5 188.5,-25.2 207.0,-35.9"/><polygon class="bp-t bp-plastic" points="22.2,-142.6 207.0,-35.9 188.5,-25.2 3.7,-131.9"/><polygon class="bp-l bp-pcb" points="-109.1,-96.6 127.3,39.9 127.3,33.2 -109.1,-103.3"/><polygon class="bp-r bp-pcb" points="236.4,-23.1 127.3,39.9 127.3,33.2 236.4,-29.8"/><polygon class="bp-t bp-pcb" points="0.0,-166.3 236.4,-29.8 127.3,33.2 -109.1,-103.3"/><polygon class="bp-hole" points="5.1,-148.7 3.3,-147.9 1.1,-147.5 -1.1,-147.5 -3.3,-147.9 -5.1,-148.7 -6.4,-149.7 -7.1,-151.0 -7.1,-152.3 -6.4,-153.5 -5.1,-154.6 -3.3,-155.3 -1.1,-155.7 1.1,-155.7 3.3,-155.3 5.1,-154.6 6.4,-153.5 7.1,-152.3 7.1,-151.0 6.4,-149.7"/><polygon class="bp-hole" points="216.1,-26.9 214.2,-26.1 212.1,-25.7 209.8,-25.7 207.7,-26.1 205.9,-26.9 204.5,-27.9 203.9,-29.2 203.9,-30.5 204.5,-31.7 205.9,-32.8 207.7,-33.5 209.8,-33.9 212.1,-33.9 214.2,-33.5 216.1,-32.8 217.4,-31.7 218.1,-30.5 218.1,-29.2 217.4,-27.9"/><polygon class="bp-hole" points="-78.6,-100.4 -80.4,-99.6 -82.5,-99.2 -84.8,-99.2 -86.9,-99.6 -88.8,-100.4 -90.1,-101.4 -90.8,-102.7 -90.8,-104.0 -90.1,-105.2 -88.8,-106.3 -86.9,-107.0 -84.8,-107.4 -82.5,-107.4 -80.4,-107.0 -78.6,-106.3 -77.2,-105.2 -76.5,-104.0 -76.5,-102.7 -77.2,-101.4"/><polygon class="bp-hole" points="132.4,21.4 130.6,22.2 128.4,22.6 126.2,22.6 124.0,22.2 122.2,21.4 120.9,20.4 120.2,19.1 120.2,17.8 120.9,16.6 122.2,15.5 124.0,14.8 126.2,14.4 128.4,14.4 130.6,14.8 132.4,15.5 133.7,16.6 134.4,17.8 134.4,19.1 133.7,20.4"/><polygon class="bp-l bp-glass" points="-95.7,-100.6 113.5,20.2 113.5,16.0 -95.7,-104.8"/><polygon class="bp-r bp-glass" points="213.9,-37.8 113.5,20.2 113.5,16.0 213.9,-42.0"/><polygon class="bp-t bp-glass" points="4.7,-162.8 213.9,-42.0 113.5,16.0 -95.7,-104.8"/><polygon class="bp-l bp-flex" points="138.2,5.9 150.9,13.2 150.9,11.6 138.2,4.2"/><polygon class="bp-r bp-flex" points="201.9,-16.2 150.9,13.2 150.9,11.6 201.9,-17.9"/><polygon class="bp-t bp-flex" points="189.1,-25.2 201.9,-17.9 150.9,11.6 138.2,4.2"/><polygon class="bp-paper" points="10.2,-153.7 191.0,-49.4 100.4,2.9 -80.4,-101.4"/><image class="bp-screen" href="img/moods/ready.png" width="500" height="244" preserveAspectRatio="none" transform="matrix(0.3528 0.2037 -0.3533 0.2040 10.2 -151.2)"/><g class="bp-callout"><circle cx="221.9" cy="-34.0" r="2.6"/><polyline points="221.9,-34.0 235.9,-76.0 261.9,-76.0"/><text text-anchor="start" y="-72.0"><tspan x="267.9" dy="0">2.13" E-PAPER HAT V4</tspan><tspan x="267.9" dy="13">250 × 122 px</tspan></text></g><g class="bp-callout"><circle cx="188.8" cy="88.4" r="2.6"/><polyline points="188.8,88.4 211.2,54.4 252.8,54.4"/><text text-anchor="start" y="58.4"><tspan x="258.8" dy="0">40-PIN HEADER</tspan></text></g><g class="bp-callout"><circle cx="211.0" cy="132.7" r="2.6"/><polyline points="211.0,132.7 229.2,126.7 263.0,126.7"/><text text-anchor="start" y="130.7"><tspan x="269.0" dy="0">RASPBERRY PI</tspan><tspan x="269.0" dy="13">ZERO 2 W</tspan></text></g><g class="bp-callout"><circle cx="-138.2" cy="7.1" r="2.6"/><polyline points="-138.2,7.1 -147.3,47.1 -164.2,47.1"/><text text-anchor="end" y="51.1"><tspan x="-170.2" dy="0">MICROSD CARD</tspan></text></g><g class="bp-callout"><circle cx="85.5" cy="165.7" r="2.6"/><polyline points="85.5,165.7 108.6,199.7 151.5,199.7"/><text text-anchor="start" y="203.7"><tspan x="157.5" dy="0">PWR (NOT NEEDED)</tspan></text></g><g class="bp-callout bp-accent"><circle cx="-25.8" cy="206.0" r="2.6"/><polyline points="-25.8,206.0 -1.3,232.0 44.2,232.0"/><text text-anchor="start" y="236.0"><tspan x="50.2" dy="0">USB DATA CABLE</tspan><tspan x="50.2" dy="13">POWER + NETWORK</tspan></text></g></svg><!-- /fig:hero --></div><figcaption><span>Fig. 04 — the hat goes on the header</span><span></span></figcaption></figure>
         <p>The display talks to the Pi over SPI. If you wire it by hand instead of using the HAT connector, these are the pins the driver uses (BCM numbering): RST 17, DC 25, CS 8 (CE0), BUSY 24, PWR 18, plus MOSI 10, SCLK 11, 3.3 V and GND.</p>
-      </li>
-      <li>
+      </div></li>
+      <li><div>
         <h3>Get the image</h3>
         <p>Download the ready-made image from the <a href="download.html">download page</a>: <code>claudegotchi-zero2w.img.xz</code> for the Pi Zero 2 W or <code>claudegotchi-zerow.img.xz</code> for the Pi Zero W.</p>
-        <p>You can also build it yourself on a Debian or Ubuntu machine. The first build downloads Buildroot and all sources and takes about an hour.</p>
-        <pre><code>sudo apt-get install build-essential bc cpio rsync unzip file wget
-make zero2w      # or: make zerow
-# result: output/zero2w/images/claudegotchi-zero2w.img.xz</code></pre>
-      </li>
-      <li>
+        <p>Developers with the source code can also build it themselves on a Debian or Ubuntu machine. The first build downloads Buildroot and all sources and takes about an hour.</p>
+        <pre data-title="debian / ubuntu"><code><span class="p">$ </span>sudo apt-get install build-essential bc cpio rsync unzip file wget
+<span class="p">$ </span>make zero2w      <span class="c"># or: make zerow</span>
+<span class="c"># result: output/zero2w/images/claudegotchi-zero2w.img.xz</span></code></pre>
+      </div></li>
+      <li><div>
         <h3>Flash the card</h3>
         <p>In Raspberry Pi Imager, pick <em>Choose OS</em> → <em>Use custom</em> and select the <code>.img.xz</code> file. Choose the microSD card and write. Skip Imager's OS customisation: the gotchi has its own settings file.</p>
-      </li>
-      <li>
+      </div></li>
+      <li><div>
         <h3>Optional: Wi-Fi and settings</h3>
         <p>After flashing, the card shows up on your computer as a drive called <code>GOTCHI</code>. It holds <code>claudegotchi.toml</code>. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk. To use it over Wi-Fi or with the cloud relay, fill in the <code>[wifi]</code> section:</p>
-        <pre><code>[wifi]
+        <pre data-title="GOTCHI/claudegotchi.toml"><code>[wifi]
 ssid = "MyNetwork"
 psk = "my-wifi-password"
 country = "DE"</code></pre>
         <p>You can change all of this later in the browser, see <a href="docs.html#settings">settings</a>.</p>
-      </li>
-      <li>
+      </div></li>
+      <li><div>
         <h3>Plug it in</h3>
         <p>Put the card into the Pi. Connect the cable to the micro-USB port labelled <strong>USB</strong>, not the one labelled <strong>PWR</strong>. On the USB port the gotchi gets power and shows up on your computer as a small network adapter. Your computer gets an address automatically, and the gotchi is reachable at <code>192.168.77.1</code>.</p>
+        <figure class="plate"><div class="art"><!-- fig:ports --><svg class="bp" viewBox="-12 -66 565 376" role="img" aria-label="Top view of the Pi Zero: plug the cable into the port labelled USB, not PWR"><rect class="bp-t bp-pcb" x="0" y="0" width="455.0" height="210.0" rx="21.0"/><circle class="bp-hole" cx="24.5" cy="24.5" r="9.799999999999999"/><circle class="bp-hole" cx="430.5" cy="24.5" r="9.799999999999999"/><circle class="bp-hole" cx="24.5" cy="185.5" r="9.799999999999999"/><circle class="bp-hole" cx="430.5" cy="185.5" r="9.799999999999999"/><rect class="bp-t bp-plastic" x="49.699999999999996" y="7.0" width="355.59999999999997" height="35.56"/><rect class="bp-pinhead" x="55.589999999999996" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="73.37" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="91.14999999999999" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="108.92999999999999" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="126.71000000000001" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="144.49" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="162.26999999999998" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="180.04999999999998" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="197.82999999999998" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="215.60999999999999" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="233.39" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="251.17000000000002" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="268.95" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="286.73" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="304.51" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="322.28999999999996" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="340.07" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="357.84999999999997" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="375.63" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="393.40999999999997" y="12.89" width="6" height="6"/><rect class="bp-pinhead" x="55.589999999999996" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="73.37" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="91.14999999999999" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="108.92999999999999" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="126.71000000000001" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="144.49" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="162.26999999999998" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="180.04999999999998" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="197.82999999999998" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="215.60999999999999" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="233.39" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="251.17000000000002" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="268.95" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="286.73" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="304.51" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="322.28999999999996" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="340.07" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="357.84999999999997" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="375.63" y="30.67" width="6" height="6"/><rect class="bp-pinhead" x="393.40999999999997" y="30.67" width="6" height="6"/><rect class="bp-t bp-metal" x="10.5" y="70.0" width="80.5" height="84.0"/><rect class="bp-t bp-chip" x="175.0" y="66.5" width="98.0" height="98.0"/><text class="bp-silk" x="224.0" y="121.10000000000001" text-anchor="middle" font-size="13">RP3A0</text><rect class="bp-t" x="427.0" y="56.0" width="22.400000000000002" height="98.0"/><rect class="bp-t bp-metal" x="47.60000000000001" y="171.5" width="78.39999999999999" height="42.0"/><rect class="bp-t bp-metal bp-accent" x="262.5" y="171.5" width="54.6" height="42.0"/><rect class="bp-t bp-metal" x="350.7" y="171.5" width="54.6" height="42.0"/><g class="bp-dim"><line x1="0" y1="-26" x2="455.0" y2="-26"/><line x1="0" y1="-34" x2="0" y2="-6"/><line x1="455.0" y1="-34" x2="455.0" y2="-6"/><text x="227.5" y="-34" text-anchor="middle">65 MM</text><line x1="481.0" y1="0" x2="481.0" y2="210.0"/><line x1="461.0" y1="0" x2="489.0" y2="0"/><line x1="461.0" y1="210.0" x2="489.0" y2="210.0"/><text x="495.0" y="109.0">30 MM</text></g><g class="bp-callout"><circle cx="86.8" cy="212.0" r="2.6"/><polyline points="86.8,212.0 86.8,254.0"/><text x="86.8" y="268.0" text-anchor="middle">MINI HDMI</text></g><g class="bp-callout bp-accent"><circle cx="289.8" cy="212.0" r="2.6"/><polyline points="289.8,212.0 289.8,280.0"/><text x="289.8" y="294.0" text-anchor="middle">↑ USB · PLUG IN HERE</text></g><g class="bp-callout"><circle cx="378.0" cy="212.0" r="2.6"/><polyline points="378.0,212.0 378.0,240.0"/><text x="378.0" y="254.0" text-anchor="middle">PWR</text></g><text class="bp-note" x="0" y="-50">TOP VIEW · HEADER AT THE BACK · PORTS AT THE FRONT</text></svg><!-- /fig:ports --></div><figcaption><span>Fig. 05 — top view</span><span>use the usb port</span></figcaption></figure>
         <p>After booting, the critter appears on the display. On a Mac, if macOS asks whether to allow the new accessory to connect, allow it.</p>
-      </li>
-      <li>
-        <h3>Install the client</h3>
-        <p>Get the Claudegotchi repository onto your computer and run the installer. It adds hooks and a status line to <code>~/.claude/settings.json</code>, makes a backup first, and keeps your existing hooks and status line.</p>
-        <pre><code>python3 client/install_mac.py
-python3 ~/.claude/claudegotchi/claudegotchi_client.py test</code></pre>
-        <p>The test walks the critter through its moods over about a minute. By default the client tries the USB cable first and then <code>claudegotchi.local</code> on your Wi-Fi.</p>
-      </li>
-      <li>
+      </div></li>
+      <li id="connect"><div>
+        <h3>Connect Claude Code</h3>
+        <p>Now teach Claude Code to talk to the gotchi. It comes as a Claude Code plugin. In Claude Code, add the Claudegotchi marketplace and install the plugin:</p>
+        <pre data-title="claude code"><code><span class="p">$ </span>/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json
+<span class="p">$ </span>/plugin install claudegotchi@claudegotchi</code></pre>
+        <p>The plugin adds <a href="https://docs.claude.com/en/docs/claude-code/hooks">hooks</a> that report each event to the gotchi. It asks for an address, a token and a relay; leave all three empty for now. You can change them later in <code>/plugin</code>.</p>
+        <p>Plugins cannot set the status line, and the status line is where the gotchi learns how much of your 5-hour and 7-day budget is left. To add it, run this in a terminal:</p>
+        <pre data-title="your computer · terminal"><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only</code></pre>
+        <p>It keeps your existing status line and still shows it. You can <a href="install.sh">read the script</a> before you run it.</p>
+        <div class="note"><p><strong>No plugin?</strong> <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh</code> installs hooks and status line in one go, straight into <code>~/.claude/settings.json</code>. Use either the plugin or this, not both, or every event reaches the gotchi twice.</p></div>
+        <p>Then check that the gotchi answers. The test walks the critter through its moods over about a minute:</p>
+        <pre data-title="your computer · terminal"><code><span class="p">$ </span>python3 ~/.claude/claudegotchi/claudegotchi_client.py test</code></pre>
+        <p>By default the client tries the USB cable first and then <code>claudegotchi.local</code> on your Wi-Fi. You can also watch the display live in a browser at <a href="http://192.168.77.1:8765/"><code>http://192.168.77.1:8765/</code></a>.</p>
+      </div></li>
+      <li><div>
         <h3>Start Claude Code</h3>
-        <p>Open a new Claude Code session. The critter says hello, gets busy while Claude works, raises its arms when Claude needs your permission and lets you know when the reply is done.</p>
-      </li>
+        <p>Close running Claude Code sessions and open a new one, so it picks up the plugin. The critter says hello, gets busy while Claude works, raises its arms when Claude needs your permission and lets you know when the reply is done.</p>
+      </div></li>
     </ol>
 
-    <h2>Next steps</h2>
-    <ul>
-      <li>Upside down? Set <code>rotate = 180</code> on the <a href="docs.html#settings">settings page</a>.</li>
-      <li>Using Claude Code in the cloud? Set up the <a href="docs.html#cloud">relay</a>.</li>
-      <li>Want a token so only your computer can talk to the gotchi? See <a href="docs.html#security">security</a>.</li>
-    </ul>
+    <section class="block">
+      <span class="kicker"><b>§ next</b> / where to go from here</span>
+      <div class="cols">
+        <div><h3>Upside down?</h3><p>Set <code>rotate = 180</code> on the <a href="docs.html#settings">settings page</a>.</p></div>
+        <div><h3>Claude in the cloud?</h3><p>Set up the <a href="docs.html#cloud">relay</a> so cloud sessions reach the gotchi.</p></div>
+        <div><h3>Shared Wi-Fi?</h3><p>Set a token so only your computer can talk to the gotchi, see <a href="docs.html#security">security</a>.</p></div>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>Claudegotchi is a hobby project, inspired by Pwnagotchi. Not affiliated with Anthropic.</p>
-      <p>MIT licensed. Fonts: DejaVu.</p>
+      <span><b>▚</b> claudegotchi · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
     </div>
   </footer>
 </body>

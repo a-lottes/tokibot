@@ -5,90 +5,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shopping List · Claudegotchi</title>
   <meta name="description" content="Everything you need to build a Claudegotchi.">
+  <meta name="color-scheme" content="light dark">
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="./">claude<span>gotchi</span></a>
-      <nav class="site-nav">
-        <a href="./">Home</a>
-        <a href="parts.html" aria-current="page">Shopping list</a>
-        <a href="build.html">Assembly</a>
-        <a href="download.html">Download</a>
-        <a href="docs.html">Docs</a>
-      </nav>
+      <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
+      <nav class="site-nav"><a href="./">Home</a><a href="parts.html" aria-current="page">Parts</a><a href="build.html">Assembly</a><a href="download.html">Download</a><a href="docs.html">Docs</a></nav>
+      <span class="sys"><span class="dot">●</span> v0.2.0 · 192.168.77.1:8765</span>
     </div>
   </header>
 
-    <main class="wrap">
-    <h1>Shopping list</h1>
+  <main class="wrap">
+    <span class="kicker"><b>§ parts</b> / 4 items · about € 50–60 · no soldering</span>
+    <h1>Shopping <em>list</em>.</h1>
     <p class="lead">Four parts, no soldering if you pick a Pi with headers. Everything plugs together.</p>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Part</th><th>Notes</th><th>Approx. price</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Raspberry Pi Zero 2 WH</strong></td>
-            <td>The default. "WH" means the 40-pin header is already soldered on. A Zero 2 W without header works too if you solder one yourself.</td>
-            <td class="num">€ 20–25</td>
-          </tr>
-          <tr>
-            <td><strong>Waveshare 2.13" e-Paper HAT V4</strong></td>
-            <td>Black and white, 250 × 122 pixels. It must be the <strong>V4</strong>: the gotchi only ships a driver for this revision. The version is printed on the back of the board.</td>
-            <td class="num">€ 18–22</td>
-          </tr>
-          <tr>
-            <td><strong>microSD card, 8 GB or more</strong></td>
-            <td>The image is small, so any size from 8 GB up is plenty. A name brand card (SanDisk, Samsung, Kingston) saves trouble.</td>
-            <td class="num">€ 6–10</td>
-          </tr>
-          <tr>
-            <td><strong>Micro-USB data cable</strong></td>
-            <td>It powers the gotchi and carries the data. It must be a <em>data</em> cable: many cheap charging cables have no data wires. For a Mac with only USB-C ports, take a USB-C to micro-USB cable.</td>
-            <td class="num">€ 5</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr><td>Total</td><td></td><td class="num">about € 50–60</td></tr>
-        </tfoot>
-      </table>
+    <div class="parts">
+      <div class="part">
+        <div class="art"><!-- fig:part-pi --><svg class="bp" viewBox="-100 -22 308 199" role="img" aria-label="Raspberry Pi Zero 2 WH with header"><polygon class="bp-l bp-pcb" points="-93.5,54.0 109.1,171.0 109.1,166.0 -93.5,49.0"/><polygon class="bp-r bp-pcb" points="202.6,117.0 109.1,171.0 109.1,166.0 202.6,112.0"/><polygon class="bp-t bp-pcb" points="0.0,-5.0 202.6,112.0 109.1,166.0 -93.5,49.0"/><polygon class="bp-hole" points="4.4,10.1 2.8,10.7 1.0,11.1 -1.0,11.1 -2.8,10.7 -4.4,10.1 -5.5,9.2 -6.1,8.1 -6.1,7.0 -5.5,5.9 -4.4,5.0 -2.8,4.4 -1.0,4.0 1.0,4.0 2.8,4.4 4.4,5.0 5.5,5.9 6.1,7.0 6.1,8.1 5.5,9.2"/><polygon class="bp-hole" points="185.2,114.5 183.6,115.1 181.8,115.5 179.9,115.5 178.0,115.1 176.5,114.5 175.3,113.6 174.7,112.5 174.7,111.4 175.3,110.3 176.5,109.4 178.0,108.8 179.9,108.4 181.8,108.4 183.6,108.8 185.2,109.4 186.3,110.3 186.9,111.4 186.9,112.5 186.3,113.6"/><polygon class="bp-hole" points="-67.3,51.5 -68.9,52.1 -70.7,52.5 -72.7,52.5 -74.5,52.1 -76.1,51.5 -77.2,50.6 -77.8,49.5 -77.8,48.4 -77.2,47.3 -76.1,46.4 -74.5,45.8 -72.7,45.4 -70.7,45.4 -68.9,45.8 -67.3,46.4 -66.2,47.3 -65.6,48.4 -65.6,49.5 -66.2,50.6"/><polygon class="bp-hole" points="113.5,155.9 111.9,156.5 110.1,156.9 108.2,156.9 106.3,156.5 104.8,155.9 103.6,155.0 103.0,153.9 103.0,152.8 103.6,151.7 104.8,150.8 106.3,150.2 108.2,149.8 110.1,149.8 111.9,150.2 113.5,150.8 114.6,151.7 115.2,152.8 115.2,153.9 114.6,155.0"/><text class="bp-silk" font-size="2.3" transform="matrix(3.118 1.800 -3.118 1.800 -14.0 75.1)">Raspberry Pi Zero 2 W</text><polygon class="bp-l bp-metal" points="-63.9,37.3 -28.1,58.0 -28.1,53.3 -63.9,32.6"/><polygon class="bp-r bp-metal" points="9.4,36.4 -28.1,58.0 -28.1,53.3 9.4,31.7"/><polygon class="bp-t bp-metal" points="-26.5,11.0 9.4,31.7 -28.1,53.3 -63.9,32.6"/><polygon class="bp-l" points="121.6,144.4 131.6,150.1 131.6,145.8 121.6,140.0"/><polygon class="bp-r" points="175.2,124.9 131.6,150.1 131.6,145.8 175.2,120.6"/><polygon class="bp-t" points="165.2,114.8 175.2,120.6 131.6,145.8 121.6,140.0"/><polygon class="bp-l bp-chip" points="4.7,82.3 48.3,107.5 48.3,103.1 4.7,77.9"/><polygon class="bp-r bp-chip" points="92.0,82.3 48.3,107.5 48.3,103.1 92.0,77.9"/><polygon class="bp-t bp-chip" points="48.3,52.7 92.0,77.9 48.3,103.1 4.7,77.9"/><text class="bp-silk-chip" font-size="2.6" transform="matrix(3.118 1.800 -3.118 1.800 30.6 70.9)">RP3A0</text><polygon class="bp-l bp-chip" points="0.0,52.6 12.5,59.8 12.5,56.9 0.0,49.7"/><polygon class="bp-r bp-chip" points="24.9,52.6 12.5,59.8 12.5,56.9 24.9,49.7"/><polygon class="bp-t bp-chip" points="12.5,42.5 24.9,49.7 12.5,56.9 0.0,49.7"/><polygon class="bp-l bp-chip" points="87.3,103.0 102.9,112.0 102.9,109.1 87.3,100.1"/><polygon class="bp-r bp-chip" points="112.2,106.6 102.9,112.0 102.9,109.1 112.2,103.7"/><polygon class="bp-t bp-chip" points="96.6,94.7 112.2,103.7 102.9,109.1 87.3,100.1"/><polygon class="bp-l bp-plastic" points="3.2,18.7 161.6,110.1 161.6,101.1 3.2,9.7"/><polygon class="bp-r bp-plastic" points="177.4,101.0 161.6,110.1 161.6,101.1 177.4,92.0"/><polygon class="bp-t bp-plastic" points="19.0,0.5 177.4,92.0 161.6,101.1 3.2,9.7"/><line class="bp-pin" x1="19.0" y1="5.1" x2="19.0" y2="-16.5"/><line class="bp-pin" x1="26.9" y1="9.7" x2="26.9" y2="-11.9"/><line class="bp-pin" x1="34.9" y1="14.3" x2="34.9" y2="-7.3"/><line class="bp-pin" x1="42.8" y1="18.8" x2="42.8" y2="-2.8"/><line class="bp-pin" x1="50.7" y1="23.4" x2="50.7" y2="1.8"/><line class="bp-pin" x1="58.6" y1="28.0" x2="58.6" y2="6.4"/><line class="bp-pin" x1="66.5" y1="32.5" x2="66.5" y2="10.9"/><line class="bp-pin" x1="74.5" y1="37.1" x2="74.5" y2="15.5"/><line class="bp-pin" x1="82.4" y1="41.7" x2="82.4" y2="20.1"/><line class="bp-pin" x1="90.3" y1="46.3" x2="90.3" y2="24.7"/><line class="bp-pin" x1="98.2" y1="50.8" x2="98.2" y2="29.2"/><line class="bp-pin" x1="106.1" y1="55.4" x2="106.1" y2="33.8"/><line class="bp-pin" x1="114.0" y1="60.0" x2="114.0" y2="38.4"/><line class="bp-pin" x1="122.0" y1="64.5" x2="122.0" y2="42.9"/><line class="bp-pin" x1="129.9" y1="69.1" x2="129.9" y2="47.5"/><line class="bp-pin" x1="137.8" y1="73.7" x2="137.8" y2="52.1"/><line class="bp-pin" x1="145.7" y1="78.3" x2="145.7" y2="56.7"/><line class="bp-pin" x1="153.6" y1="82.8" x2="153.6" y2="61.2"/><line class="bp-pin" x1="161.6" y1="87.4" x2="161.6" y2="65.8"/><line class="bp-pin" x1="169.5" y1="92.0" x2="169.5" y2="70.4"/><line class="bp-pin" x1="11.1" y1="9.7" x2="11.1" y2="-11.9"/><line class="bp-pin" x1="19.0" y1="14.3" x2="19.0" y2="-7.3"/><line class="bp-pin" x1="26.9" y1="18.8" x2="26.9" y2="-2.8"/><line class="bp-pin" x1="34.9" y1="23.4" x2="34.9" y2="1.8"/><line class="bp-pin" x1="42.8" y1="28.0" x2="42.8" y2="6.4"/><line class="bp-pin" x1="50.7" y1="32.5" x2="50.7" y2="10.9"/><line class="bp-pin" x1="58.6" y1="37.1" x2="58.6" y2="15.5"/><line class="bp-pin" x1="66.5" y1="41.7" x2="66.5" y2="20.1"/><line class="bp-pin" x1="74.5" y1="46.3" x2="74.5" y2="24.7"/><line class="bp-pin" x1="82.4" y1="50.8" x2="82.4" y2="29.2"/><line class="bp-pin" x1="90.3" y1="55.4" x2="90.3" y2="33.8"/><line class="bp-pin" x1="98.2" y1="60.0" x2="98.2" y2="38.4"/><line class="bp-pin" x1="106.1" y1="64.5" x2="106.1" y2="42.9"/><line class="bp-pin" x1="114.0" y1="69.1" x2="114.0" y2="47.5"/><line class="bp-pin" x1="122.0" y1="73.7" x2="122.0" y2="52.1"/><line class="bp-pin" x1="129.9" y1="78.3" x2="129.9" y2="56.7"/><line class="bp-pin" x1="137.8" y1="82.8" x2="137.8" y2="61.2"/><line class="bp-pin" x1="145.7" y1="87.4" x2="145.7" y2="65.8"/><line class="bp-pin" x1="153.6" y1="92.0" x2="153.6" y2="70.4"/><line class="bp-pin" x1="161.6" y1="96.6" x2="161.6" y2="75.0"/><polygon class="bp-l bp-metal" points="-73.9,62.1 -39.0,82.3 -39.0,70.4 -73.9,50.2"/><polygon class="bp-r bp-metal" points="-20.3,71.5 -39.0,82.3 -39.0,70.4 -20.3,59.6"/><polygon class="bp-t bp-metal" points="-55.2,39.4 -20.3,59.6 -39.0,70.4 -73.9,50.2"/><polygon class="bp-l bp-metal" points="21.8,117.4 46.1,131.4 46.1,121.3 21.8,107.3"/><polygon class="bp-r bp-metal" points="64.8,120.6 46.1,131.4 46.1,121.3 64.8,110.5"/><polygon class="bp-t bp-metal" points="40.5,96.5 64.8,110.5 46.1,121.3 21.8,107.3"/><polygon class="bp-l bp-metal" points="61.1,140.0 85.4,154.1 85.4,144.0 61.1,130.0"/><polygon class="bp-r bp-metal" points="104.1,143.3 85.4,154.1 85.4,144.0 104.1,133.2"/><polygon class="bp-t bp-metal" points="79.8,119.2 104.1,133.2 85.4,144.0 61.1,130.0"/></svg><!-- /fig:part-pi --></div>
+        <div class="body"><span class="kicker"><b>A</b> board</span><h3>Raspberry Pi Zero 2 WH</h3><p>The default. "WH" means the 40-pin header is already soldered on. A Zero 2 W without header works too if you solder one yourself.</p></div>
+        <div class="meta"><span>qty 1</span><span>€ 20–25</span></div>
+      </div>
+      <div class="part">
+        <div class="art"><!-- fig:part-hat --><svg class="bp" viewBox="-100 -42 308 189" role="img" aria-label="Waveshare 2.13 inch e-Paper HAT V4"><polygon class="bp-l bp-plastic" points="3.2,23.7 161.6,115.2 161.6,84.6 3.2,-6.9"/><polygon class="bp-r bp-plastic" points="177.4,106.0 161.6,115.2 161.6,84.6 177.4,75.4"/><polygon class="bp-t bp-plastic" points="19.0,-16.0 177.4,75.4 161.6,84.6 3.2,-6.9"/><polygon class="bp-l bp-pcb" points="-93.5,23.4 109.1,140.4 109.1,134.6 -93.5,17.6"/><polygon class="bp-r bp-pcb" points="202.6,86.4 109.1,140.4 109.1,134.6 202.6,80.6"/><polygon class="bp-t bp-pcb" points="0.0,-36.4 202.6,80.6 109.1,134.6 -93.5,17.6"/><polygon class="bp-hole" points="4.4,-21.2 2.8,-20.6 1.0,-20.2 -1.0,-20.2 -2.8,-20.6 -4.4,-21.2 -5.5,-22.1 -6.1,-23.2 -6.1,-24.3 -5.5,-25.4 -4.4,-26.3 -2.8,-26.9 -1.0,-27.3 1.0,-27.3 2.8,-26.9 4.4,-26.3 5.5,-25.4 6.1,-24.3 6.1,-23.2 5.5,-22.1"/><polygon class="bp-hole" points="185.2,83.2 183.6,83.8 181.8,84.2 179.9,84.2 178.0,83.8 176.5,83.2 175.3,82.3 174.7,81.2 174.7,80.1 175.3,79.0 176.5,78.1 178.0,77.5 179.9,77.1 181.8,77.1 183.6,77.5 185.2,78.1 186.3,79.0 186.9,80.1 186.9,81.2 186.3,82.3"/><polygon class="bp-hole" points="-67.3,20.2 -68.9,20.8 -70.7,21.2 -72.7,21.2 -74.5,20.8 -76.1,20.2 -77.2,19.3 -77.8,18.2 -77.8,17.1 -77.2,16.0 -76.1,15.1 -74.5,14.5 -72.7,14.1 -70.7,14.1 -68.9,14.5 -67.3,15.1 -66.2,16.0 -65.6,17.1 -65.6,18.2 -66.2,19.3"/><polygon class="bp-hole" points="113.5,124.6 111.9,125.2 110.1,125.6 108.2,125.6 106.3,125.2 104.8,124.6 103.6,123.7 103.0,122.6 103.0,121.5 103.6,120.4 104.8,119.5 106.3,118.9 108.2,118.5 110.1,118.5 111.9,118.9 113.5,119.5 114.6,120.4 115.2,121.5 115.2,122.6 114.6,123.7"/><polygon class="bp-l bp-glass" points="-82.0,20.0 97.3,123.5 97.3,119.9 -82.0,16.4"/><polygon class="bp-r bp-glass" points="183.3,73.8 97.3,123.5 97.3,119.9 183.3,70.2"/><polygon class="bp-t bp-glass" points="4.1,-33.3 183.3,70.2 97.3,119.9 -82.0,16.4"/><polygon class="bp-l bp-flex" points="118.5,111.2 129.4,117.5 129.4,116.1 118.5,109.8"/><polygon class="bp-r bp-flex" points="173.0,92.3 129.4,117.5 129.4,116.1 173.0,90.9"/><polygon class="bp-t bp-flex" points="162.1,84.6 173.0,90.9 129.4,116.1 118.5,109.8"/><polygon class="bp-paper" points="8.7,-25.6 163.7,63.9 86.0,108.7 -68.9,19.3"/><image class="bp-screen" href="img/moods/ready.png" width="500" height="244" preserveAspectRatio="none" transform="matrix(0.3024 0.1746 -0.3028 0.1748 8.7 -23.4)"/></svg><!-- /fig:part-hat --></div>
+        <div class="body"><span class="kicker"><b>B</b> display</span><h3>Waveshare 2.13″ e-Paper HAT V4</h3><p>Black and white, 250 × 122 pixels. It must be the <strong>V4</strong>: the gotchi only ships a driver for this revision. The version is printed on the back of the board.</p></div>
+        <div class="meta"><span>qty 1</span><span>€ 18–22</span></div>
+      </div>
+      <div class="part">
+        <div class="art"><!-- fig:part-sd --><svg class="bp" viewBox="-68 -12 158 103" role="img" aria-label="microSD card"><polygon class="bp-l bp-card" points="-61.9,35.8 22.5,84.5 22.5,78.0 -61.9,29.2"/><polygon class="bp-r bp-card" points="84.4,48.8 22.5,84.5 22.5,78.0 84.4,42.2"/><polygon class="bp-t bp-card" points="0.0,-6.5 84.4,42.2 22.5,78.0 -61.9,29.2"/><text class="bp-silk" font-size="2.2" transform="matrix(5.629 3.250 -5.629 3.250 -22.5 26.0)">microSD</text></svg><!-- /fig:part-sd --></div>
+        <div class="body"><span class="kicker"><b>C</b> storage</span><h3>microSD card, 8 GB or more</h3><p>The image is small, so any size from 8 GB up is plenty. A name brand card (SanDisk, Samsung, Kingston) saves trouble.</p></div>
+        <div class="meta"><span>qty 1</span><span>€ 6–10</span></div>
+      </div>
+      <div class="part">
+        <div class="art"><!-- fig:part-cable --><svg class="bp" viewBox="-164 -23 183 207" role="img" aria-label="Micro-USB data cable"><polygon class="bp-l bp-metal " points="-35.0,5.8 -10.0,20.2 -10.0,10.6 -35.0,-3.8"/><polygon class="bp-r bp-metal " points="12.5,7.2 -10.0,20.2 -10.0,10.6 12.5,-2.4"/><polygon class="bp-t bp-metal " points="-12.5,-16.8 12.5,-2.4 -10.0,10.6 -35.0,-3.8"/><polygon class="bp-l" points="-83.1,32.4 -45.0,54.4 -45.0,32.0 -83.1,10.0"/><polygon class="bp-r" points="-3.5,30.4 -45.0,54.4 -45.0,32.0 -3.5,8.0"/><polygon class="bp-t" points="-41.6,-14.0 -3.5,8.0 -45.0,32.0 -83.1,10.0"/><path class="bp-cable " d="M-64.1,32.2 C-146.5,79.8 -158.3,113.8 -58.2,178.4"/></svg><!-- /fig:part-cable --></div>
+        <div class="body"><span class="kicker"><b>D</b> cable</span><h3>Micro-USB data cable</h3><p>It powers the gotchi and carries the data. It must be a <em>data</em> cable: many cheap charging cables have no data wires. For a Mac with only USB-C ports, take a USB-C to micro-USB cable.</p></div>
+        <div class="meta"><span>qty 1</span><span>€ 5</span></div>
+      </div>
     </div>
-    <p>Prices are a rough guide for Germany in 2026 and vary by shop.</p>
+    <p class="mono" style="color:var(--muted)">Prices are a rough guide for Germany in 2026 and vary by shop.</p>
 
-    <h2>Optional</h2>
-    <ul>
-      <li><strong>A case.</strong> Any Pi Zero case with room for a HAT on top, or a 3D printed one for the 2.13" e-Paper HAT. Several free designs exist.</li>
-      <li><strong>A PiSugar 3 battery</strong> (about € 30–40) to take the gotchi with you, no cable needed. It screws under the Pi Zero and connects through pogo pins, so no soldering. The gotchi finds it on its own, shows the charge in the header and shuts down cleanly before the battery is empty. The PiSugar 3 Plus works too.</li>
-      <li><strong>A USB power supply</strong> (5 V, 2 A, micro-USB) if the gotchi should run away from your computer, for example on Wi-Fi with the cloud relay.</li>
-      <li><strong>A microSD card reader</strong> if your computer has no slot, to flash the image.</li>
-    </ul>
-
-    <h2>Also works</h2>
-    <ul>
-      <li><strong>Raspberry Pi Zero W / WH</strong> (the first generation). There is a separate image for it. It is slower, which is fine for a display that refreshes a few times a minute.</li>
-    </ul>
-
-    <h2>Does not work</h2>
-    <ul>
-      <li>Older revisions of the 2.13" display (V1, V2, V3) and other display sizes. They need different drivers that are not in the image yet.</li>
-      <li>Raspberry Pi 3, 4 and 5. The image targets the Zero boards only.</li>
-      <li>Batteries and battery HATs. Not supported yet.</li>
-    </ul>
-
-    <div class="note">
-      <p>Got everything? Continue with the <a href="build.html">assembly guide</a>.</p>
-    </div>
+    <section class="block">
+      <div class="split">
+        <div>
+          <span class="kicker"><b>§ 01</b> / optional</span>
+          <h2>Nice to have.</h2>
+          <ul>
+            <li><strong>A case.</strong> Any Pi Zero case with room for a HAT on top, or a 3D printed one for the 2.13″ e-Paper HAT. Several free designs exist.</li>
+            <li><strong>A PiSugar 3 battery</strong> (about € 30–40) to take the gotchi with you, no cable needed. It screws under the Pi Zero and connects through pogo pins, so no soldering. The gotchi finds it on its own, shows the charge in the header and shuts down cleanly before the battery is empty. The PiSugar 3 Plus works too.</li>
+            <li><strong>A USB power supply</strong> (5 V, 2 A, micro-USB) if the gotchi should run away from your computer, for example on Wi-Fi with the cloud relay.</li>
+            <li><strong>A microSD card reader</strong> if your computer has no slot, to flash the image.</li>
+          </ul>
+          <span class="kicker" style="margin-top:34px"><b>§ 02</b> / compatibility</span>
+          <h2>Also works.</h2>
+          <ul>
+            <li><strong>Raspberry Pi Zero W / WH</strong> (the first generation). There is a separate image for it. It is slower, which is fine for a display that refreshes a few times a minute.</li>
+          </ul>
+          <h2>Does not work.</h2>
+          <ul>
+            <li>Older revisions of the 2.13″ display (V1, V2, V3) and other display sizes. They need different drivers that are not in the image yet.</li>
+            <li>Raspberry Pi 3, 4 and 5. The image targets the Zero boards only.</li>
+            <li>Other batteries and battery HATs. Only the PiSugar 3 is supported.</li>
+          </ul>
+        </div>
+        <figure class="plate"><div class="art"><!-- fig:stack --><svg class="bp" viewBox="-134 -76 504 418" role="img" aria-label="The assembled gotchi with its USB cable"><polygon class="bp-l bp-pcb" points="-114.3,66.0 133.4,209.0 133.4,202.8 -114.3,59.8"/><polygon class="bp-r bp-pcb" points="247.7,143.0 133.4,209.0 133.4,202.8 247.7,136.8"/><polygon class="bp-t bp-pcb" points="0.0,-6.2 247.7,136.8 133.4,202.8 -114.3,59.8"/><polygon class="bp-hole" points="5.3,12.3 3.4,13.1 1.2,13.5 -1.2,13.5 -3.4,13.1 -5.3,12.3 -6.7,11.2 -7.5,9.9 -7.5,8.6 -6.7,7.3 -5.3,6.2 -3.4,5.4 -1.2,4.9 1.2,4.9 3.4,5.4 5.3,6.2 6.7,7.3 7.5,8.6 7.5,9.9 6.7,11.2"/><polygon class="bp-hole" points="226.3,139.9 224.4,140.7 222.2,141.1 219.8,141.1 217.6,140.7 215.7,139.9 214.3,138.8 213.6,137.5 213.6,136.2 214.3,134.9 215.7,133.8 217.6,133.0 219.8,132.5 222.2,132.5 224.4,133.0 226.3,133.8 227.7,134.9 228.5,136.2 228.5,137.5 227.7,138.8"/><polygon class="bp-hole" points="-82.3,62.9 -84.2,63.7 -86.5,64.1 -88.8,64.1 -91.1,63.7 -93.0,62.9 -94.4,61.8 -95.1,60.5 -95.1,59.2 -94.4,57.9 -93.0,56.8 -91.1,56.0 -88.8,55.5 -86.5,55.5 -84.2,56.0 -82.3,56.8 -80.9,57.9 -80.2,59.2 -80.2,60.5 -80.9,61.8"/><polygon class="bp-hole" points="138.7,190.5 136.8,191.3 134.5,191.7 132.2,191.7 129.9,191.3 128.0,190.5 126.6,189.4 125.9,188.1 125.9,186.8 126.6,185.5 128.0,184.4 129.9,183.6 132.2,183.1 134.5,183.1 136.8,183.6 138.7,184.4 140.1,185.5 140.8,186.8 140.8,188.1 140.1,189.4"/><text class="bp-silk" font-size="2.3" transform="matrix(3.811 2.200 -3.811 2.200 -17.1 91.7)">Raspberry Pi Zero 2 W</text><polygon class="bp-l bp-metal" points="-78.1,45.5 -34.3,70.8 -34.3,65.1 -78.1,39.8"/><polygon class="bp-r bp-metal" points="11.4,44.4 -34.3,70.8 -34.3,65.1 11.4,38.7"/><polygon class="bp-t bp-metal" points="-32.4,13.4 11.4,38.7 -34.3,65.1 -78.1,39.8"/><polygon class="bp-l" points="148.6,176.4 160.8,183.5 160.8,178.2 148.6,171.2"/><polygon class="bp-r" points="214.2,152.7 160.8,183.5 160.8,178.2 214.2,147.4"/><polygon class="bp-t" points="202.0,140.4 214.2,147.4 160.8,178.2 148.6,171.2"/><polygon class="bp-l bp-chip" points="5.7,100.5 59.1,131.3 59.1,126.1 5.7,95.3"/><polygon class="bp-r bp-chip" points="112.4,100.5 59.1,131.3 59.1,126.1 112.4,95.3"/><polygon class="bp-t bp-chip" points="59.1,64.5 112.4,95.3 59.1,126.1 5.7,95.3"/><text class="bp-silk-chip" font-size="2.6" transform="matrix(3.811 2.200 -3.811 2.200 37.3 86.7)">RP3A0</text><polygon class="bp-l bp-chip" points="0.0,64.2 15.2,73.0 15.2,69.5 0.0,60.7"/><polygon class="bp-r bp-chip" points="30.5,64.2 15.2,73.0 15.2,69.5 30.5,60.7"/><polygon class="bp-t bp-chip" points="15.2,51.9 30.5,60.7 15.2,69.5 0.0,60.7"/><polygon class="bp-l bp-chip" points="106.7,125.8 125.7,136.8 125.7,133.3 106.7,122.3"/><polygon class="bp-r bp-chip" points="137.2,130.2 125.7,136.8 125.7,133.3 137.2,126.7"/><polygon class="bp-t bp-chip" points="118.1,115.7 137.2,126.7 125.7,133.3 106.7,122.3"/><polygon class="bp-l bp-plastic" points="3.9,22.8 197.5,134.6 197.5,123.6 3.9,11.8"/><polygon class="bp-r bp-plastic" points="216.8,123.4 197.5,134.6 197.5,123.6 216.8,112.4"/><polygon class="bp-t bp-plastic" points="23.2,0.7 216.8,112.4 197.5,123.6 3.9,11.8"/><line class="bp-pin" x1="23.2" y1="6.2" x2="23.2" y2="-20.2"/><line class="bp-pin" x1="32.9" y1="11.8" x2="32.9" y2="-14.6"/><line class="bp-pin" x1="42.6" y1="17.4" x2="42.6" y2="-9.0"/><line class="bp-pin" x1="52.3" y1="23.0" x2="52.3" y2="-3.4"/><line class="bp-pin" x1="62.0" y1="28.6" x2="62.0" y2="2.2"/><line class="bp-pin" x1="71.6" y1="34.2" x2="71.6" y2="7.8"/><line class="bp-pin" x1="81.3" y1="39.8" x2="81.3" y2="13.4"/><line class="bp-pin" x1="91.0" y1="45.4" x2="91.0" y2="19.0"/><line class="bp-pin" x1="100.7" y1="51.0" x2="100.7" y2="24.6"/><line class="bp-pin" x1="110.4" y1="56.5" x2="110.4" y2="30.1"/><line class="bp-pin" x1="120.0" y1="62.1" x2="120.0" y2="35.7"/><line class="bp-pin" x1="129.7" y1="67.7" x2="129.7" y2="41.3"/><line class="bp-pin" x1="139.4" y1="73.3" x2="139.4" y2="46.9"/><line class="bp-pin" x1="149.1" y1="78.9" x2="149.1" y2="52.5"/><line class="bp-pin" x1="158.7" y1="84.5" x2="158.7" y2="58.1"/><line class="bp-pin" x1="168.4" y1="90.1" x2="168.4" y2="63.7"/><line class="bp-pin" x1="178.1" y1="95.7" x2="178.1" y2="69.3"/><line class="bp-pin" x1="187.8" y1="101.2" x2="187.8" y2="74.8"/><line class="bp-pin" x1="197.5" y1="106.8" x2="197.5" y2="80.4"/><line class="bp-pin" x1="207.1" y1="112.4" x2="207.1" y2="86.0"/><line class="bp-pin" x1="13.6" y1="11.8" x2="13.6" y2="-14.6"/><line class="bp-pin" x1="23.2" y1="17.4" x2="23.2" y2="-9.0"/><line class="bp-pin" x1="32.9" y1="23.0" x2="32.9" y2="-3.4"/><line class="bp-pin" x1="42.6" y1="28.6" x2="42.6" y2="2.2"/><line class="bp-pin" x1="52.3" y1="34.2" x2="52.3" y2="7.8"/><line class="bp-pin" x1="62.0" y1="39.8" x2="62.0" y2="13.4"/><line class="bp-pin" x1="71.6" y1="45.4" x2="71.6" y2="19.0"/><line class="bp-pin" x1="81.3" y1="51.0" x2="81.3" y2="24.6"/><line class="bp-pin" x1="91.0" y1="56.5" x2="91.0" y2="30.1"/><line class="bp-pin" x1="100.7" y1="62.1" x2="100.7" y2="35.7"/><line class="bp-pin" x1="110.4" y1="67.7" x2="110.4" y2="41.3"/><line class="bp-pin" x1="120.0" y1="73.3" x2="120.0" y2="46.9"/><line class="bp-pin" x1="129.7" y1="78.9" x2="129.7" y2="52.5"/><line class="bp-pin" x1="139.4" y1="84.5" x2="139.4" y2="58.1"/><line class="bp-pin" x1="149.1" y1="90.1" x2="149.1" y2="63.7"/><line class="bp-pin" x1="158.7" y1="95.7" x2="158.7" y2="69.3"/><line class="bp-pin" x1="168.4" y1="101.2" x2="168.4" y2="74.8"/><line class="bp-pin" x1="178.1" y1="106.8" x2="178.1" y2="80.4"/><line class="bp-pin" x1="187.8" y1="112.4" x2="187.8" y2="86.0"/><line class="bp-pin" x1="197.5" y1="118.0" x2="197.5" y2="91.6"/><polygon class="bp-l bp-metal" points="-90.3,75.9 -47.6,100.5 -47.6,86.0 -90.3,61.4"/><polygon class="bp-r bp-metal" points="-24.8,87.3 -47.6,100.5 -47.6,86.0 -24.8,72.8"/><polygon class="bp-t bp-metal" points="-67.4,48.2 -24.8,72.8 -47.6,86.0 -90.3,61.4"/><polygon class="bp-l bp-metal bp-accent" points="26.7,143.4 56.4,160.6 56.4,148.3 26.7,131.1"/><polygon class="bp-r bp-metal bp-accent" points="79.3,147.4 56.4,160.6 56.4,148.3 79.3,135.1"/><polygon class="bp-t bp-metal bp-accent" points="49.5,117.9 79.3,135.1 56.4,148.3 26.7,131.1"/><polygon class="bp-l bp-metal" points="74.7,171.2 104.4,188.3 104.4,176.0 74.7,158.8"/><polygon class="bp-r bp-metal" points="127.3,175.1 104.4,188.3 104.4,176.0 127.3,162.8"/><polygon class="bp-t bp-metal" points="97.5,145.6 127.3,162.8 104.4,176.0 74.7,158.8"/><polygon class="bp-l bp-plastic" points="3.9,11.8 197.5,123.6 197.5,86.2 3.9,-25.6"/><polygon class="bp-r bp-plastic" points="216.8,112.4 197.5,123.6 197.5,86.2 216.8,75.0"/><polygon class="bp-t bp-plastic" points="23.2,-36.7 216.8,75.0 197.5,86.2 3.9,-25.6"/><polygon class="bp-l bp-pcb" points="-114.3,11.4 133.4,154.4 133.4,147.4 -114.3,4.4"/><polygon class="bp-r bp-pcb" points="247.7,88.4 133.4,154.4 133.4,147.4 247.7,81.4"/><polygon class="bp-t bp-pcb" points="0.0,-61.6 247.7,81.4 133.4,147.4 -114.3,4.4"/><polygon class="bp-hole" points="5.3,-43.1 3.4,-42.3 1.2,-41.9 -1.2,-41.9 -3.4,-42.3 -5.3,-43.1 -6.7,-44.2 -7.5,-45.5 -7.5,-46.9 -6.7,-48.2 -5.3,-49.3 -3.4,-50.1 -1.2,-50.5 1.2,-50.5 3.4,-50.1 5.3,-49.3 6.7,-48.2 7.5,-46.9 7.5,-45.5 6.7,-44.2"/><polygon class="bp-hole" points="226.3,84.5 224.4,85.3 222.2,85.7 219.8,85.7 217.6,85.3 215.7,84.5 214.3,83.4 213.6,82.1 213.6,80.7 214.3,79.4 215.7,78.3 217.6,77.5 219.8,77.1 222.2,77.1 224.4,77.5 226.3,78.3 227.7,79.4 228.5,80.7 228.5,82.1 227.7,83.4"/><polygon class="bp-hole" points="-82.3,7.5 -84.2,8.3 -86.5,8.7 -88.8,8.7 -91.1,8.3 -93.0,7.5 -94.4,6.4 -95.1,5.1 -95.1,3.7 -94.4,2.4 -93.0,1.3 -91.1,0.5 -88.8,0.1 -86.5,0.1 -84.2,0.5 -82.3,1.3 -80.9,2.4 -80.2,3.7 -80.2,5.1 -80.9,6.4"/><polygon class="bp-hole" points="138.7,135.1 136.8,135.9 134.5,136.3 132.2,136.3 129.9,135.9 128.0,135.1 126.6,134.0 125.9,132.7 125.9,131.3 126.6,130.0 128.0,128.9 129.9,128.1 132.2,127.7 134.5,127.7 136.8,128.1 138.7,128.9 140.1,130.0 140.8,131.3 140.8,132.7 140.1,134.0"/><polygon class="bp-l bp-glass" points="-100.2,7.3 118.9,133.8 118.9,129.4 -100.2,2.9"/><polygon class="bp-r bp-glass" points="224.1,73.0 118.9,133.8 118.9,129.4 224.1,68.6"/><polygon class="bp-t bp-glass" points="5.0,-57.9 224.1,68.6 118.9,129.4 -100.2,2.9"/><polygon class="bp-l bp-flex" points="144.8,118.8 158.1,126.5 158.1,124.7 144.8,117.0"/><polygon class="bp-r bp-flex" points="211.5,95.7 158.1,126.5 158.1,124.7 211.5,93.9"/><polygon class="bp-t bp-flex" points="198.1,86.2 211.5,93.9 158.1,124.7 144.8,117.0"/><polygon class="bp-paper" points="10.7,-48.4 200.1,60.9 105.2,115.7 -84.2,6.4"/><image class="bp-screen" href="img/moods/working.png" width="500" height="244" preserveAspectRatio="none" transform="matrix(0.3696 0.2134 -0.3701 0.2137 10.7 -45.8)"/><polygon class="bp-l bp-metal bp-accent" points="3.0,157.5 30.5,173.4 30.5,162.8 3.0,147.0"/><polygon class="bp-r bp-metal bp-accent" points="55.3,159.1 30.5,173.4 30.5,162.8 55.3,148.5"/><polygon class="bp-t bp-metal bp-accent" points="27.8,132.7 55.3,148.5 30.5,162.8 3.0,147.0"/><polygon class="bp-l bp-accent" points="-49.9,186.8 -8.0,211.0 -8.0,186.3 -49.9,162.1"/><polygon class="bp-r bp-accent" points="37.7,184.6 -8.0,211.0 -8.0,186.3 37.7,159.9"/><polygon class="bp-t bp-accent" points="-4.2,135.7 37.7,159.9 -8.0,186.3 -49.9,162.1"/><path class="bp-cable bp-accent" d="M-29.0,186.6 C-109.0,232.8 -120.4,265.8 -23.2,328.5"/><g class="bp-callout"><circle cx="232.4" cy="75.2" r="2.6"/><polyline points="232.4,75.2 245.7,49.2 270.4,49.2"/><text text-anchor="start" y="53.2"><tspan x="276.4" dy="0">E-PAPER HAT</tspan></text></g><g class="bp-callout"><circle cx="219.1" cy="146.7" r="2.6"/><polyline points="219.1,146.7 233.1,150.7 259.1,150.7"/><text text-anchor="start" y="154.7"><tspan x="265.1" dy="0">PI ZERO 2 W</tspan></text></g><g class="bp-callout bp-accent"><circle cx="18.7" cy="189.4" r="2.6"/><polyline points="18.7,189.4 39.7,217.4 78.7,217.4"/><text text-anchor="start" y="221.4"><tspan x="84.7" dy="0">TO YOUR COMPUTER</tspan></text></g></svg><!-- /fig:stack --></div><figcaption><span>Fig. 03 — assembled</span><span>a + b + d</span></figcaption></figure>
+      </div>
+      <div class="actions"><a class="button primary" href="build.html">Got everything? Assemble →</a></div>
+    </section>
   </main>
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>Claudegotchi is a hobby project, inspired by Pwnagotchi. Not affiliated with Anthropic.</p>
-      <p>MIT licensed. Fonts: DejaVu.</p>
+      <span><b>▚</b> claudegotchi · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
     </div>
   </footer>
 </body>
