@@ -17,8 +17,8 @@ relay.
   on different days). The hardware button is still to come.
 * **Accessories instead of colours**, since the display is black and white. The
   "gift from a friend" and the "far away" badge are not built.
-* **Crypto** is plain Python (`crypto.py`, checked against the RFC test vectors), so
-  nothing new has to be installed on the device or the Mac.
+* **Crypto** comes from libsodium through PyNaCl (`crypto.py` only names the
+  primitives): Ed25519, X25519, XChaCha20-Poly1305 and Argon2id for backups.
 * **Reset** forgets the key and friends, but keeps the critter's XP.
 
 ## Goal
@@ -209,8 +209,8 @@ public profile page for those who want one.
 | simulator | a fake nearby gotchi so all of this can be tried without hardware |
 | new: `community/` | site and API (phase 5+), separate from the device code |
 
-Crypto on the device uses one small, well-known library (PyNaCl or
-`cryptography`); both are in Buildroot.
+Crypto on the device uses one small, well-known library: PyNaCl (libsodium),
+which is in Buildroot.
 
 ## Open questions
 

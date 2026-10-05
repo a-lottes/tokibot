@@ -114,7 +114,7 @@ def make_backup(data_dir, passphrase):
     key = crypto.passphrase_key(passphrase, salt)
     sealed = crypto.seal(key, nonce, json.dumps(files).encode())
     b64 = lambda b: base64.b64encode(b).decode()
-    return json.dumps({"claudegotchi_backup": 1, "kdf": "pbkdf2-sha256", "iterations": 200_000,
+    return json.dumps({"claudegotchi_backup": 1, "kdf": crypto.KDF,
                        "salt": b64(salt), "nonce": b64(nonce), "data": b64(sealed)}).encode()
 
 
@@ -125,10 +125,11 @@ def read_backup(blob, passphrase):
         if d.get("claudegotchi_backup") != 1:
             raise ValueError
         salt, nonce, sealed = (base64.b64decode(d[k]) for k in ("salt", "nonce", "data"))
-        iterations = int(d.get("iterations", 200_000))
+        if d.get("kdf") != crypto.KDF:
+            raise ValueError
     except (ValueError, KeyError, TypeError):
         raise BackupError("This is not a Claudegotchi backup.")
-    plain = crypto.open_sealed(crypto.passphrase_key(passphrase, salt, iterations), nonce, sealed)
+    plain = crypto.open_sealed(crypto.passphrase_key(passphrase, salt), nonce, sealed)
     if plain is None:
         raise BackupError("Wrong passphrase, or the file is damaged.")
     files = json.loads(plain)

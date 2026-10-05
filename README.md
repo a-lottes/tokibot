@@ -116,7 +116,7 @@ app/       the service on the device (Python, Pillow)
   claudegotchi/identity.py   the gotchi's key pair, backup and restore
   claudegotchi/social.py     encounters and friendships (the Bluetooth protocol)
   claudegotchi/radio.py      Bluetooth LE over raw HCI, and a UDP radio for the simulator
-  claudegotchi/crypto.py     Ed25519, X25519, ChaCha20 in plain Python
+  claudegotchi/crypto.py     Ed25519, X25519, sealing, backups (libsodium via PyNaCl)
   claudegotchi/socialpage.py the social page in the browser
   tools/mockups.py           renders docs/mockups.png
 client/    hook and status line client for your computer, plus installer
@@ -126,7 +126,7 @@ os/        Buildroot extension (br2-external): defconfigs, board files, package
 ## Try it without hardware
 
 ```bash
-python3 -m pip install pillow
+python3 -m pip install pillow pynacl
 make test
 make sim                       # preview: http://localhost:8765/  (other port: make sim PORT=8766)
 CLAUDEGOTCHI_URL=http://localhost:8765 python3 client/claudegotchi_client.py test

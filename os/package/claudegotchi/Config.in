@@ -9,6 +9,7 @@ config BR2_PACKAGE_CLAUDEGOTCHI
 	select BR2_PACKAGE_PYTHON3_SSL # relay over https
 	select BR2_PACKAGE_CA_CERTIFICATES
 	select BR2_PACKAGE_BLUEZ5_UTILS_HEADERS # socket.AF_BLUETOOTH in Python
+	select BR2_PACKAGE_PYTHON_PYNACL # identity, friendship proofs, backups (libsodium)
 	help
 	  The Claudegotchi service: receives hook events from Claude Code
 	  and shows the mood on the e-paper.

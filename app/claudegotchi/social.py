@@ -53,7 +53,7 @@ OFFER_LINGER = 3 * 60         # keep sending our offer after the friendship, so 
 AUTO_AFTER_DAYS = 3           # "auto" befriends gotchis met on this many different days
 KNOWN_MAX = 300
 SAVE_EVERY = 30
-OFFER_LEN = 4 + 4 + 64 + 16 + 8
+OFFER_LEN = 4 + 4 + 64 + 16 + crypto.TAG_LEN
 MAX_OFFERS = 3                # friendship offers sent at the same time
 
 MOOD_CODES = ["idle", "ready", "working", "tired", "waiting", "permission", "done", "error", "limit"]
@@ -120,7 +120,7 @@ def _offer_key(ident, peer_pub):
 def encode_offer(ident, peer_pub, day):
     sig = ident.sign(proof_message(ident.pub, peer_pub, day))
     nonce = struct.pack(">I", day) + ident.pub[:8]
-    sealed = crypto.seal(_offer_key(ident, peer_pub), nonce, ident.beacon_secret, tag_len=8)
+    sealed = crypto.seal(_offer_key(ident, peer_pub), nonce, ident.beacon_secret)
     return hashlib.sha256(peer_pub).digest()[:4] + struct.pack(">I", day) + sig + sealed
 
 
@@ -133,7 +133,7 @@ def decode_offer(ident, sender_pub, blob):
     if not crypto.verify(sender_pub, proof_message(sender_pub, ident.pub, day), sig):
         return None
     secret = crypto.open_sealed(_offer_key(ident, sender_pub), struct.pack(">I", day) + sender_pub[:8],
-                                sealed, tag_len=8)
+                                sealed)
     return (day, sig, secret) if secret else None
 
 

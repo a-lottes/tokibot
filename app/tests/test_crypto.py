@@ -51,22 +51,19 @@ class X25519Test(unittest.TestCase):
         self.assertNotEqual(ka, crypto.shared_key(a, crypto.public_key(b), b"other"))
 
 
-class ChaChaTest(unittest.TestCase):
-    def test_rfc8439_vector(self):
-        key = bytes(range(32))
-        nonce = h("000000000000004a00000000")
-        text = (b"Ladies and Gentlemen of the class of '99: If I could offer you only one tip "
-                b"for the future, sunscreen would be it.")
-        ct = crypto.chacha20(key, nonce, text)
-        self.assertEqual(ct[:16], h("6e2e359a2568f98041ba0728dd0d6981"))
-        self.assertEqual(crypto.chacha20(key, nonce, ct), text)
-
+class SealTest(unittest.TestCase):
     def test_seal_and_open(self):
         key, nonce = bytes(32), bytes(12)
-        sealed = crypto.seal(key, nonce, b"secret", tag_len=8)
-        self.assertEqual(crypto.open_sealed(key, nonce, sealed, tag_len=8), b"secret")
+        sealed = crypto.seal(key, nonce, b"secret")
+        self.assertEqual(len(sealed), 6 + crypto.TAG_LEN)
+        self.assertEqual(crypto.open_sealed(key, nonce, sealed), b"secret")
         broken = bytes([sealed[0] ^ 1]) + sealed[1:]
-        self.assertIsNone(crypto.open_sealed(key, nonce, broken, tag_len=8))
+        self.assertIsNone(crypto.open_sealed(key, nonce, broken))
+        self.assertIsNone(crypto.open_sealed(key, bytes(11) + b"x", sealed))
+
+    def test_bad_peer_key(self):
+        with self.assertRaises(ValueError):
+            crypto.shared_key(crypto.new_seed(), bytes(32), b"test")
 
 
 if __name__ == "__main__":
