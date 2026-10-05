@@ -28,8 +28,12 @@ CASES = [
     ("newfriend", "Mochi07 and I are friends now!", "", {}, "bow", 1, 1),
     ("invite", "Tofu42 wants to be friends! Say yes on the social page.", "", {}, "none", 1, 0),
     ("badge", "New badge: Co-working!", "", {}, "glasses", 1, 1),
+    ("lowbattery", "Battery at 12% … plug me in?", "", {}, "none", 0, 0),
 ]
 ACCESSORY_CASES = ["cap", "bow", "glasses", "headphones", "nightcap", "party", "crown"]
+# With a PiSugar battery: the header shows the charge (lightning bolt = on power)
+BATTERY = {"lowbattery": {"pct": 12, "plugged": False}, "done": {"pct": 64, "plugged": True},
+           "idle": {"pct": 87, "plugged": False}}
 SCALE, PAD, COLS = 2, 16, 3
 
 
@@ -42,7 +46,7 @@ def main(out):
             view = {"mood": mood, "message": msg, "project": project, "counts": counts,
                     "sessions": sum(counts.values()), "tools_today": 12, "level": 4, "streak": 5,
                     "limits": {} if mood == "idle" else LIMITS, "accessory": accessory,
-                    "nearby": nearby, "friends_nearby": friends}
+                    "nearby": nearby, "friends_nearby": friends, "battery": BATTERY.get(mood)}
             tiles.append((f"{mood} {frame + 1}/{critter.frames(mood)}", painter.render(view, frame)))
     for accessory in ACCESSORY_CASES:
         view = {"mood": "ready", "message": f"Look, my {accessory}!", "project": "", "counts": {},

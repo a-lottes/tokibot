@@ -15,9 +15,10 @@ CELEBRATE_OVER = {"working", "done", "ready", "idle", "error"}
 
 
 class Brain:
-    def __init__(self, life=None, social=None):
+    def __init__(self, life=None, social=None, battery=None):
         self.life = life or Life()
         self.social = social          # social.Social, or None when Bluetooth social is off
+        self.battery = battery        # battery.BatteryMonitor, or None without a battery
         self.lock = threading.Lock()
         self.sessions = {}
         self.limits = {}          # {"five_hour": {"pct":.., "reset":..}, ...}
@@ -149,7 +150,10 @@ class Brain:
             soc = self.social.view(now)
         event = soc["event"] or {}
         celebrate = state in CELEBRATE_OVER
-        if now - life["level_up_at"] < LEVELUP_SHOW and celebrate:
+        battery = self.battery.state if self.battery else None
+        if self.battery and self.battery.low() and celebrate:
+            mood = "lowbattery"
+        elif now - life["level_up_at"] < LEVELUP_SHOW and celebrate:
             mood = "levelup"
         elif event.get("kind") == "newfriend" and celebrate:
             mood = "newfriend"
@@ -177,6 +181,7 @@ class Brain:
             "peer": soc["invite"] if mood == "invite" else (event.get("name") or LABELS["stranger"]),
             "peer_level": event.get("level") or "?",
             "badge": BADGES.get(life["last_badge"], ("?",))[0],
+            "battery": battery["pct"] if battery else "?",
         }
         key = mood
         if mood == "encounter" and event.get("kind") == "encounter_anon":
@@ -198,5 +203,6 @@ class Brain:
             "level": life["level"], "streak": life["streak"], "life": life,
             "nearby": soc["nearby"], "friends_nearby": len(soc["friends_nearby"]),
             "accessory": self.social.accessory() if self.social else "none",
+            "battery": dict(battery) if battery else None,
         }
 

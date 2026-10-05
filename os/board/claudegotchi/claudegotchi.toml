@@ -1,7 +1,7 @@
 # Claudegotchi settings
 #
 # This file lives on the SD card's boot partition. You can edit it directly on
-# your Mac (drive "CLAUDEGOTCHI"), then put the card back into the Pi.
+# your Mac (drive "GOTCHI"), then put the card back into the Pi.
 
 [device]
 # Display driver: "waveshare_2in13_v4"
@@ -42,3 +42,11 @@ auth = ""
 enabled = true
 # "auto" (Bluetooth on the device, a simulated radio in the simulator), "ble", "udp" or "off"
 radio = "auto"
+
+[battery]
+# Optional battery under the Pi. "auto" looks for a PiSugar 3 (or 3 Plus) on I2C and
+# shows nothing battery related without one. "pisugar3" insists on one, "none" turns it off.
+model = "auto"
+# Shut down cleanly at this charge (percent) when not on power, so the SD card stays
+# intact. 0 = never.
+shutdown_at = 5

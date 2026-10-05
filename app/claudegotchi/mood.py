@@ -10,7 +10,7 @@ PRIORITY = ["limit", "permission", "waiting", "error", "working", "done", "ready
 ANIM_PERIOD = {"working": 3, "tired": 6, "waiting": 4, "permission": 2,
                "done": 5, "error": 6, "limit": 20, "idle": 8, "ready": 6,
                "levelup": 2, "summary": 10, "hungry": 7,
-               "encounter": 2, "friend": 3, "newfriend": 2, "invite": 3, "badge": 2}
+               "encounter": 2, "friend": 3, "newfriend": 2, "invite": 3, "badge": 2, "lowbattery": 5}
 
 MESSAGES = {
     "working": ["Busy building …", "Tap tap tap …", "On it!", "Hmm, interesting …",
@@ -47,6 +47,9 @@ MESSAGES = {
     "invite": ["{peer} wants to be friends! Say yes on the social page.",
                "A friend request from {peer}!"],
     "badge": ["New badge: {badge}!", "I earned a badge: {badge}!"],
+    "lowbattery": ["Battery at {battery}% … plug me in?", "Running low: {battery}%",
+                   "Feeling weak … {battery}% left."],
+    "battery_off": ["Battery empty. Good night!"],
 }
 
 # Fallbacks for the {placeholders} above
@@ -108,6 +111,10 @@ ACCESSORIES = {
     "party": ("Party hat", "conference"),
     "crown": ("Crown", "ten_friends"),
 }
+
+# Battery (PiSugar, see battery.py)
+BATTERY_LOW = 15             # below this, without power, the critter asks to be plugged in
+BATTERY_POLL = 20            # seconds between battery readings
 
 WORKING_EVENTS = {
     "UserPromptSubmit", "UserPromptExpansion", "PreToolUse", "PostToolUse",

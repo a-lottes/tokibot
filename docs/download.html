@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Download · Claudegotchi</title>
+  <meta name="description" content="Download the Claudegotchi images and app bundle.">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./">claude<span>gotchi</span></a>
+      <nav class="site-nav">
+        <a href="./">Home</a>
+        <a href="parts.html">Shopping list</a>
+        <a href="build.html">Assembly</a>
+        <a href="download.html" aria-current="page">Download</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+      <main class="wrap">
+    <h1>Download</h1>
+    <p class="lead">Ready-made images for the SD card and the app bundle for updates without flashing.</p>
+
+    <div id="release">
+      <p>Looking for the latest release …</p>
+    </div>
+
+    <noscript>
+      <p>This page needs JavaScript to list the files. They are in the <a href="downloads/">downloads folder</a>.</p>
+    </noscript>
+
+    <h2>Which file do I need?</h2>
+    <ul>
+      <li><code>claudegotchi-zero2w.img.xz</code>: the image for the <strong>Raspberry Pi Zero 2 W</strong> (the default board).</li>
+      <li><code>claudegotchi-zerow.img.xz</code>: the image for the first <strong>Raspberry Pi Zero W</strong>.</li>
+      <li><code>claudegotchi-app.tar.gz</code>: only the app. Upload it on the gotchi's <a href="docs.html#updates">settings page</a> to update without reflashing.</li>
+    </ul>
+    <p>Flash an image with Raspberry Pi Imager (<em>Choose OS</em> → <em>Use custom</em>). There is no need to unpack the <code>.xz</code> file first. The <a href="build.html">assembly guide</a> walks through the rest.</p>
+
+    <h2>Check the download</h2>
+    <p>Compare the SHA-256 checksum with the one in the table:</p>
+    <pre><code>shasum -a 256 claudegotchi-zero2w.img.xz     # macOS
+sha256sum claudegotchi-zero2w.img.xz         # Linux</code></pre>
+  </main>
+
+  <script>
+    (function () {
+      var box = document.getElementById("release");
+      var boards = {
+        "claudegotchi-zero2w.img.xz": "Image for Raspberry Pi Zero 2 W",
+        "claudegotchi-zerow.img.xz": "Image for Raspberry Pi Zero W",
+        "claudegotchi-app.tar.gz": "App bundle (update without flashing)"
+      };
+      function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+      }
+      function size(n) {
+        return n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+      }
+      function none() {
+        box.innerHTML = '<div class="note"><p><strong>No release yet.</strong> The first images are still being built and tested. ' +
+          'Until then you can <a href="build.html">build the image yourself</a>.</p></div>';
+      }
+      fetch("downloads/latest.json", { cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (rel) {
+          if (!rel.files || !rel.files.length) return none();
+          var date = rel.published ? new Date(rel.published).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "";
+          var rows = rel.files.map(function (f) {
+            return "<tr><td><a href=\"downloads/" + encodeURIComponent(f.name) + "\" download><strong>" + esc(f.name) + "</strong></a><br>" +
+              esc(boards[f.name] || "") + "</td><td class=\"num\">" + size(f.size) + "</td><td><code class=\"hash\">" + esc(f.sha256) + "</code></td></tr>";
+          }).join("");
+          box.innerHTML = "<h2>Version " + esc(rel.version) + "</h2>" +
+            (date ? "<p>Released " + esc(date) + ".</p>" : "") +
+            "<div class=\"table-wrap\"><table><thead><tr><th>File</th><th>Size</th><th>SHA-256</th></tr></thead><tbody>" +
+            rows + "</tbody></table></div>";
+        })
+        .catch(none);
+    })();
+  </script>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Claudegotchi is a hobby project, inspired by Pwnagotchi. Not affiliated with Anthropic.</p>
+      <p>MIT licensed. Fonts: DejaVu.</p>
+    </div>
+  </footer>
+</body>
+</html>

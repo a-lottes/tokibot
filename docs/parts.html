@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shopping List · Claudegotchi</title>
+  <meta name="description" content="Everything you need to build a Claudegotchi.">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./">claude<span>gotchi</span></a>
+      <nav class="site-nav">
+        <a href="./">Home</a>
+        <a href="parts.html" aria-current="page">Shopping list</a>
+        <a href="build.html">Assembly</a>
+        <a href="download.html">Download</a>
+        <a href="docs.html">Docs</a>
+      </nav>
+    </div>
+  </header>
+
+    <main class="wrap">
+    <h1>Shopping list</h1>
+    <p class="lead">Four parts, no soldering if you pick a Pi with headers. Everything plugs together.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Part</th><th>Notes</th><th>Approx. price</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Raspberry Pi Zero 2 WH</strong></td>
+            <td>The default. "WH" means the 40-pin header is already soldered on. A Zero 2 W without header works too if you solder one yourself.</td>
+            <td class="num">€ 20–25</td>
+          </tr>
+          <tr>
+            <td><strong>Waveshare 2.13" e-Paper HAT V4</strong></td>
+            <td>Black and white, 250 × 122 pixels. It must be the <strong>V4</strong>: the gotchi only ships a driver for this revision. The version is printed on the back of the board.</td>
+            <td class="num">€ 18–22</td>
+          </tr>
+          <tr>
+            <td><strong>microSD card, 8 GB or more</strong></td>
+            <td>The image is small, so any size from 8 GB up is plenty. A name brand card (SanDisk, Samsung, Kingston) saves trouble.</td>
+            <td class="num">€ 6–10</td>
+          </tr>
+          <tr>
+            <td><strong>Micro-USB data cable</strong></td>
+            <td>It powers the gotchi and carries the data. It must be a <em>data</em> cable: many cheap charging cables have no data wires. For a Mac with only USB-C ports, take a USB-C to micro-USB cable.</td>
+            <td class="num">€ 5</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr><td>Total</td><td></td><td class="num">about € 50–60</td></tr>
+        </tfoot>
+      </table>
+    </div>
+    <p>Prices are a rough guide for Germany in 2026 and vary by shop.</p>
+
+    <h2>Optional</h2>
+    <ul>
+      <li><strong>A case.</strong> Any Pi Zero case with room for a HAT on top, or a 3D printed one for the 2.13" e-Paper HAT. Several free designs exist.</li>
+      <li><strong>A PiSugar 3 battery</strong> (about € 30–40) to take the gotchi with you, no cable needed. It screws under the Pi Zero and connects through pogo pins, so no soldering. The gotchi finds it on its own, shows the charge in the header and shuts down cleanly before the battery is empty. The PiSugar 3 Plus works too.</li>
+      <li><strong>A USB power supply</strong> (5 V, 2 A, micro-USB) if the gotchi should run away from your computer, for example on Wi-Fi with the cloud relay.</li>
+      <li><strong>A microSD card reader</strong> if your computer has no slot, to flash the image.</li>
+    </ul>
+
+    <h2>Also works</h2>
+    <ul>
+      <li><strong>Raspberry Pi Zero W / WH</strong> (the first generation). There is a separate image for it. It is slower, which is fine for a display that refreshes a few times a minute.</li>
+    </ul>
+
+    <h2>Does not work</h2>
+    <ul>
+      <li>Older revisions of the 2.13" display (V1, V2, V3) and other display sizes. They need different drivers that are not in the image yet.</li>
+      <li>Raspberry Pi 3, 4 and 5. The image targets the Zero boards only.</li>
+      <li>Batteries and battery HATs. Not supported yet.</li>
+    </ul>
+
+    <div class="note">
+      <p>Got everything? Continue with the <a href="build.html">assembly guide</a>.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Claudegotchi is a hobby project, inspired by Pwnagotchi. Not affiliated with Anthropic.</p>
+      <p>MIT licensed. Fonts: DejaVu.</p>
+    </div>
+  </footer>
+</body>
+</html>

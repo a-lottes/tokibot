@@ -22,6 +22,8 @@ class Renderer(threading.Thread):
         self.brain, self.display, self.painter = brain, display, Painter()
         self.last_key, self.last_draw, self.last_full, self.partials = None, 0.0, 0.0, 0
         self.frame = None
+        self.farewell = "offline"     # which goodbye to show (MESSAGES key)
+        self.said_goodbye = False
         self.stop_evt = threading.Event()
         self.draw_lock = threading.Lock()
 
@@ -47,7 +49,8 @@ class Renderer(threading.Thread):
         key = (view["mood"], frame, view["message"], view["project"], json.dumps(view["counts"], sort_keys=True),
                json.dumps({k: int(v["pct"]) for k, v in view["limits"].items()}, sort_keys=True),
                datetime.now().strftime("%H:%M"), view["sessions"], view.get("level"), view.get("streak"),
-               view.get("nearby"), view.get("friends_nearby"), view.get("accessory"))
+               view.get("nearby"), view.get("friends_nearby"), view.get("accessory"),
+               json.dumps(view.get("battery") and {k: view["battery"][k] for k in ("pct", "plugged")}))
         if key == self.last_key or now - self.last_draw < self.MIN_INTERVAL:
             return
         img = self.painter.render(view, frame)
@@ -65,11 +68,15 @@ class Renderer(threading.Thread):
     def goodbye(self):
         self.stop_evt.set()
         self.brain.life.maybe_save(force=True)
-        view = {"state": "offline", "mood": "offline", "message": MESSAGES["offline"][0],
+        last = self.brain.view()
+        view = {"state": "offline", "mood": "offline", "message": MESSAGES[self.farewell][0],
                 "project": "", "counts": {}, "sessions": 0, "limits": {}, "tools_today": 0,
-                "level": self.brain.view().get("level"), "streak": 0}
+                "level": last.get("level"), "streak": 0, "battery": last.get("battery")}
         try:
             with self.draw_lock:
+                if self.said_goodbye:
+                    return
+                self.said_goodbye = True
                 img = self.painter.render(view)
                 self.display.show(img, True)
                 self.frame = img

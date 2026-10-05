@@ -188,6 +188,8 @@ LOOKS = {
     "badge":      {"eyes": ["happy"], "mouth": "grin", "arms": ("up", "up"),
                    "props": [[("star", 72, -14), ("sparkle", -2, -6)],
                              [("star", 72, -20), ("sparkle", 2, -12), ("sparkle", 62, -4)]]},
+    "lowbattery": {"eyes": ["tired", "closed"], "mouth": "o", "arms": ("down", "down"),
+                   "props": [[("battery", 62, -12)], []]},
     "offline":    {"eyes": ["closed"], "mouth": "dot", "arms": ("down", "down"),
                    "props": [[("z_small", 66, -6), ("z_big", 74, -18)]]},
 }

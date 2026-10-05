@@ -1,0 +1,254 @@
+/* Claudegotchi website: plain static pages, no build step. */
+
+:root {
+  --paper: #f4f1ea;
+  --card: #fbfaf6;
+  --ink: #1b1a17;
+  --muted: #5e5a52;
+  --line: #d8d3c7;
+  --accent: #c2562f;
+  --accent-ink: #ffffff;
+  --code-bg: #ebe7dd;
+  --note-bg: #fff4d6;
+  --note-line: #e3c56b;
+  --radius: 10px;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #161512;
+    --card: #1f1e1a;
+    --ink: #ece8de;
+    --muted: #a39d90;
+    --line: #36332d;
+    --accent: #e07a52;
+    --accent-ink: #161512;
+    --code-bg: #26241f;
+    --note-bg: #2b2616;
+    --note-line: #6b5a24;
+  }
+  .screen img { filter: invert(0.92) hue-rotate(180deg); }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 17px/1.6 var(--sans);
+}
+
+a { color: var(--accent); text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+img { max-width: 100%; height: auto; }
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+
+/* Header */
+
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--card);
+}
+.site-header .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.brand {
+  font: 700 20px/1 var(--mono);
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.brand span { color: var(--accent); }
+.site-nav { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.site-nav a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--ink); }
+.site-nav a[aria-current="page"] { border-bottom: 2px solid var(--accent); }
+
+/* Content */
+
+main.wrap { padding-top: 32px; padding-bottom: 56px; }
+
+h1, h2, h3 { line-height: 1.25; letter-spacing: -0.01em; }
+h1 { font-size: clamp(30px, 6vw, 44px); margin: 0 0 12px; }
+h2 { font-size: 26px; margin: 48px 0 12px; padding-top: 8px; }
+h3 { font-size: 19px; margin: 28px 0 8px; }
+h2:first-child { margin-top: 0; }
+
+.lead { font-size: 20px; color: var(--muted); max-width: 40em; }
+
+p, ul, ol { max-width: 44em; }
+li { margin: 4px 0; }
+
+code, pre, kbd { font-family: var(--mono); font-size: 0.88em; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre {
+  background: var(--code-bg);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  overflow-x: auto;
+  line-height: 1.5;
+  max-width: 100%;
+}
+pre code { background: none; padding: 0; }
+kbd {
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 5px;
+  background: var(--card);
+}
+
+.note {
+  background: var(--note-bg);
+  border-left: 4px solid var(--note-line);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 20px 0;
+  max-width: 44em;
+}
+.note p { margin: 0; }
+.note p + p { margin-top: 8px; }
+
+/* Hero */
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; }
+}
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.button {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+.button.ghost { background: transparent; color: var(--accent); }
+
+/* The e-paper frame around screenshots */
+
+.screen {
+  margin: 0;
+  background: #2a2925;
+  padding: 14px;
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.screen img {
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+  border-radius: 3px;
+  background: #fff;
+}
+.screen figcaption { color: #c9c4b8; font: 13px/1.4 var(--mono); margin-top: 8px; }
+
+/* Grids and cards */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+.card h3 { margin-top: 0; }
+.card p { margin: 0; }
+
+.moods {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+  margin: 20px 0;
+}
+.moods .screen { padding: 10px; }
+
+/* Tables */
+
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+table { border-collapse: collapse; width: 100%; min-width: 520px; }
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+th { font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+td.num { white-space: nowrap; }
+tfoot td { font-weight: 600; border-bottom: none; }
+
+/* Step list for the assembly guide */
+
+ol.steps { list-style: none; padding: 0; counter-reset: step; max-width: none; }
+ol.steps > li {
+  counter-increment: step;
+  position: relative;
+  padding: 4px 0 8px 52px;
+  margin: 0 0 20px;
+}
+ol.steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  font: 700 17px/36px var(--mono);
+  text-align: center;
+}
+ol.steps h3 { margin-top: 4px; }
+
+/* Docs layout with a table of contents */
+
+.docs { display: grid; grid-template-columns: 210px 1fr; gap: 40px; }
+.toc { position: sticky; top: 16px; align-self: start; font-size: 15px; }
+.toc ul { list-style: none; padding: 0; margin: 0; }
+.toc a { color: var(--muted); text-decoration: none; display: block; padding: 3px 0; }
+.toc a:hover { color: var(--ink); }
+@media (max-width: 760px) {
+  .docs { grid-template-columns: 1fr; gap: 0; }
+  .toc { position: static; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; background: var(--card); margin-bottom: 24px; }
+}
+.docs-body { min-width: 0; }
+
+/* Footer */
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+  padding: 20px 0 32px;
+}
+.site-footer p { margin: 4px 0; max-width: none; }
+
+code.hash { font-size: 12px; word-break: break-all; background: none; padding: 0; }

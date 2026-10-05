@@ -31,6 +31,7 @@ Claude Code ── hooks + status line ──► claudegotchi_client.py ──HT
 | levelup | the critter just reached a new level |
 | summary | idle in the evening (18–23 h): the day's tally |
 | hungry | no work for two days or more |
+| lowbattery | on battery with 15 % or less left (only with a PiSugar) |
 
 With several sessions (e.g. worktrees), the state that needs you most wins. The
 footer shows how many sessions are working (▶), waiting for you (?) or done (✓),
@@ -98,6 +99,8 @@ other.
 * Raspberry Pi Zero 2 W (default) or Pi Zero W
 * Waveshare 2.13" e-Paper HAT V4 (250 × 122)
 * A USB data cable to your computer (micro-USB on the port labelled **USB**, not **PWR**)
+* Optional: a [PiSugar 3](https://github.com/PiSugar/PiSugar/wiki/PiSugar-3-Series) battery
+  (1200 mAh for the Zero), see [Battery](#battery)
 
 ## Repository
 
@@ -152,7 +155,7 @@ Flash it with Raspberry Pi Imager: *Use custom* and pick the `.img.xz`.
 
 ## Set up
 
-After flashing, the boot partition (`CLAUDEGOTCHI`) contains `claudegotchi.toml`.
+After flashing, the boot partition (`GOTCHI`) contains `claudegotchi.toml`.
 Put your Wi-Fi, token, rotation and time zone there if you need them. Without
 Wi-Fi, the gotchi only talks over the USB cable: your computer gets an address
 automatically and the gotchi is reachable at `192.168.77.1`.
@@ -225,6 +228,20 @@ The topic name is the secret: anyone who knows it can read the events (metadata
 only, see below) and could publish to it. The gotchi ignores relay messages
 without the right token. You can also run your own ntfy server and point
 `--relay` at it; set `[relay] auth` if it needs an access token.
+
+## Battery
+
+With a PiSugar 3 (or 3 Plus) screwed under the Pi, the gotchi runs without a cable.
+Nothing needs to be set up: at start it looks for the PiSugar on I2C (address 0x57)
+and, if there is one, shows the charge as a small battery in the header, with a
+lightning bolt while it is on power. On battery with 15 % or less, the critter asks
+to be plugged in. At 5 % it says good night and shuts down cleanly, so the SD card is
+not cut off mid-write. To start it again, charge it and switch it on with the PiSugar's button.
+
+Without a PiSugar nothing changes. Settings live under `[battery]` in
+`claudegotchi.toml` (`model = "auto" | "pisugar3" | "none"`, `shutdown_at`).
+Try it without hardware: `make sim BATTERY=sim` (a fake battery that drains and
+recharges, or `BATTERY=sim:20` to start at 20 %).
 
 ## What is in the image
 
