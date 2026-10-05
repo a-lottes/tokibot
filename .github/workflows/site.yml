@@ -4,6 +4,10 @@ name: Deploy website
 #   NETLIFY_AUTH_TOKEN  a personal access token from Netlify (User settings → Applications)
 #   NETLIFY_SITE_ID     the site's ID (Site configuration → General → Site details)
 # Pushes to main go live; pull requests that touch docs/ get a preview deploy.
+#
+# The download page serves the files of the latest GitHub release. The repository is
+# private, so release assets need a login; this workflow copies them into the site
+# instead. After "Build image" finishes it runs again, so a new release shows up there.
 
 on:
   push:
@@ -11,11 +15,17 @@ on:
     paths: ["docs/**", ".github/workflows/site.yml"]
   pull_request:
     paths: ["docs/**", ".github/workflows/site.yml"]
+  workflow_run:
+    workflows: ["Build image"]
+    types: [completed]
   workflow_dispatch:
 
 concurrency:
-  group: site-${{ github.ref }}
+  group: site-${{ github.event_name == 'pull_request' && github.ref || 'production' }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
@@ -27,6 +37,34 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Add the latest release to the download page
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p docs/downloads
+          if ! tag=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null); then
+            echo "No release yet, the download page says so."
+            exit 0
+          fi
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir docs/downloads \
+            --pattern '*.img.xz' --pattern 'claudegotchi-app.tar.gz'
+          published=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json publishedAt --jq .publishedAt)
+          python3 - "$tag" "$published" <<'PY'
+          import hashlib, json, os, sys
+          tag, published = sys.argv[1], sys.argv[2]
+          d = "docs/downloads"
+          order = ["claudegotchi-zero2w.img.xz", "claudegotchi-zerow.img.xz", "claudegotchi-app.tar.gz"]
+          files = []
+          for name in sorted(os.listdir(d), key=lambda n: (order.index(n) if n in order else 99, n)):
+              h = hashlib.sha256()
+              with open(os.path.join(d, name), "rb") as f:
+                  for chunk in iter(lambda: f.read(1 << 20), b""):
+                      h.update(chunk)
+              files.append({"name": name, "size": os.path.getsize(os.path.join(d, name)), "sha256": h.hexdigest()})
+          with open(os.path.join(d, "latest.json"), "w") as f:
+              json.dump({"version": tag.lstrip("v"), "tag": tag, "published": published, "files": files}, f, indent=2)
+          print(json.dumps(files, indent=2))
+          PY
       - name: Deploy to Netlify
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

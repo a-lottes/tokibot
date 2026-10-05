@@ -16,6 +16,7 @@
         <a href="./">Home</a>
         <a href="parts.html">Shopping list</a>
         <a href="build.html" aria-current="page">Assembly</a>
+        <a href="download.html">Download</a>
         <a href="docs.html">Docs</a>
       </nav>
     </div>
@@ -44,7 +45,7 @@
       </li>
       <li>
         <h3>Get the image</h3>
-        <p>Once a version is tagged, every GitHub release carries ready images: <code>claudegotchi-zero2w.img.xz</code> for the Pi Zero 2 W and <code>claudegotchi-zerow.img.xz</code> for the Pi Zero W.</p>
+        <p>Download the ready-made image from the <a href="download.html">download page</a>: <code>claudegotchi-zero2w.img.xz</code> for the Pi Zero 2 W or <code>claudegotchi-zerow.img.xz</code> for the Pi Zero W.</p>
         <p>You can also build it yourself on a Debian or Ubuntu machine. The first build downloads Buildroot and all sources and takes about an hour.</p>
         <pre><code>sudo apt-get install build-essential bc cpio rsync unzip file wget
 make zero2w      # or: make zerow
@@ -56,7 +57,7 @@ make zero2w      # or: make zerow
       </li>
       <li>
         <h3>Optional: Wi-Fi and settings</h3>
-        <p>After flashing, the card shows up on your computer as a drive called <code>CLAUDEGOTCHI</code>. It holds <code>claudegotchi.toml</code>. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk. To use it over Wi-Fi or with the cloud relay, fill in the <code>[wifi]</code> section:</p>
+        <p>After flashing, the card shows up on your computer as a drive called <code>GOTCHI</code>. It holds <code>claudegotchi.toml</code>. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk. To use it over Wi-Fi or with the cloud relay, fill in the <code>[wifi]</code> section:</p>
         <pre><code>[wifi]
 ssid = "MyNetwork"
 psk = "my-wifi-password"

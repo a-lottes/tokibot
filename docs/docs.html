@@ -16,6 +16,7 @@
         <a href="./">Home</a>
         <a href="parts.html">Shopping list</a>
         <a href="build.html">Assembly</a>
+        <a href="download.html">Download</a>
         <a href="docs.html" aria-current="page">Docs</a>
       </nav>
     </div>
@@ -97,7 +98,7 @@ python3 client/install_mac.py --uninstall                      # remove it again
 
       <h2 id="settings">Settings</h2>
       <p>Open <code>http://claudegotchi.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. The page changes Wi-Fi, time zone, rotation, token and relay. It writes <code>claudegotchi.toml</code> on the boot partition, keeps the comments in it, and restarts the gotchi. Once a token is set, the page asks for it.</p>
-      <p>You can also edit the file directly: put the card into your computer and open <code>claudegotchi.toml</code> on the <code>CLAUDEGOTCHI</code> drive.</p>
+      <p>You can also edit the file directly: put the card into your computer and open <code>claudegotchi.toml</code> on the <code>GOTCHI</code> drive.</p>
       <pre><code>[device]
 display = "waveshare_2in13_v4"
 rotate = 0                    # 180 if the picture is upside down
@@ -147,7 +148,7 @@ auth = ""                     # access token for a protected ntfy server</code><
       <h2 id="updates">Updates</h2>
       <p>The Python app updates in place. Only kernel or system changes need a new image.</p>
       <pre><code>make update GOTCHI=http://claudegotchi.local:8765 TOKEN=your-token</code></pre>
-      <p>This packs <code>app/</code> into <code>output/claudegotchi-app.tar.gz</code> and sends it to the gotchi. You can also upload that file on the settings page; every GitHub release carries one.</p>
+      <p>This packs <code>app/</code> into <code>output/claudegotchi-app.tar.gz</code> and sends it to the gotchi. You can also upload that file on the settings page; the <a href="download.html">download page</a> has the one from the latest release.</p>
       <p>The gotchi checks that the new version starts, keeps it in <code>/data/app</code>, and restarts. If it crashes three times in a row right after starting, it falls back to the version built into the image. "Back to the built-in version" on the settings page does the same by hand.</p>
 
       <h2 id="simulator">Simulator</h2>
@@ -163,7 +164,7 @@ make mockups                # every mood in docs/mockups.png</code></pre>
       <p>The operating system is built with Buildroot from the <code>os/</code> folder. There is one configuration per board:</p>
       <pre><code>make zero2w     # Raspberry Pi Zero 2 W (64-bit)
 make zerow      # Raspberry Pi Zero W</code></pre>
-      <p>On GitHub, the workflow <code>image.yml</code> builds both images for every <code>v*</code> tag and attaches them to the release, together with the app bundle.</p>
+      <p>On GitHub, the workflow <code>image.yml</code> builds both images for every <code>v*</code> tag and attaches them to the release, together with the app bundle. The website then picks them up for the <a href="download.html">download page</a>.</p>
       <ul>
         <li>Read-only root filesystem, <code>/tmp</code> and <code>/run</code> in RAM. Pulling the plug does not hurt the card.</li>
         <li>A 16 MB writable <code>data</code> partition at <code>/data</code> for the critter's progress and app updates.</li>
