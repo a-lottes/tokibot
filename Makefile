@@ -59,10 +59,16 @@ update: bundle
 	curl -fsS --data-binary @$(OUT)/claudegotchi-app.tar.gz -H 'X-Claudegotchi-Token: $(TOKEN)' \
 		$(GOTCHI)/update; echo
 
-$(BR_DIR):
-	git clone --depth 1 --branch $(BR_VERSION) https://gitlab.com/buildroot.org/buildroot.git $(BR_DIR)
+# Depends on Buildroot's Makefile, not on the folder: the CI cache restores
+# $(BR_DIR)/dl (the downloads) before Buildroot itself is there.
+$(BR_DIR)/Makefile:
+	rm -rf $(BR_DIR).clone
+	git clone --depth 1 --branch $(BR_VERSION) https://gitlab.com/buildroot.org/buildroot.git $(BR_DIR).clone
+	mkdir -p $(BR_DIR)
+	cp -a $(BR_DIR).clone/. $(BR_DIR)/
+	rm -rf $(BR_DIR).clone
 
-zero2w zerow: | $(BR_DIR)
+zero2w zerow: | $(BR_DIR)/Makefile
 	$(BR_MAKE) claudegotchi_$@_defconfig
 	$(BR_MAKE)
 
