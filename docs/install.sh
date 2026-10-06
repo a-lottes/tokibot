@@ -1,18 +1,18 @@
 #!/bin/sh
-# Installs the Claudegotchi client into Claude Code on macOS, Linux, or Windows
+# Installs the Tokibot client into Claude Code on macOS, Linux, or Windows
 # (in Git Bash, which comes with Git for Windows).
 #
-#   curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh
-#   curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --token my-secret
-#   curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only
-#   curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --uninstall
+#   curl -fsSL https://tokibot.lottes.dev/install.sh | sh
+#   curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --token my-secret
+#   curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --statusline-only
+#   curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --uninstall
 #
-# It downloads install.py, claudegotchi_client.py and claudegotchi.sh from this
+# It downloads install.py, tokibot_client.py and tokibot.sh from this
 # website into a temporary folder and runs the installer with the arguments you
 # pass after "--".
 set -eu
 
-SITE="${CLAUDEGOTCHI_SITE:-https://claudegotchi.lottes.dev}"
+SITE="${TOKIBOT_SITE:-https://tokibot.lottes.dev}"
 
 # On Windows "python3" is often missing or a stub that opens the Microsoft Store
 case "$(uname -s 2>/dev/null)" in
@@ -29,7 +29,7 @@ for c in $candidates; do
 done
 unset IFS
 if [ -z "$py" ]; then
-  echo "Claudegotchi needs Python 3.9 or newer. $hint" >&2
+  echo "Tokibot needs Python 3.9 or newer. $hint" >&2
   exit 1
 fi
 if [ ! -d "$HOME/.claude" ]; then
@@ -38,7 +38,7 @@ fi
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-for f in install.py claudegotchi_client.py claudegotchi.sh; do
+for f in install.py tokibot_client.py tokibot.sh; do
   curl -fsSL "$SITE/client/$f" -o "$tmp/$f"
 done
 $py "$tmp/install.py" "$@"

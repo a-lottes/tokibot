@@ -3,11 +3,11 @@ import os
 import tempfile
 import unittest
 
-from claudegotchi import identity, social
-from claudegotchi.identity import Identity
-from claudegotchi.life import Life
-from claudegotchi.radio import ad_payload, parse_reports
-from claudegotchi.social import Social
+from tokibot import identity, social
+from tokibot.identity import Identity
+from tokibot.life import Life
+from tokibot.radio import ad_payload, parse_reports
+from tokibot.social import Social
 
 T0 = 1_791_000_000.0           # some fixed point in time (2026)
 
@@ -241,7 +241,7 @@ class BackupTest(unittest.TestCase):
 
 class PageTest(unittest.TestCase):
     def test_social_page_renders(self):
-        from claudegotchi import socialpage
+        from tokibot import socialpage
         w = World()
         try:
             a, b = w.gotchis

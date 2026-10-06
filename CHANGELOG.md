@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+* Claudegotchi is now **Tokibot**, at https://tokibot.lottes.dev. Gotchis are called
+  `tokibot-xxxx` with the same four digits as before. Clients, plugins and gotchis from
+  before the rename keep working together: the old `X-Claudegotchi-*` headers and
+  name, `claudegotchi.toml`, `~/.claudegotchi`, `CLAUDEGOTCHI_*` variables and the old
+  relay messages are still understood, and friendships and backups stay valid.
+  Run `install.py` once to move the client to `~/.tokibot`. A gotchi on 0.4.0 cannot
+  update itself to this version, the app moved; flash the new image instead.
+* The website menu folds into a button on phones and small windows.
+* Four more harnesses: Kiro CLI 3, Cline, OpenCode and Amp (`install.py --harness`).
+  OpenCode and Amp get a small plugin; the OpenCode one brings the token counts of
+  every reply. Not yet tried against the real tools.
+* Highscores on the website: Level (all time), Glutton (most food) and Gourmet (XP per
+  food) for this week, this month and all time. Opt-in with *Join the highscores* on the
+  settings page; the gotchi signs its card with its own key and posts it hourly, or the
+  client posts it for a gotchi on the USB cable. Turning it off removes the entry.
 * Not only Claude Code: the client also reports OpenAI Codex CLI, Gemini CLI,
   GitHub Copilot CLI, Cursor and Devin Desktop (Windsurf) sessions. Pick them with
   `install.py --harness claude,codex,…` or `--harness auto`. The bubble names the
@@ -12,7 +27,7 @@
   stuffed and peckish. XP stay the overall level.
 * More displays, the ones common in Pwnagotchi builds: Waveshare 2.13" V1, V2, V3
   and V4, the 2.13" B V4 (black/white/red) and the 2.7" V1 and V2. Pick yours on the
-  settings page or with `display` in `claudegotchi.toml`; Pwnagotchi's names for them
+  settings page or with `display` in `tokibot.toml`; Pwnagotchi's names for them
   (`waveshare_3`, `waveshare_4`, …) work too. Panels without partial refresh redraw
   at most once a minute and skip the animations.
 * An unknown display name no longer stops the gotchi: it keeps running without a

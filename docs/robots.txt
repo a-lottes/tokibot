@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://claudegotchi.lottes.dev/sitemap.xml
+Sitemap: https://tokibot.lottes.dev/sitemap.xml

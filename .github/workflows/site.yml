@@ -10,13 +10,14 @@ name: Deploy website
 # instead. After "Build image" finishes it runs again, so a new release shows up there.
 # The client files are copied too, for docs/install.sh, and the Claude Code plugin is
 # packed as a zip with a marketplace.json, so /plugin marketplace add works from the site.
+# The highscores API (/api/scores) is a Netlify Function in netlify/, its data in Netlify Blobs.
 
 on:
   push:
     branches: [main]
-    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", ".github/workflows/site.yml"]
+    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", "netlify/**", ".github/workflows/site.yml"]
   pull_request:
-    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", ".github/workflows/site.yml"]
+    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", "netlify/**", ".github/workflows/site.yml"]
   workflow_run:
     workflows: ["Build image"]
     types: [completed]
@@ -39,6 +40,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install and test the highscores function
+        working-directory: netlify
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
       - name: Check that faq.html matches faq.md
         run: |
           (cd app && python3 tools/faq.py ../docs)
@@ -46,12 +52,12 @@ jobs:
       - name: Add the client, so install.sh works without access to the repository
         run: |
           mkdir -p docs/client
-          cp client/claudegotchi_client.py client/claudegotchi.sh client/install.py docs/client/
+          cp client/tokibot_client.py client/tokibot.sh client/install.py docs/client/
       - name: Add the Claude Code plugin and its marketplace
         env:
           PR: ${{ github.event.pull_request.number }}
         run: |
-          if [ -n "$PR" ]; then site="https://pr-$PR--claude-gotchi.netlify.app"; else site="https://claudegotchi.lottes.dev"; fi
+          if [ -n "$PR" ]; then site="https://pr-$PR--claude-gotchi.netlify.app"; else site="https://tokibot.lottes.dev"; fi
           python3 plugin/build.py docs "$site"
       - name: Add the latest release to the download page
         env:
@@ -63,13 +69,14 @@ jobs:
             exit 0
           fi
           gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir docs/downloads \
-            --pattern '*.img.xz' --pattern 'claudegotchi-app.tar.gz'
+            --pattern '*.img.xz' --pattern 'tokibot-app.tar.gz' --pattern 'claudegotchi-app.tar.gz'
           published=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json publishedAt --jq .publishedAt)
           python3 - "$tag" "$published" <<'PY'
           import hashlib, json, os, sys
           tag, published = sys.argv[1], sys.argv[2]
           d = "docs/downloads"
-          order = ["claudegotchi-zero2w.img.xz", "claudegotchi-zerow.img.xz", "claudegotchi-app.tar.gz"]
+          order = ["tokibot-zero2w.img.xz", "tokibot-zerow.img.xz", "tokibot-app.tar.gz",
+                   "claudegotchi-zero2w.img.xz", "claudegotchi-zerow.img.xz", "claudegotchi-app.tar.gz"]
           files = []
           for name in sorted(os.listdir(d), key=lambda n: (order.index(n) if n in order else 99, n)):
               h = hashlib.sha256()
@@ -91,9 +98,9 @@ jobs:
             exit 0
           fi
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            npx --yes netlify-cli@latest deploy --dir=docs --no-build \
+            npx --yes netlify-cli@latest deploy --dir=docs --functions=netlify/functions --no-build \
               --alias="pr-${{ github.event.number }}" --message="PR #${{ github.event.number }}"
           else
-            npx --yes netlify-cli@latest deploy --dir=docs --no-build --prod \
+            npx --yes netlify-cli@latest deploy --dir=docs --functions=netlify/functions --no-build --prod \
               --message="${{ github.sha }}"
           fi

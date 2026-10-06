@@ -4,11 +4,11 @@ import tarfile
 import tempfile
 import unittest
 
-from claudegotchi import settings, update
-from claudegotchi.config import DEFAULTS, _parse_simple_toml
+from tokibot import settings, update
+from tokibot.config import DEFAULTS, _parse_simple_toml
 
-TEMPLATE = os.path.join(os.path.dirname(__file__), "..", "..", "os", "board", "claudegotchi",
-                        "claudegotchi.toml")
+TEMPLATE = os.path.join(os.path.dirname(__file__), "..", "..", "os", "board", "tokibot",
+                        "tokibot.toml")
 APP = os.path.join(os.path.dirname(__file__), "..")
 
 
@@ -23,7 +23,7 @@ class TomlTest(unittest.TestCase):
         self.assertEqual(data["wifi"]["ssid"], 'My "Phone"')
         self.assertEqual((data["usb"]["enabled"], data["device"]["rotate"]), (False, 180))
         self.assertEqual((data["relay"]["extra"], data["new"]["key"]), ("x", "y"))
-        self.assertIn("# Claudegotchi settings", new)
+        self.assertIn("# Tokibot settings", new)
         self.assertEqual(data["wifi"]["country"], "DE")
 
     def test_form_keeps_empty_secrets(self):
@@ -60,8 +60,8 @@ class UpdateTest(unittest.TestCase):
             app_dir = os.path.join(d, "app")
             with open(out, "rb") as f:
                 version = update.install(f.read(), app_dir)
-            self.assertEqual(version, update.claudegotchi.__version__)
-            self.assertTrue(os.path.exists(os.path.join(app_dir, "claudegotchi", "fonts")))
+            self.assertEqual(version, update.tokibot.__version__)
+            self.assertTrue(os.path.exists(os.path.join(app_dir, "tokibot", "fonts")))
             with open(out, "rb") as f:
                 update.install(f.read(), app_dir)          # second time keeps the old one
             self.assertTrue(os.path.isdir(app_dir + ".old"))
@@ -74,7 +74,7 @@ class UpdateTest(unittest.TestCase):
             for data in (b"nope",
                          make_bundle({"../evil.py": b"x"}),
                          make_bundle({"other/x.py": b"x"}),
-                         make_bundle({"claudegotchi/__init__.py": b"raise SystemExit(3)\n"})):
+                         make_bundle({"tokibot/__init__.py": b"raise SystemExit(3)\n"})):
                 with self.assertRaises(update.UpdateError):
                     update.install(data, app_dir)
             self.assertFalse(os.path.exists(app_dir))

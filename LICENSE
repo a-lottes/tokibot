@@ -20,8 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-The Waveshare e-Paper driver in app/claudegotchi/displays/waveshare/epd2in13_V4.py
+The Waveshare e-Paper driver in app/tokibot/displays/waveshare/epd2in13_V4.py
 is taken from https://github.com/waveshareteam/e-Paper and keeps its own MIT notice.
 
-The DejaVu fonts in app/claudegotchi/fonts/ are distributed under their own license,
-see app/claudegotchi/fonts/LICENSE-DejaVu.
+The DejaVu fonts in app/tokibot/fonts/ are distributed under their own license,
+see app/tokibot/fonts/LICENSE-DejaVu.

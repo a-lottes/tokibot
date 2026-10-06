@@ -1,0 +1,12 @@
+{
+  "name": "tokibot-site-functions",
+  "private": true,
+  "type": "module",
+  "description": "Netlify Functions for tokibot.lottes.dev (highscores)",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.3"
+  }
+}

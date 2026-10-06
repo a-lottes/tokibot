@@ -1,6 +1,6 @@
 import unittest
 
-from claudegotchi import crypto
+from tokibot import crypto
 
 h = bytes.fromhex
 

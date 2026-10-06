@@ -1,16 +1,16 @@
-# Claudegotchi FAQ
+# Tokibot FAQ
 
-Answers to common questions and problems when setting up a Claudegotchi, an e-ink companion for Claude Code that runs on a Raspberry Pi Zero, on macOS, Linux and Windows. Every answer stands on its own. The same text is on https://claudegotchi.lottes.dev/faq.html.
+Answers to common questions and problems when setting up a Tokibot, an e-ink companion for Claude Code and other coding agents that runs on a Raspberry Pi Zero, on macOS, Linux and Windows. Every answer stands on its own. The same text is on https://tokibot.lottes.dev/faq.html.
 
 ## Basics
 
-### What is a Claudegotchi? {#what-is-it}
+### What is a Tokibot? {#what-is-it}
 
-A Claudegotchi is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your Claude Code sessions are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. Claude Code reports to it through hooks and its status line. The gotchi runs its own small operating system image, built with Buildroot.
+A Tokibot is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your coding agent sessions (Claude Code, Codex, Gemini CLI, Copilot CLI, Cursor, Devin, Kiro, Cline, OpenCode, Amp) are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. They report to it through hooks, and the tokens they use are its food. It was called Claudegotchi until version 0.4. The gotchi runs its own small operating system image, built with Buildroot.
 
 ### Do I need Claude Code? {#need-claude-code}
 
-Yes. The gotchi only shows what Claude Code is doing, so without Claude Code there is nothing to show. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see [How do cloud sessions reach the gotchi?](#cloud-relay).
+No, but you need at least one coding agent: Claude Code, OpenAI Codex CLI, Gemini CLI, GitHub Copilot CLI, Cursor, Devin Desktop (Windsurf), Kiro CLI, Cline, OpenCode or Amp. Pick them with `install.py --harness`, or `--harness auto` for all that are installed. Only Claude Code reports its rate limits and context, so the budget bars need it. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see [How do cloud sessions reach the gotchi?](#cloud-relay).
 
 ### Which computers are supported? {#supported-systems}
 
@@ -18,7 +18,7 @@ macOS, Linux and Windows. All of them need Python 3.9 or newer for the small cli
 
 ### Which hardware do I need? {#hardware}
 
-A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT (**V4** by default, V1 to V3 work too), a microSD card with 8 GB or more and a micro-USB **data** cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at https://claudegotchi.lottes.dev/parts.html.
+A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT (**V4** by default, V1 to V3 work too), a microSD card with 8 GB or more and a micro-USB **data** cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at https://tokibot.lottes.dev/parts.html.
 
 ### Does it work with a Raspberry Pi 3, 4 or 5, or another display? {#other-hardware}
 
@@ -26,7 +26,7 @@ The image targets the Pi Zero 2 W and the Pi Zero W only, so no Pi 3, 4 or 5. Fo
 
 ### I have a Pwnagotchi. Can I reuse its hardware? {#pwnagotchi}
 
-Yes, if it has one of the displays above: flash the Claudegotchi image onto a second microSD card and keep the Pwnagotchi card as it is. Set the display on the settings page, or copy the name from Pwnagotchi's `ui.display.type` into `display` in `claudegotchi.toml`; names like `waveshare_3` or `waveshare_4` are understood. A PiSugar 3 works as well.
+Yes, if it has one of the displays above: flash the Tokibot image onto a second microSD card and keep the Pwnagotchi card as it is. Set the display on the settings page, or copy the name from Pwnagotchi's `ui.display.type` into `display` in `tokibot.toml`; names like `waveshare_3` or `waveshare_4` are understood. A PiSugar 3 works as well.
 
 ### What data does the gotchi get? Does it see my code? {#privacy}
 
@@ -36,23 +36,23 @@ Only metadata: the event name, session ID, project folder name, tool name, error
 
 ### Which image do I download? {#which-image}
 
-`claudegotchi-zero2w.img.xz` for the Raspberry Pi Zero 2 W and `claudegotchi-zerow.img.xz` for the first-generation Pi Zero W. Both are on https://claudegotchi.lottes.dev/download.html with SHA-256 checksums. Flash the `.img.xz` file as it is; Raspberry Pi Imager unpacks it.
+`tokibot-zero2w.img.xz` for the Raspberry Pi Zero 2 W and `tokibot-zerow.img.xz` for the first-generation Pi Zero W. Both are on https://tokibot.lottes.dev/download.html with SHA-256 checksums. Flash the `.img.xz` file as it is; Raspberry Pi Imager unpacks it.
 
 ### How do I flash the card? {#flash}
 
-Open Raspberry Pi Imager, choose *Choose OS* → *Use custom*, pick the `.img.xz` file, choose the microSD card and write. Skip Imager's OS customisation (user, Wi-Fi, SSH): the Claudegotchi image does not use it and has its own settings file, `claudegotchi.toml`.
+Open Raspberry Pi Imager, choose *Choose OS* → *Use custom*, pick the `.img.xz` file, choose the microSD card and write. Skip Imager's OS customisation (user, Wi-Fi, SSH): the Tokibot image does not use it and has its own settings file, `tokibot.toml`.
 
 ### Windows says "You need to format the disk" after flashing. What do I do? {#windows-format-prompt}
 
-Click **Cancel**. Do not format. The card has partitions that Windows cannot read, which is normal for a Linux image. Formatting would erase the image. The partition Windows can read is called `GOTCHI` and holds `claudegotchi.toml`.
+Click **Cancel**. Do not format. The card has partitions that Windows cannot read, which is normal for a Linux image. Formatting would erase the image. The partition Windows can read is called `TOKIBOT` and holds `tokibot.toml`.
 
 ### macOS says "The disk you inserted was not readable by this computer". {#mac-disk-not-readable}
 
-Click **Ignore**. The card has a Linux partition that macOS cannot read, which is normal. The `GOTCHI` drive with `claudegotchi.toml` shows up next to it.
+Click **Ignore**. The card has a Linux partition that macOS cannot read, which is normal. The `TOKIBOT` drive with `tokibot.toml` shows up next to it.
 
 ### How do I check the download? {#checksum}
 
-Compare the SHA-256 checksum with the one on the download page. On macOS run `shasum -a 256 claudegotchi-zero2w.img.xz`, on Linux `sha256sum claudegotchi-zero2w.img.xz`, on Windows in PowerShell `Get-FileHash claudegotchi-zero2w.img.xz`.
+Compare the SHA-256 checksum with the one on the download page. On macOS run `shasum -a 256 tokibot-zero2w.img.xz`, on Linux `sha256sum tokibot-zero2w.img.xz`, on Windows in PowerShell `Get-FileHash tokibot-zero2w.img.xz`.
 
 ## Connecting over USB
 
@@ -71,7 +71,7 @@ Check these in order:
 
 ### What address does the gotchi have? {#address}
 
-Over the USB cable it is always `192.168.77.1`, port `8765`. Your computer gets an address from the gotchi automatically (DHCP, `192.168.77.2` to `.10`). On Wi-Fi the gotchi has a name of its own, `claudegotchi-xxxx.local`; it shows that name on screen until a client talks to it. See [Two gotchis on the same Wi-Fi](#several-gotchis). The gotchi does not route your internet traffic; your normal connection keeps working.
+Over the USB cable it is always `192.168.77.1`, port `8765`. Your computer gets an address from the gotchi automatically (DHCP, `192.168.77.2` to `.10`). On Wi-Fi the gotchi has a name of its own, `tokibot-xxxx.local`; it shows that name on screen until a client talks to it. See [Two gotchis on the same Wi-Fi](#several-gotchis). The gotchi does not route your internet traffic; your normal connection keeps working.
 
 ### Windows: the gotchi does not show up as a network adapter. {#windows-rndis}
 
@@ -93,7 +93,7 @@ The gotchi's DHCP server has not answered yet. Wait until the critter is on the 
 
 Set the new wired connection to DHCP. With NetworkManager it is usually automatic; if not, set IPv4 to *Automatic (DHCP)* for the adapter (`nmcli device` lists it, often named `usb0` or `enx…`). With systemd-networkd or a manual setup, run a DHCP client on that interface. The gotchi itself is always `192.168.77.1`.
 
-### `claudegotchi-xxxx.local` does not resolve. {#mdns}
+### `tokibot-xxxx.local` does not resolve. {#mdns}
 
 `.local` names need mDNS. On Linux install and start avahi with nss-mdns (on Debian and Ubuntu: `libnss-mdns`). On Windows `.local` lookups are often unreliable. Over the USB cable this does not matter: the client tries `192.168.77.1` first. On Wi-Fi you can set a fixed address instead, for example `--url http://192.168.1.50:8765` or the *Gotchi address* setting of the plugin.
 
@@ -101,7 +101,7 @@ Set the new wired connection to DHCP. With NetworkManager it is usually automati
 
 ### Plugin or install script: which one should I use? {#plugin-or-script}
 
-Either one, never both, or every event reaches the gotchi twice. The Claude Code plugin is the usual way: in Claude Code run `/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json` and `/plugin install claudegotchi@claudegotchi`. Plugins cannot set the status line, so add it with `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only`. Without the plugin, `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh` installs hooks and status line in one go.
+Either one, never both, or every event reaches the gotchi twice. The Claude Code plugin is the usual way: in Claude Code run `/plugin marketplace add https://tokibot.lottes.dev/marketplace.json` and `/plugin install tokibot@tokibot`. Plugins cannot set the status line, so add it with `curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --statusline-only`. Without the plugin, `curl -fsSL https://tokibot.lottes.dev/install.sh | sh` installs hooks and status line in one go.
 
 ### Why does the plugin need an extra step for the status line? {#statusline}
 
@@ -109,19 +109,19 @@ Claude Code plugins can add hooks but cannot set the status line. The gotchi lea
 
 ### `/plugin marketplace add` with the URL fails. {#plugin-url-fails}
 
-Update Claude Code. The plugin is served as a zip archive from the website, and archive sources need Claude Code 2.1.224 or newer. Also check that your network can reach `claudegotchi.lottes.dev`. As an alternative, `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh` installs the same client without the plugin system.
+Update Claude Code. The plugin is served as a zip archive from the website, and archive sources need Claude Code 2.1.224 or newer. Also check that your network can reach `tokibot.lottes.dev`. As an alternative, `curl -fsSL https://tokibot.lottes.dev/install.sh | sh` installs the same client without the plugin system.
 
 ### I installed both the plugin and install.sh. {#both-installed}
 
-Remove the hooks from one of them, or every event is counted twice. To keep the plugin, run `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --uninstall` and then `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only`. To keep the script instead, remove the plugin in `/plugin`.
+Remove the hooks from one of them, or every event is counted twice. To keep the plugin, run `curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --uninstall` and then `curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --statusline-only`. To keep the script instead, remove the plugin in `/plugin`.
 
 ### Windows: which terminal do I use for the commands? {#windows-terminal}
 
-Git Bash, which comes with Git for Windows. The `curl … | sh` commands and `sh ~/.claude/claudegotchi/claudegotchi.sh test` are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.
+Git Bash, which comes with Git for Windows. The `curl … | sh` commands and `sh ~/.tokibot/tokibot.sh test` are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.
 
 ### Windows: "python3" opens the Microsoft Store or is not found. {#windows-python}
 
-Install Python from https://www.python.org/downloads/ and keep the option that adds Python to PATH. On Windows `python3` is often only a stub that opens the Store. The Claudegotchi client and `install.sh` do not depend on it: in Git Bash they try `py -3`, then `python`, then `python3`, and take the first one that is Python 3.9 or newer.
+Install Python from https://www.python.org/downloads/ and keep the option that adds Python to PATH. On Windows `python3` is often only a stub that opens the Store. The Tokibot client and `install.sh` do not depend on it: in Git Bash they try `py -3`, then `python`, then `python3`, and take the first one that is Python 3.9 or newer.
 
 ### Windows: hooks do nothing, and Git for Windows is not installed. {#windows-no-git-bash}
 
@@ -133,14 +133,14 @@ Install them: click *Install*, or run `xcode-select --install`. They bring Pytho
 
 ### How do I test the connection? {#test}
 
-Run `sh ~/.claude/claudegotchi/claudegotchi.sh test` (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and `--statusline-only` put this file there.
+Run `sh ~/.tokibot/tokibot.sh test` (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and `--statusline-only` put this file there.
 
 ### The critter does not react to Claude Code. {#not-reacting}
 
 Check these in order:
 
 - Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.
-- Run the test: `sh ~/.claude/claudegotchi/claudegotchi.sh test`.
+- Run the test: `sh ~/.tokibot/tokibot.sh test`.
 - If the gotchi has a token, the client needs the same one: set it in `/plugin` (plugin) or run the install script again with `--token`.
 - If the test says 409, the address answered with another gotchi than yours, for example a friend's. Pair again with yours, see [How do I pair](#pairing).
 - Check that plugin and install script are not both installed, see [I installed both](#both-installed).
@@ -155,25 +155,25 @@ The state that needs you most wins: a permission request or a session waiting fo
 
 ### How do I remove the client? {#uninstall}
 
-Remove the plugin in `/plugin`, and the status line or full install with `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --uninstall`. The uninstall puts your previous status line back. A backup of your original settings is in `~/.claude/settings.json.claudegotchi-backup`.
+Remove the plugin in `/plugin`, and the status line or full install with `curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --uninstall`. The uninstall puts your previous status line back. A backup of your original settings is in `~/.claude/settings.json.tokibot-backup`.
 
 ## Wi-Fi, settings and security
 
 ### How do I put the gotchi on Wi-Fi? {#wifi}
 
-Either before the first start: put the card into your computer, open `claudegotchi.toml` on the `GOTCHI` drive and fill in `ssid`, `psk` and `country` under `[wifi]`. Or later in the browser: open `http://192.168.77.1:8765/settings` over the USB cable. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk.
+Either before the first start: put the card into your computer, open `tokibot.toml` on the `TOKIBOT` drive and fill in `ssid`, `psk` and `country` under `[wifi]`. Or later in the browser: open `http://192.168.77.1:8765/settings` over the USB cable. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk.
 
 ### Where are the settings? {#settings}
 
-On the settings page at `http://claudegotchi-xxxx.local:8765/settings`, or `http://192.168.77.1:8765/settings` over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes `claudegotchi.toml` on the card. You can also edit that file directly on the `GOTCHI` drive.
+On the settings page at `http://tokibot-xxxx.local:8765/settings`, or `http://192.168.77.1:8765/settings` over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes `tokibot.toml` on the card. You can also edit that file directly on the `TOKIBOT` drive.
 
 ### How do I pair my computer with my gotchi? {#pairing}
 
-The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: `--gotchi claudegotchi-xxxx`. To pair again later, run `sh ~/.claude/claudegotchi/claudegotchi.sh pair` (over USB) or `sh ~/.claude/claudegotchi/claudegotchi.sh pair claudegotchi-xxxx` (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in `claudegotchi.toml` and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.
+The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: `--gotchi tokibot-xxxx`. To pair again later, run `sh ~/.tokibot/tokibot.sh pair` (over USB) or `sh ~/.tokibot/tokibot.sh pair tokibot-xxxx` (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in `tokibot.toml` and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.
 
 ### Two gotchis on the same Wi-Fi: does mine get my events? {#several-gotchis}
 
-Yes. Every gotchi has its own network name, `claudegotchi-xxxx.local`, where `xxxx` comes from the Pi's serial number and stays the same after reflashing. The client sends your gotchi's name with every event, and a gotchi with another name refuses it (HTTP 409). A friend's gotchi on the same network never shows your sessions.
+Yes. Every gotchi has its own network name, `tokibot-xxxx.local`, where `xxxx` comes from the Pi's serial number and stays the same after reflashing. The client sends your gotchi's name with every event, and a gotchi with another name refuses it (HTTP 409). A friend's gotchi on the same network never shows your sessions.
 
 ### Should I set a token? {#token}
 
@@ -181,7 +181,7 @@ Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token,
 
 ### The picture is upside down. {#upside-down}
 
-Set *Rotate display* to 180 on the settings page, or `rotate = 180` under `[device]` in `claudegotchi.toml`.
+Set *Rotate display* to 180 on the settings page, or `rotate = 180` under `[device]` in `tokibot.toml`.
 
 ### The clock is wrong. {#clock}
 
@@ -189,13 +189,13 @@ Set your time zone on the settings page (`timezone`, for example `Europe/Berlin`
 
 ### Can I log in to the gotchi with SSH? {#ssh}
 
-No. The image has no SSH, and its root filesystem is read-only. Everything you can change is on the settings page or in `claudegotchi.toml`. App updates are uploaded on the settings page.
+No. The image has no SSH, and its root filesystem is read-only. Everything you can change is on the settings page or in `tokibot.toml`. App updates are uploaded on the settings page.
 
 ## Claude Code in the cloud
 
 ### How do cloud sessions reach the gotchi? {#cloud-relay}
 
-Sessions in a Claude Project or in Claude Code on the web run in a cloud container that cannot see your desk. They send their events to a relay, an ntfy topic, and the gotchi listens to that topic over Wi-Fi. Setup, once: give the gotchi Wi-Fi; create a relay with `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --new-relay` and enter the printed token and relay URL on the gotchi's settings page; print the setup script with `curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --cloud-setup > cloud-setup.sh`; on claude.ai add your own cloud environment that allows `ntfy.sh` and runs that script. The full walkthrough is at https://claudegotchi.lottes.dev/docs.html#cloud.
+Sessions in a Claude Project or in Claude Code on the web run in a cloud container that cannot see your desk. They send their events to a relay, an ntfy topic, and the gotchi listens to that topic over Wi-Fi. Setup, once: give the gotchi Wi-Fi; create a relay with `curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --new-relay` and enter the printed token and relay URL on the gotchi's settings page; print the setup script with `curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --cloud-setup > cloud-setup.sh`; on claude.ai add your own cloud environment that allows `ntfy.sh` and runs that script. The full walkthrough is at https://tokibot.lottes.dev/docs.html#cloud.
 
 ### Cloud sessions do not reach the gotchi. {#cloud-not-working}
 
@@ -214,11 +214,11 @@ The topic name is the secret: anyone who knows it can read the events, which are
 
 ### How do I fit the PiSugar 3 battery? {#pisugar-fit}
 
-Screw it under the Pi, battery side down, with the screws and spacers that come with it. Its pogo pins press against the pads of the first pins of the 40-pin header from below and carry power and I2C, so no soldering is needed. The display still goes on top. Step by step: https://claudegotchi.lottes.dev/build.html#battery.
+Screw it under the Pi, battery side down, with the screws and spacers that come with it. Its pogo pins press against the pads of the first pins of the 40-pin header from below and carry power and I2C, so no soldering is needed. The display still goes on top. Step by step: https://tokibot.lottes.dev/build.html#battery.
 
 ### The gotchi does not show the battery. {#pisugar-not-detected}
 
-The gotchi looks for the PiSugar on I2C (address 0x57) when it starts. If no battery shows in the header: check that the PiSugar is screwed on firmly so the pogo pins touch the header pads, then restart the gotchi. In `claudegotchi.toml`, `model` under `[battery]` must be `auto` or `pisugar3`, not `none`. Only the PiSugar 3 and 3 Plus are supported.
+The gotchi looks for the PiSugar on I2C (address 0x57) when it starts. If no battery shows in the header: check that the PiSugar is screwed on firmly so the pogo pins touch the header pads, then restart the gotchi. In `tokibot.toml`, `model` under `[battery]` must be `auto` or `pisugar3`, not `none`. Only the PiSugar 3 and 3 Plus are supported.
 
 ### Why did the gotchi switch itself off? {#battery-shutdown}
 
@@ -232,17 +232,27 @@ Check that the HAT sits flush on all 40 pins, and that it is the **V4** revision
 
 ### How do gotchis become friends? {#friends}
 
-Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at `http://claudegotchi-xxxx.local:8765/social`, tick *Open for new friends*, and press *Befriend* next to a gotchi nearby; its owner presses *Accept* on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (*Meet other gotchis*) or with `[social] enabled = false`.
+Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at `http://tokibot-xxxx.local:8765/social`, tick *Open for new friends*, and press *Befriend* next to a gotchi nearby; its owner presses *Accept* on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (*Meet other gotchis*) or with `[social] enabled = false`.
 
 ### How do I keep my critter's progress when I change the card? {#backup}
 
 Download a backup on the social page. It is encrypted with a passphrase you choose and holds the identity, friends and progress. Restore it on the new card or gotchi. Without a backup, all of that lives only on the SD card.
 
+## Highscores
+
+### How do I get on the highscores? {#highscores}
+
+Tick *Join the highscores* on the settings page (or set `[leaderboard] enabled = true`). The gotchi then posts a small card signed with its own key once an hour: its name from the social page, level, XP, best streak, and food and XP per day. Nothing about your projects, prompts or code. A gotchi without Wi-Fi gets posted by the client on your computer after a reply. Untick it and the gotchi asks the site to delete its entry. The lists are at https://tokibot.lottes.dev/highscores.html.
+
+### How are the highscores fair across harnesses and plans? {#highscores-fair}
+
+They count food points, not raw tokens: input, output and cache writes in full, cache reads at 10 %. Glutton counts only real token counts, never the estimates for harnesses that report none. Gourmet ranks XP per million food points, so getting a lot done with little counts too. Weeks and months are fixed calendar periods in UTC. No list looks at the 5-hour or weekly limits of any plan.
+
 ## Updates
 
 ### How do I update the gotchi? {#update}
 
-Download `claudegotchi-app.tar.gz` from https://claudegotchi.lottes.dev/download.html and upload it on the settings page. The gotchi checks that the new version starts and keeps it; if it crashes three times in a row right after starting, it goes back to the version built into the image. Kernel or system changes need a new image on the card.
+Download `tokibot-app.tar.gz` from https://tokibot.lottes.dev/download.html and upload it on the settings page. The gotchi checks that the new version starts and keeps it; if it crashes three times in a row right after starting, it goes back to the version built into the image. Kernel or system changes need a new image on the card.
 
 ### How do I update the client on my computer? {#update-client}
 

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://claudegotchi.lottes.dev/</loc></url>
-  <url><loc>https://claudegotchi.lottes.dev/parts.html</loc></url>
-  <url><loc>https://claudegotchi.lottes.dev/build.html</loc></url>
-  <url><loc>https://claudegotchi.lottes.dev/friends.html</loc></url>
-  <url><loc>https://claudegotchi.lottes.dev/download.html</loc></url>
-  <url><loc>https://claudegotchi.lottes.dev/docs.html</loc></url>
-  <url><loc>https://claudegotchi.lottes.dev/faq.html</loc></url>
-  <url><loc>https://claudegotchi.lottes.dev/faq.md</loc></url>
-  <url><loc>https://claudegotchi.lottes.dev/llms.txt</loc></url>
+  <url><loc>https://tokibot.lottes.dev/</loc></url>
+  <url><loc>https://tokibot.lottes.dev/parts.html</loc></url>
+  <url><loc>https://tokibot.lottes.dev/build.html</loc></url>
+  <url><loc>https://tokibot.lottes.dev/friends.html</loc></url>
+  <url><loc>https://tokibot.lottes.dev/highscores.html</loc></url>
+  <url><loc>https://tokibot.lottes.dev/download.html</loc></url>
+  <url><loc>https://tokibot.lottes.dev/docs.html</loc></url>
+  <url><loc>https://tokibot.lottes.dev/faq.html</loc></url>
+  <url><loc>https://tokibot.lottes.dev/faq.md</loc></url>
+  <url><loc>https://tokibot.lottes.dev/llms.txt</loc></url>
 </urlset>

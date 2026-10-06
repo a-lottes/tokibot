@@ -1,17 +1,19 @@
-# claudegotchi
+# Tokibot
 
-A small e-ink companion for Claude Code with its own slim operating system image.
-A pixel critter shows what your Claude Code sessions are up to: working, waiting
-for you, asking for permission, done, or running into a rate limit.
+A small e-ink companion for your coding agents with its own slim operating system
+image (formerly Claudegotchi). A pixel critter shows what your Claude Code, Codex,
+Gemini, Copilot, Cursor, Devin, Kiro, Cline, OpenCode or Amp sessions are up to: working, waiting for you,
+asking for permission, done, or running into a rate limit. The tokens they burn
+are its food.
 
 ![Every mood of the critter](docs/mockups.png)
 
 The idea comes from Pwnagotchi, but the image is its own thing. It is built with
-Buildroot, has no Debian and no Wi-Fi hacking tools, only the Claudegotchi service
+Buildroot, has no Debian and no Wi-Fi hacking tools, only the Tokibot service
 and the bare minimum around it.
 
 ```
-Claude Code ── hooks + status line ──► claudegotchi_client.py ──HTTP──► Pi: claudegotchi ──► e-paper
+Claude Code ── hooks + status line ──► tokibot_client.py ──HTTP──► Pi: tokibot ──► e-paper
                                           (USB cable or Wi-Fi)
 ```
 
@@ -85,11 +87,31 @@ The food fills a stomach that empties by half every 90 minutes. How full it is (
 food, so it works the same for a light and a heavy user and has nothing to do with
 any rate limit. 100 % is as full as while working on a usual day; from 150 % it is
 stuffed, below 10 % and idle during the day it is peckish. Harnesses that report no
-token counts (Copilot, Cursor, Devin) feed it an estimate per reply and tool call.
+token counts (Copilot, Cursor, Devin, Kiro, Cline, Amp) feed it an estimate per reply and tool call.
 
 The progress lives in `life.json` on the image's small writable `data` partition
-(`~/.claudegotchi/` in the simulator), so it survives reboots and updates of the
-root filesystem. All numbers and texts are in `app/claudegotchi/mood.py`.
+(`~/.tokibot/` in the simulator), so it survives reboots and updates of the
+root filesystem. All numbers and texts are in `app/tokibot/mood.py`.
+
+### Highscores
+
+Opt in with *Join the highscores* on the settings page (`[leaderboard] enabled`) and
+the gotchi shows up on [tokibot.lottes.dev/highscores.html](https://tokibot.lottes.dev/highscores.html):
+
+| List | Ranks by | Periods |
+|---|---|---|
+| Level | total XP | all time |
+| Glutton | food points, real token counts only (no estimates) | week, month, all time |
+| Gourmet | XP per million food points, from 2M food on | week, month, all time |
+
+Weeks start on Monday, months on the first, both in UTC; no list looks at a rate
+limit. The gotchi signs a small card (name, level, XP, best streak, food and XP per
+day for the last five weeks) with its Ed25519 key and posts it once an hour when it
+has Wi-Fi. For a gotchi on the USB cable only, the client fetches the signed card
+from `GET /score` after a reply and posts it, also at most once an hour. Turning it
+off posts a signed removal. The site (`netlify/`, a Netlify Function with Netlify
+Blobs) checks signature, clock and that the numbers are possible; it cannot prove what
+a gotchi really ate, so it is a game, not an audit.
 
 ## Friends
 
@@ -117,7 +139,7 @@ the design leaves room for a community site with chat later
 * **On the display.** ♥ and the number of friends nearby (● for other gotchis) next to
   the clock; the critter waves at new gotchis and celebrates new friends.
 
-Open `http://claudegotchi-xxxx.local:8765/social` (or `/social` in the simulator) to see
+Open `http://tokibot-xxxx.local:8765/social` (or `/social` in the simulator) to see
 who is nearby, befriend them, pick an accessory and download a **backup**. The
 identity, friends and progress only live on the SD card; the backup is encrypted
 with a passphrase you choose and restores everything on a new card or gotchi.
@@ -138,7 +160,7 @@ other.
 ## Hardware
 
 * Raspberry Pi Zero 2 W (default) or Pi Zero W
-* A Waveshare e-Paper HAT, set in `claudegotchi.toml` (`[device] display`) or on the
+* A Waveshare e-Paper HAT, set in `tokibot.toml` (`[device] display`) or on the
   settings page:
 
   | Display | `display =` | Pwnagotchi name |
@@ -162,22 +184,22 @@ other.
 
 ```
 app/       the service on the device (Python, Pillow)
-  claudegotchi/brain.py      folds all sessions into one mood
-  claudegotchi/feeling.py    how the work is going: valence, energy, stuck, proud, …
-  claudegotchi/critter.py    the pixel critter and its expressions
-  claudegotchi/painter.py    header, critter, speech bubble, status bar
-  claudegotchi/mood.py       all display texts (one place, ready for i18n)
-  claudegotchi/displays/     display drivers (simulator, Waveshare 2.13" V1–V4, 2.13" B, 2.7")
-  claudegotchi/config.py     reads claudegotchi.toml
-  claudegotchi/relay.py      listens to an ntfy topic for cloud sessions
-  claudegotchi/life.py       experience, levels, streaks and daily stats
-  claudegotchi/settings.py   the settings page in the browser
-  claudegotchi/update.py     app updates without flashing
-  claudegotchi/identity.py   the gotchi's key pair, backup and restore
-  claudegotchi/social.py     encounters and friendships (the Bluetooth protocol)
-  claudegotchi/radio.py      Bluetooth LE over raw HCI, and a UDP radio for the simulator
-  claudegotchi/crypto.py     Ed25519, X25519, sealing, backups (libsodium via PyNaCl)
-  claudegotchi/socialpage.py the social page in the browser
+  tokibot/brain.py      folds all sessions into one mood
+  tokibot/feeling.py    how the work is going: valence, energy, stuck, proud, …
+  tokibot/critter.py    the pixel critter and its expressions
+  tokibot/painter.py    header, critter, speech bubble, status bar
+  tokibot/mood.py       all display texts (one place, ready for i18n)
+  tokibot/displays/     display drivers (simulator, Waveshare 2.13" V1–V4, 2.13" B, 2.7")
+  tokibot/config.py     reads tokibot.toml
+  tokibot/relay.py      listens to an ntfy topic for cloud sessions
+  tokibot/life.py       experience, levels, streaks and daily stats
+  tokibot/settings.py   the settings page in the browser
+  tokibot/update.py     app updates without flashing
+  tokibot/identity.py   the gotchi's key pair, backup and restore
+  tokibot/social.py     encounters and friendships (the Bluetooth protocol)
+  tokibot/radio.py      Bluetooth LE over raw HCI, and a UDP radio for the simulator
+  tokibot/crypto.py     Ed25519, X25519, sealing, backups (libsodium via PyNaCl)
+  tokibot/socialpage.py the social page in the browser
   tools/mockups.py           renders docs/mockups.png
 client/    hook and status line client for your computer, plus installer
 os/        Buildroot extension (br2-external): defconfigs, board files, package
@@ -189,7 +211,7 @@ os/        Buildroot extension (br2-external): defconfigs, board files, package
 python3 -m pip install pillow pynacl
 make test
 make sim                       # preview: http://localhost:8765/  (other port: make sim PORT=8766)
-CLAUDEGOTCHI_URL=http://localhost:8765 python3 client/claudegotchi_client.py test
+TOKIBOT_URL=http://localhost:8765 python3 client/tokibot_client.py test
 make mockups                   # every mood in docs/mockups.png
 ```
 
@@ -205,9 +227,9 @@ make zero2w      # or: make zerow
 ```
 
 You only need this to change the image yourself; ready-made images are on the
-[download page](https://claudegotchi.lottes.dev/download.html). The first build
+[download page](https://tokibot.lottes.dev/download.html). The first build
 downloads Buildroot and all sources and takes about an hour.
-Result: `output/zero2w/images/claudegotchi-zero2w.img.xz`. On GitHub, the workflow
+Result: `output/zero2w/images/tokibot-zero2w.img.xz`. On GitHub, the workflow
 `.github/workflows/image.yml` builds both images for every `v*` tag and attaches
 them, with the app bundle, to the release.
 
@@ -215,7 +237,7 @@ Flash it with Raspberry Pi Imager: *Use custom* and pick the `.img.xz`.
 
 ## Set up
 
-After flashing, the boot partition (`GOTCHI`) contains `claudegotchi.toml`.
+After flashing, the boot partition (`TOKIBOT`) contains `tokibot.toml`.
 Put your Wi-Fi, token, rotation and time zone there if you need them. Without
 Wi-Fi, the gotchi only talks over the USB cable: your computer gets an address
 automatically and the gotchi is reachable at `192.168.77.1`.
@@ -224,7 +246,7 @@ On your computer:
 
 ```bash
 python3 client/install.py          # address "auto": USB first, then your gotchi's name on Wi-Fi
-sh ~/.claude/claudegotchi/claudegotchi.sh test
+sh ~/.tokibot/tokibot.sh test
 ```
 
 ### Other coding harnesses
@@ -243,31 +265,39 @@ python3 client/install.py --harness auto                  # all found on this co
 | Claude Code | `~/.claude/settings.json` (or the plugin) | from the transcript |
 | OpenAI Codex CLI | `~/.codex/hooks.json` (approve them once with `/hooks` in Codex) | from the rollout log |
 | Gemini CLI | `~/.gemini/settings.json` | from the session file |
-| GitHub Copilot CLI | `~/.copilot/hooks/claudegotchi.json` | estimated |
+| GitHub Copilot CLI | `~/.copilot/hooks/tokibot.json` | estimated |
 | Cursor | `~/.cursor/hooks.json` | estimated |
 | Devin Desktop (Windsurf) | `~/.codeium/windsurf/hooks.json` | estimated |
+| Kiro CLI 3 | `~/.kiro/hooks/tokibot.json` | estimated |
+| Cline | scripts in `~/Documents/Cline/Hooks/` (macOS, Linux) | estimated |
+| OpenCode | plugin `~/.config/opencode/plugins/tokibot.ts` | from the plugin, per reply |
+| Amp | plugin `~/.config/amp/plugins/tokibot.ts` | estimated |
 
 The client translates every harness into Claude Code's hook events, so the gotchi
 only knows one vocabulary. Cursor also runs the hooks from `~/.claude/settings.json`;
 the client recognises that and reports those sessions as Cursor (or drops them, when
-Cursor's own hooks are installed). Without Claude Code there is no 5-hour budget bar,
+Cursor's own hooks are installed). OpenCode and Amp have no command hooks, only
+plugins that Bun runs; the installer writes a small one that hands every event to
+the client. Cline keeps an existing hook script of the same name and skips that
+event. Kiro, Cline, OpenCode and Amp are built from their documentation and not yet
+tried against the real tools. Without Claude Code there is no 5-hour budget bar,
 and the limit mood only shows when a harness reports a rate-limit error.
 
 ### Which gotchi?
 
-Every gotchi has its own network name, `claudegotchi-xxxx`, where `xxxx` comes from
+Every gotchi has its own network name, `tokibot-xxxx`, where `xxxx` comes from
 the Pi's serial number. It shows the name on screen until a client talks to it. So
 two gotchis on the same Wi-Fi (yours and a friend's) never answer to the same name.
 
 The installer pairs the client with your gotchi: plug the gotchi in with the USB
-cable, or pass its name with `--gotchi claudegotchi-xxxx` for Wi-Fi only. Pairing
+cable, or pass its name with `--gotchi tokibot-xxxx` for Wi-Fi only. Pairing
 remembers the name and, if the gotchi has no token yet, the gotchi makes one, saves
-it in `claudegotchi.toml` and hands it to this computer. From then on it only takes
+it in `tokibot.toml` and hands it to this computer. From then on it only takes
 events from clients with that token. Pair again any time:
 
 ```bash
-sh ~/.claude/claudegotchi/claudegotchi.sh pair                    # over USB
-sh ~/.claude/claudegotchi/claudegotchi.sh pair claudegotchi-xxxx  # over Wi-Fi
+sh ~/.tokibot/tokibot.sh pair                    # over USB
+sh ~/.tokibot/tokibot.sh pair tokibot-xxxx  # over Wi-Fi
 ```
 
 The client sends the gotchi's name with every event. A gotchi with another name
@@ -279,11 +309,11 @@ the old file, and leaves your existing hooks and status line alone.
 Remove it with `python3 client/install.py --uninstall`.
 
 Or install it as a Claude Code plugin from this repository (or from the
-website's `https://claudegotchi.lottes.dev/marketplace.json`):
+website's `https://tokibot.lottes.dev/marketplace.json`):
 
 ```
 /plugin marketplace add a-lottes/claudegotchi
-/plugin install claudegotchi@claudegotchi
+/plugin install tokibot@tokibot
 ```
 
 The plugin brings the hooks only, because plugins cannot set the status line.
@@ -292,14 +322,14 @@ the plugin or the full installer, not both. `plugin/build.py` packs the plugin
 for the website.
 
 Problems during setup? [docs/faq.md](docs/faq.md) answers the common ones per
-operating system (also at https://claudegotchi.lottes.dev/faq.html). After editing it,
+operating system (also at https://tokibot.lottes.dev/faq.html). After editing it,
 run `make faq` to rebuild the page.
 
 ## Settings in the browser
 
-Open `http://claudegotchi-xxxx.local:8765/settings` (or `http://192.168.77.1:8765/settings`
+Open `http://tokibot-xxxx.local:8765/settings` (or `http://192.168.77.1:8765/settings`
 over USB) to change Wi-Fi, time zone, rotation, token and relay. The page writes
-`claudegotchi.toml` on the boot partition, keeps its comments, and restarts the
+`tokibot.toml` on the boot partition, keeps its comments, and restarts the
 gotchi. Once a token is set, the page asks for it. Editing the file on the SD
 card still works too.
 
@@ -309,10 +339,10 @@ The Python app can be updated in place; only kernel or system changes need a new
 image.
 
 ```bash
-make update GOTCHI=http://claudegotchi-xxxx.local:8765 TOKEN=your-token
+make update GOTCHI=http://tokibot-xxxx.local:8765 TOKEN=your-token
 ```
 
-This packs `app/` into `output/claudegotchi-app.tar.gz` and sends it to the gotchi.
+This packs `app/` into `output/tokibot-app.tar.gz` and sends it to the gotchi.
 You can also upload that file on the settings page; every GitHub release carries
 one. The gotchi checks that the new version starts, keeps it in `/data/app`, and
 restarts. If it crashes three times in a row right after starting, it falls back
@@ -335,7 +365,7 @@ the gotchi keeps one outgoing connection to it, so it works behind any hotspot.
    ```
 
    It prints a `[server]` token and a `[relay]` url. Put both into
-   `claudegotchi.toml` on the gotchi, and give it Wi-Fi (the phone hotspot works).
+   `tokibot.toml` on the gotchi, and give it Wi-Fi (the phone hotspot works).
 2. Print a setup script for the cloud environment and paste it into the
    environment's setup script:
 
@@ -349,7 +379,7 @@ the gotchi keeps one outgoing connection to it, so it works behind any hotspot.
    settings → Cloud environment → Add cloud environment). Under Network access
    choose Custom and add `ntfy.sh` to the allowed domains; paste `cloud-setup.sh`
    as the setup script. The built-in environment blocks ntfy.sh. New sessions then
-   report through the relay. Full walkthrough: https://claudegotchi.lottes.dev/docs.html#cloud
+   report through the relay. Full walkthrough: https://tokibot.lottes.dev/docs.html#cloud
 
 The topic name is the secret: anyone who knows it can read the events (metadata
 only, see below) and could publish to it. The gotchi ignores relay messages
@@ -366,7 +396,7 @@ to be plugged in. At 5 % it says good night and shuts down cleanly, so the SD ca
 not cut off mid-write. To start it again, charge it and switch it on with the PiSugar's button.
 
 Without a PiSugar nothing changes. Settings live under `[battery]` in
-`claudegotchi.toml` (`model = "auto" | "pisugar3" | "none"`, `shutdown_at`).
+`tokibot.toml` (`model = "auto" | "pisugar3" | "none"`, `shutdown_at`).
 Try it without hardware: `make sim BATTERY=sim` (a fake battery that drains and
 recharges, or `BATTERY=sim:20` to start at 20 %).
 
@@ -374,11 +404,11 @@ recharges, or `BATTERY=sim:20` to start at 20 %).
 
 * Read-only root filesystem, `/tmp` and `/run` in RAM. Pulling the plug does not hurt the card.
 * A 16 MB writable `data` partition at `/data` for the critter's progress and app updates.
-* BusyBox init with a few scripts (`os/board/claudegotchi/rootfs-overlay/etc/init.d/`):
+* BusyBox init with a few scripts (`os/board/tokibot/rootfs-overlay/etc/init.d/`):
   read settings, hostname, Bluetooth, USB gadget, Wi-Fi, then the service.
 * USB gadget as a network adapter with a DHCP server for your computer: RNDIS for
   Windows, CDC-ECM for macOS and Linux, no driver needed.
-* avahi for `claudegotchi-xxxx.local` (a name of its own per gotchi), NTP on Wi-Fi. Without Wi-Fi the gotchi takes the
+* avahi for `tokibot-xxxx.local` (a name of its own per gotchi), NTP on Wi-Fi. Without Wi-Fi the gotchi takes the
   time from your computer.
 * Bluetooth LE through the kernel's HCI socket, no bluetoothd.
 * No SSH in the default image.
@@ -388,12 +418,13 @@ recharges, or `BATTERY=sim:20` to start at 20 %).
 Only metadata is sent: event, harness, session ID, folder name, tool name, limit and
 context percentages, token counts, and categories of shell commands (test run, commit, push,
 pull request) recognised on your computer. Prompts, code and replies never leave your computer. With a relay,
-that metadata passes through the ntfy server you chose.
+that metadata passes through the ntfy server you chose. With highscores on, the
+gotchi's name, level and daily food and XP go to tokibot.lottes.dev, nothing else.
 
 ## Status
 
 Version 0.4.0, the first release ([changelog](CHANGELOG.md)). Ready-made images
-and the app bundle are on the [download page](https://claudegotchi.lottes.dev/download.html)
+and the app bundle are on the [download page](https://tokibot.lottes.dev/download.html)
 and in the GitHub release. The images build cleanly on GitHub and the app runs in
 the simulator; a test on real hardware is still open, including the Bluetooth radio
 for friends.

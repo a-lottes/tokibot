@@ -4,16 +4,16 @@ import os
 import time
 import unittest
 
-from claudegotchi.brain import Brain
-from claudegotchi.relay import Relay, parse
-from claudegotchi.server import make_dispatch
+from tokibot.brain import Brain
+from tokibot.relay import Relay, parse
+from tokibot.server import make_dispatch
 from fake_ntfy import FakeNtfy
 
-CLIENT = os.path.join(os.path.dirname(__file__), "..", "..", "client", "claudegotchi_client.py")
+CLIENT = os.path.join(os.path.dirname(__file__), "..", "..", "client", "tokibot_client.py")
 
 
 def load_client():
-    spec = importlib.util.spec_from_file_location("claudegotchi_client", CLIENT)
+    spec = importlib.util.spec_from_file_location("tokibot_client", CLIENT)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -33,7 +33,7 @@ def wait_for(cond, timeout=5):
 
 
 class ParseTest(unittest.TestCase):
-    ENV = {"claudegotchi": 1, "path": "/hook", "token": "t", "data": {"hook_event_name": "Stop"}}
+    ENV = {"tokibot": 1, "path": "/hook", "token": "t", "data": {"hook_event_name": "Stop"}}
 
     def test_message(self):
         self.assertEqual(parse(line(self.ENV), "t"), ("x1", "/hook", {"hook_event_name": "Stop"}))
@@ -60,7 +60,7 @@ class DispatchTest(unittest.TestCase):
 class EndToEndTest(unittest.TestCase):
     def test_client_to_gotchi_through_relay(self):
         ntfy = FakeNtfy()
-        topic = ntfy.url + "/claudegotchi-test"
+        topic = ntfy.url + "/tokibot-test"
         brain = Brain()
         relay = Relay(topic, "secret", make_dispatch(brain, set_clock=False))
         relay.start()
@@ -84,3 +84,11 @@ class EndToEndTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LegacyEnvelopeTest(unittest.TestCase):
+    def test_envelope_from_before_the_rename(self):
+        from tokibot.relay import parse
+        msg = {"event": "message", "id": "x", "message": json.dumps(
+            {"claudegotchi": 1, "path": "/hook", "token": "", "data": {"a": 1}})}
+        self.assertEqual(parse(json.dumps(msg), ""), ("x", "/hook", {"a": 1}))

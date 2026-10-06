@@ -5,11 +5,11 @@ from unittest import mock
 
 from PIL import Image, ImageDraw
 
-from claudegotchi import displays, settings
-from claudegotchi.config import DEFAULTS
-from claudegotchi.displays import sim, waveshare_epd
-from claudegotchi.displays.waveshare import epdconfig
-from claudegotchi.renderer import Renderer
+from tokibot import displays, settings
+from tokibot.config import DEFAULTS
+from tokibot.displays import sim, waveshare_epd
+from tokibot.displays.waveshare import epdconfig
+from tokibot.renderer import Renderer
 
 
 class FakeBus:
@@ -72,7 +72,7 @@ class DisplayTest(unittest.TestCase):
         self.assertIsNone(displays.resolve("inky"))
 
     def test_unknown_display_keeps_running(self):
-        with self.assertLogs("claudegotchi", "ERROR"):
+        with self.assertLogs("tokibot", "ERROR"):
             d = displays.open_display("inky")
         self.assertIsInstance(d, sim.SimDisplay)
 

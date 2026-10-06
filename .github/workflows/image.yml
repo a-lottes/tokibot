@@ -23,12 +23,12 @@ jobs:
       - run: make bundle
       - uses: actions/upload-artifact@v4
         with:
-          name: claudegotchi-app
-          path: output/claudegotchi-app.tar.gz
+          name: tokibot-app
+          path: output/tokibot-app.tar.gz
       - if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: output/claudegotchi-app.tar.gz
+          files: output/tokibot-app.tar.gz
 
   image:
     needs: test
@@ -50,9 +50,9 @@ jobs:
       - run: make ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
-          name: claudegotchi-${{ matrix.target }}
-          path: output/${{ matrix.target }}/images/claudegotchi-${{ matrix.target }}.img.xz
+          name: tokibot-${{ matrix.target }}
+          path: output/${{ matrix.target }}/images/tokibot-${{ matrix.target }}.img.xz
       - if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: output/${{ matrix.target }}/images/claudegotchi-${{ matrix.target }}.img.xz
+          files: output/${{ matrix.target }}/images/tokibot-${{ matrix.target }}.img.xz

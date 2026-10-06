@@ -6,37 +6,37 @@ import sys
 
 from PIL import Image, ImageDraw
 
-from claudegotchi import critter
-from claudegotchi.painter import H, W, Painter
+from tokibot import critter
+from tokibot.painter import H, W, Painter
 
 LIMITS = {"five_hour": {"pct": 42.0, "reset": 0}, "seven_day": {"pct": 17.0, "reset": 0}}
 CASES = [
-    ("ready", "Hi! What are we building?", "claudegotchi", {"ready": 1}),
-    ("working", "Busy with Bash", "claudegotchi", {"working": 2, "done": 1}),
-    ("tired", "Phew, 86% of my 5h budget used …", "claudegotchi", {"working": 1}),
+    ("ready", "Hi! What are we building?", "tokibot", {"ready": 1}),
+    ("working", "Busy with Bash", "tokibot", {"working": 2, "done": 1}),
+    ("tired", "Phew, 86% of my 5h budget used …", "tokibot", {"working": 1}),
     ("permission", "May I use Bash? Please!", "my-app", {"permission": 1, "working": 1}),
-    ("waiting", "Hello? Your turn!", "claudegotchi", {"waiting": 1}),
-    ("done", "Ta-da! Finished.", "claudegotchi", {"done": 1}),
-    ("error", "Oh no … overloaded", "claudegotchi", {}),
+    ("waiting", "Hello? Your turn!", "tokibot", {"waiting": 1}),
+    ("done", "Ta-da! Finished.", "tokibot", {"done": 1}),
+    ("error", "Oh no … overloaded", "tokibot", {}),
     ("limit", "Limit reached. zZz until 18:40", "", {}),
     ("idle", "Dreaming of tokens …", "", {}),
-    ("levelup", "Level up! I'm level 4 now!", "claudegotchi", {"done": 1}),
+    ("levelup", "Level up! I'm level 4 now!", "tokibot", {"done": 1}),
     ("summary", "Today: 23 tasks, 412 tools, 2 errors. Streak: 5 days.", "", {}),
     ("hungry", "3 days without code. *stomach growls*", "", {}),
     ("encounter", "Hello Tofu42! (Lv6)", "", {}, "cap", 1, 0),
-    ("friend", "Mochi07 is here! Hi friend!", "claudegotchi", {"working": 1}, "bow", 2, 1),
+    ("friend", "Mochi07 is here! Hi friend!", "tokibot", {"working": 1}, "bow", 2, 1),
     ("newfriend", "Mochi07 and I are friends now!", "", {}, "bow", 1, 1),
     ("invite", "Tofu42 wants to be friends! Say yes on the social page.", "", {}, "none", 1, 0),
     ("badge", "New badge: Co-working!", "", {}, "glasses", 1, 1),
     ("lowbattery", "Battery at 12% … plug me in?", "", {}, "none", 0, 0),
-    ("flow", "In the zone.", "claudegotchi", {"working": 1}),
-    ("struggling", "This one is tricky …", "claudegotchi", {"working": 1}),
-    ("stuck", "Bash keeps failing …", "claudegotchi", {"working": 1}),
-    ("oops", "Oops, wrong way? Tell me.", "claudegotchi", {"working": 1}),
-    ("juggling", "Juggling 3 sessions!", "claudegotchi", {"working": 3}),
-    ("proud", "Committed! 4 today.", "claudegotchi", {"working": 1}),
-    ("relieved", "Green again. Phew!", "claudegotchi", {"working": 1}),
-    ("stuffed", "I'm stuffed! 2.4M tokens today.", "claudegotchi", {"working": 1}),
+    ("flow", "In the zone.", "tokibot", {"working": 1}),
+    ("struggling", "This one is tricky …", "tokibot", {"working": 1}),
+    ("stuck", "Bash keeps failing …", "tokibot", {"working": 1}),
+    ("oops", "Oops, wrong way? Tell me.", "tokibot", {"working": 1}),
+    ("juggling", "Juggling 3 sessions!", "tokibot", {"working": 3}),
+    ("proud", "Committed! 4 today.", "tokibot", {"working": 1}),
+    ("relieved", "Green again. Phew!", "tokibot", {"working": 1}),
+    ("stuffed", "I'm stuffed! 2.4M tokens today.", "tokibot", {"working": 1}),
     ("peckish", "My tummy is empty … feed me tokens?", "", {}),
 ]
 # How full the critter is (tokens are its food); FOOD_OF wins for single moods

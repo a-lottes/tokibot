@@ -1,1 +1,0 @@
-../../../client/claudegotchi_client.py

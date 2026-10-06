@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Highscores · Tokibot</title>
+  <meta name="description" content="Which Tokibot has the highest level, ate the most tokens this week, and makes the most of its food? Opt-in highscores for gotchis of every coding harness.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script src="nav.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="highscores.html" aria-current="page">Highscores</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
+      <span class="sys"><span class="dot">●</span> v0.4.0 · 192.168.77.1:8765</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero hero-plain">
+      <div>
+        <span class="kicker"><b>§ highscores</b> / opt-in · signed by the gotchi <span class="cursor"></span></span>
+        <h1>Who ate the most <em>tokens</em>?</h1>
+        <p class="lead">Gotchis that join post their level and, per day, the food and XP they earned. Three lists, fair across Claude Code, Codex, Gemini, OpenCode and the other harnesses, and none of them cares about anyone's rate limit.</p>
+      </div>
+    </section>
+
+    <div class="period" role="group" aria-label="Period">
+      <button type="button" data-period="week" aria-pressed="true">This week</button>
+      <button type="button" data-period="month" aria-pressed="false">This month</button>
+      <button type="button" data-period="all" aria-pressed="false">All time</button>
+    </div>
+    <p class="mono board-status" id="board-status" aria-live="polite">Loading the lists…</p>
+
+    <div class="boards">
+      <section class="board" aria-labelledby="b-level">
+        <h2 id="b-level">Level</h2>
+        <p class="board-what">Highest level, all time. XP come from finished turns, tool calls, commits and friends.</p>
+        <ol class="ranks" data-board="level"></ol>
+      </section>
+      <section class="board" aria-labelledby="b-glutton">
+        <h2 id="b-glutton">Glutton</h2>
+        <p class="board-what">Most food in the period. Only real token counts, no estimates.</p>
+        <ol class="ranks" data-board="glutton" data-unit="food"></ol>
+      </section>
+      <section class="board" aria-labelledby="b-gourmet">
+        <h2 id="b-gourmet">Gourmet</h2>
+        <p class="board-what">Most XP per million food points, so doing a lot with little counts. From 2M food on.</p>
+        <ol class="ranks" data-board="gourmet" data-unit="xp/M"></ol>
+      </section>
+    </div>
+
+    <section class="block" id="join">
+      <h2>Join the list</h2>
+      <ol>
+        <li>Open your gotchi's settings page (<code>http://tokibot-xxxx.local:8765/settings</code>, or <code>192.168.77.1:8765</code> over USB).</li>
+        <li>Tick <b>Join the highscores</b> and save. The list shows the name you gave it on the social page.</li>
+        <li>That's it. The gotchi posts once an hour when it has Wi-Fi. A gotchi on the USB cable only gets posted by the client on your computer.</li>
+      </ol>
+      <p>Untick it and the gotchi asks the site to delete its entry.</p>
+    </section>
+
+    <section class="block" id="fair">
+      <h2>How the scores stay fair</h2>
+      <ul>
+        <li><b>Food points, not raw tokens.</b> Input, output and cache writes count fully, cache reads a tenth. A long session that rereads its cache does not drown everyone else.</li>
+        <li><b>Fixed periods.</b> Weeks start on Monday, months on the first (UTC). The lists never look at the 5-hour or weekly limits of any plan.</li>
+        <li><b>Estimates stay out of Glutton.</b> Harnesses that do not report token counts (Copilot, Cursor, Devin, Kiro, Cline, Amp) feed the gotchi an estimate. It counts for XP and Gourmet, not for Glutton.</li>
+        <li><b>Signed by the gotchi.</b> Every post is signed with the gotchi's own key, so nobody can post under its name. The site checks that the numbers are possible. It is a game, not an audit: we cannot prove what a gotchi ate.</li>
+        <li><b>Little data.</b> Name, level, XP, best streak, and food and XP per day. No projects, no prompts, no code, and the list keeps no IP address.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span><b>▚</b> tokibot · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
+    </div>
+  </footer>
+  <script src="highscores.js" defer></script>
+</body>
+</html>

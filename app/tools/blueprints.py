@@ -420,7 +420,7 @@ def fig_system():
     f.box(PORTS["usb"][0] - 5.5, PI_D + 6.5, PCB - 1.4, 11, 12, 5.6, "bp-accent")
     f.label((lx + 2, ly - 1.5, 45), "CLAUDE CODE\nHOOKS + STATUS LINE", -36, -24)
     f.label((lx + 104, ly + 40, 1.5), "USB CABLE OR WI-FI\nHTTP · METADATA ONLY", -46, 74, accent=True)
-    f.label((63, 2, 16), "CLAUDEGOTCHI\nONE MOOD FOR ALL SESSIONS", 30, -46)
+    f.label((63, 2, 16), "TOKIBOT\nONE MOOD FOR ALL SESSIONS", 30, -46)
     return f.svg("Claude Code on your computer sends events over the USB cable or Wi-Fi to the gotchi")
 
 

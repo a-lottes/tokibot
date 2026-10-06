@@ -1,0 +1,31 @@
+#!/bin/sh
+# Starts the Tokibot service and stops it cleanly on shutdown
+# (so a sleeping critter stays on the e-paper).
+
+PIDFILE=/run/tokibot.pid
+LOG=/var/log/tokibot.log
+CONFIG=/boot/tokibot.toml
+
+start() {
+	printf "Starting Tokibot: "
+	[ -f /run/tokibot.env ] && . /run/tokibot.env
+	[ -n "$TIMEZONE" ] && [ -e "/usr/share/zoneinfo/$TIMEZONE" ] && export TZ=":/usr/share/zoneinfo/$TIMEZONE"
+	start-stop-daemon -S -q -b -m -p "$PIDFILE" -x /bin/sh -- \
+		-c "exec /usr/bin/tokibot-run --config $CONFIG >>$LOG 2>&1"
+	[ $? = 0 ] && echo "OK" || echo "FAIL"
+}
+
+stop() {
+	printf "Stopping Tokibot: "
+	# Wait up to 20 s so the goodbye frame still gets drawn.
+	start-stop-daemon -K -q -p "$PIDFILE" -s TERM -R 20
+	rm -f "$PIDFILE"
+	echo "OK"
+}
+
+case "$1" in
+	start) start ;;
+	stop) stop ;;
+	restart|reload) stop; start ;;
+	*) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac

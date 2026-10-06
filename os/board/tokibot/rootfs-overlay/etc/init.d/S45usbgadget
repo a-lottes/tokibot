@@ -1,0 +1,101 @@
+#!/bin/sh
+# USB gadget: on the data port the Pi shows up as a network adapter.
+# Two configurations, the same layout as the kernel's g_ether:
+#   c.1 RNDIS  Windows always takes the first configuration. The Microsoft OS
+#              descriptors make Windows 10 and 11 load their built-in RNDIS driver.
+#   c.2 ECM    Linux and macOS skip RNDIS and pick this one.
+# None of them needs a driver. Only one of the two is active, and both network
+# interfaces sit in the bridge usbbr, so the address and DHCP don't care which.
+# The computer gets an address via DHCP; the gotchi itself is reachable at $USB_ADDRESS.
+
+. /run/tokibot.env 2>/dev/null
+USB_ADDRESS=${USB_ADDRESS:-192.168.77.1}
+G=/sys/kernel/config/usb_gadget/tokibot
+BR=usbbr
+
+start() {
+	[ "$USB_ENABLED" = "0" ] && exit 0
+	modprobe -q libcomposite 2>/dev/null
+	mountpoint -q /sys/kernel/config || mount -t configfs none /sys/kernel/config || exit 1
+	UDC=$(ls /sys/class/udc 2>/dev/null | head -n1)
+	[ -n "$UDC" ] || { echo "USB gadget: no USB controller in device mode"; exit 0; }
+
+	SERIAL=$(sed -n 's/^Serial[[:space:]]*: *//p' /proc/cpuinfo)
+	SERIAL=${SERIAL:-0000000000000000}
+	# Stable MAC addresses from the serial number, so the computer recognizes the device
+	TAIL=$(echo "$SERIAL" | tail -c 9 | sed 's/\(..\)\(..\)\(..\)\(..\)/\1:\2:\3:\4/')
+	HOST_MAC="02:c1:$TAIL"
+	DEV_MAC="06:c1:$TAIL"
+	DEV_MAC2="0a:c1:$TAIL"        # the second interface needs its own address in the bridge
+
+	mkdir -p $G && cd $G || exit 1
+	echo 0x1d6b > idVendor          # Linux Foundation
+	echo 0x0104 > idProduct         # Multifunction Composite Gadget
+	echo 0x0200 > bcdDevice         # 2.0: RNDIS added; new number so Windows reads the descriptors fresh
+	echo 0x0200 > bcdUSB
+	mkdir -p strings/0x409
+	echo "$SERIAL" > strings/0x409/serialnumber
+	echo "Tokibot" > strings/0x409/manufacturer
+	echo "Tokibot" > strings/0x409/product
+	echo 0xEF > bDeviceClass        # miscellaneous / interface association,
+	echo 0x02 > bDeviceSubClass     # needed for the RNDIS function on Windows
+	echo 0x01 > bDeviceProtocol
+
+	# c.1: RNDIS for Windows
+	mkdir -p configs/c.1/strings/0x409
+	echo "RNDIS" > configs/c.1/strings/0x409/configuration
+	echo 250 > configs/c.1/MaxPower
+	mkdir -p functions/rndis.usb0
+	echo "$HOST_MAC" > functions/rndis.usb0/host_addr
+	echo "$DEV_MAC" > functions/rndis.usb0/dev_addr
+	echo RNDIS > functions/rndis.usb0/os_desc/interface.rndis/compatible_id
+	echo 5162001 > functions/rndis.usb0/os_desc/interface.rndis/sub_compatible_id
+	[ -e configs/c.1/rndis.usb0 ] || ln -s functions/rndis.usb0 configs/c.1/
+	echo 1 > os_desc/use
+	echo 0xcd > os_desc/b_vendor_code
+	echo MSFT100 > os_desc/qw_sign
+	[ -e os_desc/c.1 ] || ln -s configs/c.1 os_desc/
+
+	# c.2: ECM for Linux and macOS
+	mkdir -p configs/c.2/strings/0x409
+	echo "ECM" > configs/c.2/strings/0x409/configuration
+	echo 250 > configs/c.2/MaxPower
+	mkdir -p functions/ecm.usb1
+	echo "$HOST_MAC" > functions/ecm.usb1/host_addr
+	echo "$DEV_MAC2" > functions/ecm.usb1/dev_addr
+	[ -e configs/c.2/ecm.usb1 ] || ln -s functions/ecm.usb1 configs/c.2/
+	echo "$UDC" > UDC
+
+	ip link show $BR >/dev/null 2>&1 || { brctl addbr $BR; brctl setfd $BR 0; }
+	for f in rndis.usb0 ecm.usb1; do
+		IF=$(cat functions/$f/ifname)
+		ip link set "$IF" up
+		brctl addif $BR "$IF" 2>/dev/null
+	done
+	ip addr add "$USB_ADDRESS/24" dev $BR 2>/dev/null
+	ip link set $BR up
+	NET=${USB_ADDRESS%.*}
+	cat > /run/udhcpd.$BR.conf <<CONF
+interface $BR
+start $NET.2
+end $NET.10
+lease_file /run/udhcpd.$BR.leases
+option subnet 255.255.255.0
+option lease 86400
+CONF
+	# Deliberately no "option router": the computer must not route its internet via the gotchi.
+	touch /run/udhcpd.$BR.leases
+	start-stop-daemon -S -q -b -m -p /run/udhcpd.$BR.pid -x /usr/sbin/udhcpd -- -f /run/udhcpd.$BR.conf
+	echo "USB gadget: $USB_ADDRESS"
+}
+
+stop() {
+	start-stop-daemon -K -q -p /run/udhcpd.$BR.pid 2>/dev/null
+	[ -e $G/UDC ] && echo "" > $G/UDC 2>/dev/null
+}
+
+case "$1" in
+	start) start ;;
+	stop) stop ;;
+	restart) stop; start ;;
+esac

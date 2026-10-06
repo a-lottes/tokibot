@@ -1,7 +1,0 @@
-#!/bin/sh
-# Reads /boot/claudegotchi.toml once and stores the values as shell variables
-# in /run/claudegotchi.env for the other init scripts.
-
-[ "$1" = "start" ] || exit 0
-/usr/bin/python3 -m claudegotchi.config shell /boot/claudegotchi.toml > /run/claudegotchi.env 2>/dev/null \
-	|| : > /run/claudegotchi.env

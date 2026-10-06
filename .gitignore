@@ -7,3 +7,4 @@ __pycache__/
 /docs/client/
 /docs/plugin/
 /docs/marketplace.json
+/netlify/node_modules/

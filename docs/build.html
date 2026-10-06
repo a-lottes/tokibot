@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Assembly Guide · Claudegotchi</title>
-  <meta name="description" content="Build, flash and connect a Claudegotchi step by step.">
+  <title>Assembly Guide · Tokibot</title>
+  <meta name="description" content="Build, flash and connect a Tokibot step by step.">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
+  <script src="nav.js" defer></script>
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
-      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html" aria-current="page">Assembly</a><a href="friends.html">Friends</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
+      <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html" aria-current="page">Assembly</a><a href="friends.html">Friends</a><a href="highscores.html">Highscores</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
       <span class="sys"><span class="dot">●</span> v0.4.0 · 192.168.77.1:8765</span>
     </div>
   </header>
@@ -49,11 +51,11 @@
       </div></li>
       <li><div>
         <h3>Get the image</h3>
-        <p>Download the ready-made image from the <a href="download.html">download page</a>: <code>claudegotchi-zero2w.img.xz</code> for the Pi Zero 2 W or <code>claudegotchi-zerow.img.xz</code> for the Pi Zero W.</p>
+        <p>Download the ready-made image from the <a href="download.html">download page</a>: <code>tokibot-zero2w.img.xz</code> for the Pi Zero 2 W or <code>tokibot-zerow.img.xz</code> for the Pi Zero W.</p>
         <p>Developers with the source code can also build it themselves on a Debian or Ubuntu machine. The first build downloads Buildroot and all sources and takes about an hour.</p>
         <pre data-title="debian / ubuntu"><code><span class="p">$ </span>sudo apt-get install build-essential bc cpio rsync unzip file wget
 <span class="p">$ </span>make zero2w      <span class="c"># or: make zerow</span>
-<span class="c"># result: output/zero2w/images/claudegotchi-zero2w.img.xz</span></code></pre>
+<span class="c"># result: output/zero2w/images/tokibot-zero2w.img.xz</span></code></pre>
       </div></li>
       <li><div>
         <h3>Flash the card</h3>
@@ -61,8 +63,8 @@
       </div></li>
       <li id="wifi"><div>
         <h3>Optional: Wi-Fi and settings</h3>
-        <p>After flashing, the card shows up on your computer as a drive called <code>GOTCHI</code>. It holds <code>claudegotchi.toml</code>. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk. To use it over Wi-Fi or with the cloud relay, fill in the <code>[wifi]</code> section:</p>
-        <pre data-title="GOTCHI/claudegotchi.toml"><code>[wifi]
+        <p>After flashing, the card shows up on your computer as a drive called <code>TOKIBOT</code>. It holds <code>tokibot.toml</code>. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk. To use it over Wi-Fi or with the cloud relay, fill in the <code>[wifi]</code> section:</p>
+        <pre data-title="TOKIBOT/tokibot.toml"><code>[wifi]
 ssid = "MyNetwork"
 psk = "my-wifi-password"
 country = "DE"</code></pre>
@@ -76,17 +78,17 @@ country = "DE"</code></pre>
       </div></li>
       <li id="connect"><div>
         <h3>Connect Claude Code</h3>
-        <p>Now teach Claude Code to talk to the gotchi. It comes as a Claude Code plugin. In Claude Code, add the Claudegotchi marketplace and install the plugin:</p>
-        <pre data-title="claude code"><code><span class="p">$ </span>/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json
-<span class="p">$ </span>/plugin install claudegotchi@claudegotchi</code></pre>
+        <p>Now teach Claude Code to talk to the gotchi. It comes as a Claude Code plugin. In Claude Code, add the Tokibot marketplace and install the plugin:</p>
+        <pre data-title="claude code"><code><span class="p">$ </span>/plugin marketplace add https://tokibot.lottes.dev/marketplace.json
+<span class="p">$ </span>/plugin install tokibot@tokibot</code></pre>
         <p>The plugin adds <a href="https://docs.claude.com/en/docs/claude-code/hooks">hooks</a> that report each event to the gotchi. It asks for an address, the gotchi's name, a token and a relay; leave them all empty for now. You can change them later in <code>/plugin</code>.</p>
         <p>Plugins cannot set the status line, and the status line is where the gotchi learns how much of your 5-hour and 7-day budget is left. To add it, run this in a terminal:</p>
-        <pre data-title="your computer · terminal"><code><span class="p">$ </span>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh -s -- --statusline-only</code></pre>
+        <pre data-title="your computer · terminal"><code><span class="p">$ </span>curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --statusline-only</code></pre>
         <p>With the gotchi plugged in, this also pairs your computer with it: the client remembers the gotchi's name and gets a token from it, so a friend's gotchi on the same Wi-Fi never shows your sessions. It keeps your existing status line and still shows it. You can <a href="install.sh">read the script</a> before you run it.</p>
-        <div class="note"><p><strong>No plugin?</strong> <code>curl -fsSL https://claudegotchi.lottes.dev/install.sh | sh</code> installs hooks and status line in one go, straight into <code>~/.claude/settings.json</code>. Use either the plugin or this, not both, or every event reaches the gotchi twice.</p></div>
+        <div class="note"><p><strong>No plugin?</strong> <code>curl -fsSL https://tokibot.lottes.dev/install.sh | sh</code> installs hooks and status line in one go, straight into <code>~/.claude/settings.json</code>. Use either the plugin or this, not both, or every event reaches the gotchi twice.</p></div>
         <p>On Windows, run the terminal commands in Git Bash. Then check that the gotchi answers. The test walks the critter through its moods over about a minute:</p>
-        <pre data-title="your computer · terminal"><code><span class="p">$ </span>sh ~/.claude/claudegotchi/claudegotchi.sh test</code></pre>
-        <p>By default the client tries the USB cable first and then your gotchi's own name, <code>claudegotchi-xxxx.local</code>, on your Wi-Fi. The gotchi shows that name on screen until a client talks to it. You can also watch the display live in a browser at <a href="http://192.168.77.1:8765/"><code>http://192.168.77.1:8765/</code></a>.</p>
+        <pre data-title="your computer · terminal"><code><span class="p">$ </span>sh ~/.tokibot/tokibot.sh test</code></pre>
+        <p>By default the client tries the USB cable first and then your gotchi's own name, <code>tokibot-xxxx.local</code>, on your Wi-Fi. The gotchi shows that name on screen until a client talks to it. You can also watch the display live in a browser at <a href="http://192.168.77.1:8765/"><code>http://192.168.77.1:8765/</code></a>.</p>
       </div></li>
       <li><div>
         <h3>Start Claude Code</h3>
@@ -106,7 +108,7 @@ country = "DE"</code></pre>
 
   <footer class="site-footer">
     <div class="wrap">
-      <span><b>▚</b> claudegotchi · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span><b>▚</b> tokibot · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
       <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
     </div>
   </footer>

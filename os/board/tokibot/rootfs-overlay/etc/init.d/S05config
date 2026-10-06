@@ -1,0 +1,7 @@
+#!/bin/sh
+# Reads /boot/tokibot.toml once and stores the values as shell variables
+# in /run/tokibot.env for the other init scripts.
+
+[ "$1" = "start" ] || exit 0
+/usr/bin/python3 -m tokibot.config shell /boot/tokibot.toml > /run/tokibot.env 2>/dev/null \
+	|| : > /run/tokibot.env

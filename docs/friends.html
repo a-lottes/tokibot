@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Friends · Claudegotchi</title>
-  <meta name="description" content="Claudegotchis that meet over Bluetooth earn XP, become friends with two taps and unlock badges and accessories. Try the demo with two gotchis.">
+  <title>Friends · Tokibot</title>
+  <meta name="description" content="Tokibots that meet over Bluetooth earn XP, become friends with two taps and unlock badges and accessories. Try the demo with two gotchis.">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
+  <script src="nav.js" defer></script>
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
-      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html" aria-current="page">Friends</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
+      <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html" aria-current="page">Friends</a><a href="highscores.html">Highscores</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
       <span class="sys"><span class="dot">●</span> v0.4.0 · 192.168.77.1:8765</span>
     </div>
   </header>
@@ -181,7 +183,7 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <span><b>▚</b> claudegotchi · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span><b>▚</b> tokibot · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
       <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
     </div>
   </footer>
