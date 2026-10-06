@@ -415,3 +415,23 @@ p code, li code { overflow-wrap: anywhere; }
 .roadmap li.done::after { content: "built"; display: inline-block; margin-top: 6px; font-size: 11px; background: var(--accent); color: var(--accent-ink); padding: 0 5px; }
 .roadmap li:not(.done)::after { content: "planned"; display: inline-block; margin-top: 6px; font-size: 11px; border: 1px dashed var(--muted); color: var(--muted); padding: 0 5px; }
 .docs-cols { max-width: 46em; }
+
+/* Highscores */
+
+.hero-plain { grid-template-columns: minmax(0, 1fr); }
+.period { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+.period button { font: 11px/1 var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); background: var(--paper-2); border: 1px solid var(--ink); padding: 9px 12px; cursor: pointer; }
+.period button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.board-status { color: var(--muted); margin: 8px 0 18px; }
+.boards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.board { border: 1px solid var(--ink); background: var(--paper-2); padding: 14px 16px 10px; }
+.board h2 { font-size: 26px; margin: 0 0 4px; }
+.board-what { font-size: 15px; color: var(--muted); margin: 0 0 10px; }
+.ranks { list-style: none; padding: 0; margin: 0; counter-reset: rank; max-width: none; }
+.ranks li { counter-increment: rank; display: flex; align-items: baseline; gap: 10px; padding: 7px 0; border-top: 1px dashed var(--rule); }
+.ranks li::before { content: counter(rank, decimal-leading-zero); font: 13px/1 var(--mono); color: var(--accent); min-width: 2ch; }
+.ranks li.empty::before { content: "--"; color: var(--muted); }
+.ranks .who { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ranks .who small { display: block; margin-top: 3px; font: 11px/1.3 var(--mono); color: var(--muted); }
+.ranks .val { font: 14px/1 var(--mono); white-space: nowrap; }
+@media (max-width: 900px) { .boards { grid-template-columns: minmax(0, 1fr); } }

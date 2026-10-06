@@ -58,3 +58,10 @@ model = "auto"
 # Shut down cleanly at this charge (percent) when not on power, so the SD card stays
 # intact. 0 = never.
 shutdown_at = 5
+
+[leaderboard]
+# Join the highscores on tokibot.lottes.dev: name, level, and food and XP per day,
+# signed with the gotchi's key. Nothing about your work. Turning it off removes the entry.
+enabled = false
+# Where to post; empty = https://tokibot.lottes.dev/api/scores
+url = ""

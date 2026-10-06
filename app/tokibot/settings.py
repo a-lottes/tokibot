@@ -27,6 +27,8 @@ FIELDS = [
     ("relay", "auth", "Relay access token", "secret", "Only for a protected or self-hosted ntfy server."),
     ("social", "enabled", "Meet other gotchis (Bluetooth)", "bool",
      "Your gotchi stays anonymous until you open it on the social page."),
+    ("leaderboard", "enabled", "Join the highscores", "bool",
+     "Posts its name, level, and food and XP per day to tokibot.lottes.dev. Nothing about your work."),
 ]
 
 STYLE = """body{font-family:system-ui;max-width:560px;margin:2em auto;padding:0 16px;color:#222;background:#f6f6f4}

@@ -93,6 +93,26 @@ The progress lives in `life.json` on the image's small writable `data` partition
 (`~/.tokibot/` in the simulator), so it survives reboots and updates of the
 root filesystem. All numbers and texts are in `app/tokibot/mood.py`.
 
+### Highscores
+
+Opt in with *Join the highscores* on the settings page (`[leaderboard] enabled`) and
+the gotchi shows up on [tokibot.lottes.dev/highscores.html](https://tokibot.lottes.dev/highscores.html):
+
+| List | Ranks by | Periods |
+|---|---|---|
+| Level | total XP | all time |
+| Glutton | food points, real token counts only (no estimates) | week, month, all time |
+| Gourmet | XP per million food points, from 2M food on | week, month, all time |
+
+Weeks start on Monday, months on the first, both in UTC; no list looks at a rate
+limit. The gotchi signs a small card (name, level, XP, best streak, food and XP per
+day for the last five weeks) with its Ed25519 key and posts it once an hour when it
+has Wi-Fi. For a gotchi on the USB cable only, the client fetches the signed card
+from `GET /score` after a reply and posts it, also at most once an hour. Turning it
+off posts a signed removal. The site (`netlify/`, a Netlify Function with Netlify
+Blobs) checks signature, clock and that the numbers are possible; it cannot prove what
+a gotchi really ate, so it is a game, not an audit.
+
 ## Friends
 
 Gotchis that meet in real life notice each other over Bluetooth LE, can become
@@ -226,7 +246,7 @@ On your computer:
 
 ```bash
 python3 client/install.py          # address "auto": USB first, then your gotchi's name on Wi-Fi
-sh ~/.claude/tokibot/tokibot.sh test
+sh ~/.tokibot/tokibot.sh test
 ```
 
 ### Other coding harnesses
@@ -268,8 +288,8 @@ it in `tokibot.toml` and hands it to this computer. From then on it only takes
 events from clients with that token. Pair again any time:
 
 ```bash
-sh ~/.claude/tokibot/tokibot.sh pair                    # over USB
-sh ~/.claude/tokibot/tokibot.sh pair tokibot-xxxx  # over Wi-Fi
+sh ~/.tokibot/tokibot.sh pair                    # over USB
+sh ~/.tokibot/tokibot.sh pair tokibot-xxxx  # over Wi-Fi
 ```
 
 The client sends the gotchi's name with every event. A gotchi with another name
@@ -284,7 +304,7 @@ Or install it as a Claude Code plugin from this repository (or from the
 website's `https://tokibot.lottes.dev/marketplace.json`):
 
 ```
-/plugin marketplace add a-lottes/tokibot
+/plugin marketplace add a-lottes/claudegotchi
 /plugin install tokibot@tokibot
 ```
 
@@ -390,7 +410,8 @@ recharges, or `BATTERY=sim:20` to start at 20 %).
 Only metadata is sent: event, harness, session ID, folder name, tool name, limit and
 context percentages, token counts, and categories of shell commands (test run, commit, push,
 pull request) recognised on your computer. Prompts, code and replies never leave your computer. With a relay,
-that metadata passes through the ntfy server you chose.
+that metadata passes through the ntfy server you chose. With highscores on, the
+gotchi's name, level and daily food and XP go to tokibot.lottes.dev, nothing else.
 
 ## Status
 

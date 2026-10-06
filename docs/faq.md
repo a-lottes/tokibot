@@ -117,7 +117,7 @@ Remove the hooks from one of them, or every event is counted twice. To keep the 
 
 ### Windows: which terminal do I use for the commands? {#windows-terminal}
 
-Git Bash, which comes with Git for Windows. The `curl … | sh` commands and `sh ~/.claude/tokibot/tokibot.sh test` are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.
+Git Bash, which comes with Git for Windows. The `curl … | sh` commands and `sh ~/.tokibot/tokibot.sh test` are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.
 
 ### Windows: "python3" opens the Microsoft Store or is not found. {#windows-python}
 
@@ -133,14 +133,14 @@ Install them: click *Install*, or run `xcode-select --install`. They bring Pytho
 
 ### How do I test the connection? {#test}
 
-Run `sh ~/.claude/tokibot/tokibot.sh test` (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and `--statusline-only` put this file there.
+Run `sh ~/.tokibot/tokibot.sh test` (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and `--statusline-only` put this file there.
 
 ### The critter does not react to Claude Code. {#not-reacting}
 
 Check these in order:
 
 - Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.
-- Run the test: `sh ~/.claude/tokibot/tokibot.sh test`.
+- Run the test: `sh ~/.tokibot/tokibot.sh test`.
 - If the gotchi has a token, the client needs the same one: set it in `/plugin` (plugin) or run the install script again with `--token`.
 - If the test says 409, the address answered with another gotchi than yours, for example a friend's. Pair again with yours, see [How do I pair](#pairing).
 - Check that plugin and install script are not both installed, see [I installed both](#both-installed).
@@ -169,7 +169,7 @@ On the settings page at `http://tokibot-xxxx.local:8765/settings`, or `http://19
 
 ### How do I pair my computer with my gotchi? {#pairing}
 
-The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: `--gotchi tokibot-xxxx`. To pair again later, run `sh ~/.claude/tokibot/tokibot.sh pair` (over USB) or `sh ~/.claude/tokibot/tokibot.sh pair tokibot-xxxx` (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in `tokibot.toml` and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.
+The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: `--gotchi tokibot-xxxx`. To pair again later, run `sh ~/.tokibot/tokibot.sh pair` (over USB) or `sh ~/.tokibot/tokibot.sh pair tokibot-xxxx` (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in `tokibot.toml` and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.
 
 ### Two gotchis on the same Wi-Fi: does mine get my events? {#several-gotchis}
 
@@ -237,6 +237,16 @@ Gotchis that meet in real life notice each other over Bluetooth LE. Open the soc
 ### How do I keep my critter's progress when I change the card? {#backup}
 
 Download a backup on the social page. It is encrypted with a passphrase you choose and holds the identity, friends and progress. Restore it on the new card or gotchi. Without a backup, all of that lives only on the SD card.
+
+## Highscores
+
+### How do I get on the highscores? {#highscores}
+
+Tick *Join the highscores* on the settings page (or set `[leaderboard] enabled = true`). The gotchi then posts a small card signed with its own key once an hour: its name from the social page, level, XP, best streak, and food and XP per day. Nothing about your projects, prompts or code. A gotchi without Wi-Fi gets posted by the client on your computer after a reply. Untick it and the gotchi asks the site to delete its entry. The lists are at https://tokibot.lottes.dev/highscores.html.
+
+### How are the highscores fair across harnesses and plans? {#highscores-fair}
+
+They count food points, not raw tokens: input, output and cache writes in full, cache reads at 10 %. Glutton counts only real token counts, never the estimates for harnesses that report none. Gourmet ranks XP per million food points, so getting a lot done with little counts too. Weeks and months are fixed calendar periods in UTC. No list looks at the 5-hour or weekly limits of any plan.
 
 ## Updates
 

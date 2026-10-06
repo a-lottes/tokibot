@@ -16,7 +16,7 @@
     <div class="wrap">
       <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
-      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="download.html">Download</a><a href="docs.html" aria-current="page">Docs</a><a href="faq.html">FAQ</a></nav>
+      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="highscores.html">Highscores</a><a href="download.html">Download</a><a href="docs.html" aria-current="page">Docs</a><a href="faq.html">FAQ</a></nav>
       <span class="sys"><span class="dot">●</span> v0.4.0 · 192.168.77.1:8765</span>
     </div>
   </header>
@@ -92,7 +92,7 @@
       <h3>As a Claude Code plugin</h3>
       <pre data-title="claude code"><code><span class="p">$ </span>/plugin marketplace add https://tokibot.lottes.dev/marketplace.json
 <span class="p">$ </span>/plugin install tokibot@tokibot</code></pre>
-      <p>The plugin brings the hooks. It has four settings, which you can change in <code>/plugin</code>: the gotchi's address (empty: USB cable, then Wi-Fi), its name, the token, and the relay URL. Claude Code keeps the token in its secure storage. Updates arrive through <code>/plugin</code> when a new version is out. If you have access to the repository, <code>/plugin marketplace add a-lottes/tokibot</code> works too.</p>
+      <p>The plugin brings the hooks. It has four settings, which you can change in <code>/plugin</code>: the gotchi's address (empty: USB cable, then Wi-Fi), its name, the token, and the relay URL. Claude Code keeps the token in its secure storage. Updates arrive through <code>/plugin</code> when a new version is out. If you have access to the repository, <code>/plugin marketplace add a-lottes/claudegotchi</code> works too.</p>
       <p>Plugins cannot set the status line, so the budget bars need one more line in a terminal. Pass the same <code>--token</code> or <code>--url</code> as in the plugin, if you set one:</p>
       <pre><code><span class="p">$ </span>curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --statusline-only</code></pre>
       <h3>With the install script</h3>
@@ -104,9 +104,9 @@
 <span class="p">$ </span>curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --token my-secret
 <span class="c"># remove it again</span>
 <span class="p">$ </span>curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --uninstall</code></pre>
-      <p>The <a href="install.sh">install script</a> downloads <a href="client/install.py"><code>install.py</code></a>, <a href="client/tokibot_client.py"><code>tokibot_client.py</code></a> and <a href="client/tokibot.sh"><code>tokibot.sh</code></a> from this website and runs the installer. It copies the client to <code>~/.claude/tokibot/</code> and adds the hooks and the status line to <code>~/.claude/settings.json</code>. It backs up the old file as <code>settings.json.tokibot-backup</code>. Existing hooks stay, and an existing status line is still shown.</p>
+      <p>The <a href="install.sh">install script</a> downloads <a href="client/install.py"><code>install.py</code></a>, <a href="client/tokibot_client.py"><code>tokibot_client.py</code></a> and <a href="client/tokibot.sh"><code>tokibot.sh</code></a> from this website and runs the installer. It copies the client to <code>~/.tokibot/</code> and adds the hooks and the status line to <code>~/.claude/settings.json</code>. It backs up the old file as <code>settings.json.tokibot-backup</code>. Existing hooks stay, and an existing status line is still shown.</p>
       <p>To check the connection, play the test sequence. It walks through the moods over about a minute and prints which address answered:</p>
-      <pre><code><span class="p">$ </span>sh ~/.claude/tokibot/tokibot.sh test</code></pre>
+      <pre><code><span class="p">$ </span>sh ~/.tokibot/tokibot.sh test</code></pre>
 
       <h2 id="settings" data-n="05">Settings</h2>
       <p>Open <code>http://tokibot-xxxx.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. The page changes Wi-Fi, time zone, display, rotation, token and relay. It writes <code>tokibot.toml</code> on the boot partition, keeps the comments in it, and restarts the gotchi. Once a token is set, the page asks for it.</p>
@@ -154,8 +154,8 @@ auth = ""<span class="c">                     # access token for a protected ntf
       <h2 id="security" data-n="06">Security</h2>
       <p id="pairing">Every gotchi has its own network name, <code>tokibot-xxxx</code>; the four characters come from the Pi's serial number. It shows the name on screen until a client talks to it. So two gotchis on one Wi-Fi never answer to the same name, and the client sends the name along with every event: a gotchi with another name refuses it.</p>
       <p>The installer pairs your computer with the gotchi on the USB cable. For Wi-Fi only, pass the name: <code>--gotchi tokibot-xxxx</code>. Pairing remembers the name, and if the gotchi has no token yet, the gotchi makes one, saves it under <code>[server] token</code> and hands it to your computer. From then on it only takes events from clients with that token, and the settings page and app updates need it too. Pair again any time:</p>
-      <pre><code><span class="p">$ </span>sh ~/.claude/tokibot/tokibot.sh pair
-<span class="p">$ </span>sh ~/.claude/tokibot/tokibot.sh pair tokibot-xxxx</code></pre>
+      <pre><code><span class="p">$ </span>sh ~/.tokibot/tokibot.sh pair
+<span class="p">$ </span>sh ~/.tokibot/tokibot.sh pair tokibot-xxxx</code></pre>
       <p>Without pairing, the client learns the name the first time it reaches a gotchi over USB, but the gotchi has no token: anyone on the same network can send it events.</p>
       <p>The image has no SSH. The root filesystem is read-only.</p>
 

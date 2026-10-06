@@ -10,13 +10,14 @@ name: Deploy website
 # instead. After "Build image" finishes it runs again, so a new release shows up there.
 # The client files are copied too, for docs/install.sh, and the Claude Code plugin is
 # packed as a zip with a marketplace.json, so /plugin marketplace add works from the site.
+# The highscores API (/api/scores) is a Netlify Function in netlify/, its data in Netlify Blobs.
 
 on:
   push:
     branches: [main]
-    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", ".github/workflows/site.yml"]
+    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", "netlify/**", ".github/workflows/site.yml"]
   pull_request:
-    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", ".github/workflows/site.yml"]
+    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", "netlify/**", ".github/workflows/site.yml"]
   workflow_run:
     workflows: ["Build image"]
     types: [completed]
@@ -39,6 +40,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install and test the highscores function
+        working-directory: netlify
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
       - name: Check that faq.html matches faq.md
         run: |
           (cd app && python3 tools/faq.py ../docs)
@@ -91,9 +97,9 @@ jobs:
             exit 0
           fi
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            npx --yes netlify-cli@latest deploy --dir=docs --no-build \
+            npx --yes netlify-cli@latest deploy --dir=docs --functions=netlify/functions --no-build \
               --alias="pr-${{ github.event.number }}" --message="PR #${{ github.event.number }}"
           else
-            npx --yes netlify-cli@latest deploy --dir=docs --no-build --prod \
+            npx --yes netlify-cli@latest deploy --dir=docs --functions=netlify/functions --no-build --prod \
               --message="${{ github.sha }}"
           fi

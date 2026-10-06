@@ -16,7 +16,7 @@
     <div class="wrap">
       <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
-      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html" aria-current="page">Assembly</a><a href="friends.html">Friends</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
+      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html" aria-current="page">Assembly</a><a href="friends.html">Friends</a><a href="highscores.html">Highscores</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
       <span class="sys"><span class="dot">●</span> v0.4.0 · 192.168.77.1:8765</span>
     </div>
   </header>
@@ -87,7 +87,7 @@ country = "DE"</code></pre>
         <p>With the gotchi plugged in, this also pairs your computer with it: the client remembers the gotchi's name and gets a token from it, so a friend's gotchi on the same Wi-Fi never shows your sessions. It keeps your existing status line and still shows it. You can <a href="install.sh">read the script</a> before you run it.</p>
         <div class="note"><p><strong>No plugin?</strong> <code>curl -fsSL https://tokibot.lottes.dev/install.sh | sh</code> installs hooks and status line in one go, straight into <code>~/.claude/settings.json</code>. Use either the plugin or this, not both, or every event reaches the gotchi twice.</p></div>
         <p>On Windows, run the terminal commands in Git Bash. Then check that the gotchi answers. The test walks the critter through its moods over about a minute:</p>
-        <pre data-title="your computer · terminal"><code><span class="p">$ </span>sh ~/.claude/tokibot/tokibot.sh test</code></pre>
+        <pre data-title="your computer · terminal"><code><span class="p">$ </span>sh ~/.tokibot/tokibot.sh test</code></pre>
         <p>By default the client tries the USB cable first and then your gotchi's own name, <code>tokibot-xxxx.local</code>, on your Wi-Fi. The gotchi shows that name on screen until a client talks to it. You can also watch the display live in a browser at <a href="http://192.168.77.1:8765/"><code>http://192.168.77.1:8765/</code></a>.</p>
       </div></li>
       <li><div>

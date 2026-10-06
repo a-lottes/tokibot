@@ -224,10 +224,47 @@ def post_detached(cfg, path, payload, prepare=None):
             except Exception:
                 pass
         send(cfg, path, payload)
+        if path == "/hook" and payload.get("hook_event_name") in SCORE_EVENTS:
+            share_score(cfg)
     except Exception:
         pass
     finally:
         os._exit(0)
+
+
+# --- highscores: post the gotchi's signed score card for it ------------------------
+# A gotchi with Wi-Fi posts its card itself. One that only hangs on the USB cable has
+# no internet, so the client fetches the card (signed on the gotchi) and posts it.
+SCORE_STATE = os.path.join(STATE_DIR, "score_at")
+SCORE_EVENTS = {"Stop", "SessionEnd"}
+SCORE_EVERY = 3600
+
+
+def share_score(cfg, now=None, timeout=3):
+    """At most once an hour. Returns True when a card was posted."""
+    now = now or time.time()
+    try:
+        last = float(read_state(SCORE_STATE) or 0)
+    except ValueError:
+        last = 0
+    if now - last < SCORE_EVERY:
+        return False
+    write_state(SCORE_STATE, str(now))       # also when highscores are off: ask hourly at most
+    for url in candidates(cfg):
+        req = urllib.request.Request(url + "/score", headers=headers(cfg))
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                body = json.loads(resp.read())
+        except Exception:
+            continue                         # off (404) or not reachable here
+        target = body.pop("post_to", "")
+        if not str(target).startswith("https://"):
+            return False
+        req = urllib.request.Request(target, data=json.dumps(body).encode(), method="POST",
+                                     headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=10).read()
+        return True
+    return False
 
 
 # --- harnesses -------------------------------------------------------------------
@@ -608,7 +645,7 @@ def cmd_test(cfg):
 
 
 def save_installed(**values):
-    """Merges values into the installed settings file (~/.claude/tokibot/)."""
+    """Merges values into the installed settings file (~/.tokibot/)."""
     try:
         with open(INSTALLED_CFG) as f:
             data = json.load(f)

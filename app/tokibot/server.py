@@ -47,6 +47,7 @@ from .life import Life
 from .painter import H, W
 from .radio import UdpRadio, open_radio
 from .relay import Relay
+from .scores import Scores
 from .renderer import Renderer
 from .social import FakePeer, Social
 
@@ -130,7 +131,7 @@ def legacy_name(name):
     return "claudegotchi-" + name.lower().removeprefix("tokibot-") if name else ""
 
 
-def make_handler(brain, renderer, token, dispatch, control=None, name=""):
+def make_handler(brain, renderer, token, dispatch, control=None, name="", scores=None):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
             log.debug("%s %s", self.address_string(), fmt % args)
@@ -360,6 +361,11 @@ def make_handler(brain, renderer, token, dispatch, control=None, name=""):
                 self._send(200, json.dumps({"gotchi": name, "token": bool(token)}).encode())
             elif path == "/":
                 self._send(200, PREVIEW_HTML, "text/html; charset=utf-8")
+            elif path == "/score":
+                # The signed score card, for a client that posts it for a gotchi without internet
+                if not (scores and scores.enabled):
+                    return self._send(404, b'{"error":"highscores are off"}')
+                self._send(200, json.dumps({**scores.card(), "post_to": scores.url}).encode())
             elif path == "/state":
                 self._send(200, json.dumps(brain.view(), ensure_ascii=False).encode())
             elif path == "/frame.png":
@@ -403,13 +409,13 @@ def life_path(data_dir):
     return None
 
 
-def start_social(cfg, brain, data_dir, args):
+def start_social(cfg, brain, data_dir, args, identity=None):
     """Encounters and friends over Bluetooth (or a simulated radio in the simulator)."""
     soc = cfg["social"]
     if not soc["enabled"]:
         log.info("Social features are off")
         return None
-    social = Social(Identity.load_or_create(data_dir), brain.life,
+    social = Social(identity or Identity.load_or_create(data_dir), brain.life,
                     os.path.join(data_dir, "social.json") if data_dir else None,
                     open_radio(soc["radio"], args.sim))
     brain.social = social.start()
@@ -464,7 +470,15 @@ def main(argv=None):
     if not args.sim:
         brain.address = f"{name}.local"
     data_dir = os.path.dirname(path) if path else None
-    social = start_social(cfg, brain, data_dir, args)
+    me = Identity.load_or_create(data_dir) if data_dir else None
+    social = start_social(cfg, brain, data_dir, args, me)
+    scores = None
+    if me:
+        # Callables, because the name can change on the social page while it runs
+        scores = Scores(cfg["leaderboard"], brain.life,
+                        identity=lambda: social.me if social else me,
+                        name=lambda: social.state["name"] if social else "",
+                        state_path=os.path.join(data_dir, "scores.json")).start()
     renderer = Renderer(brain, display)
     if monitor:
         monitor.on_empty = lambda: power_off(renderer, on_device)
@@ -473,7 +487,7 @@ def main(argv=None):
     renderer.start()
     dispatch = make_dispatch(brain, set_clock=not args.sim)
     control = Control(cfg_path, cfg, on_device, social=social, data_dir=data_dir)
-    handler = make_handler(brain, renderer, srv["token"], dispatch, control, name)
+    handler = make_handler(brain, renderer, srv["token"], dispatch, control, name, scores)
     try:
         server = ThreadingHTTPServer((srv["host"], port), handler)
     except OSError as e:

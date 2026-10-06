@@ -10,6 +10,10 @@
   Run `install.py` once to move the client to `~/.tokibot`. A gotchi on 0.4.0 cannot
   update itself to this version, the app moved; flash the new image instead.
 * The website menu folds into a button on phones and small windows.
+* Highscores on the website: Level (all time), Glutton (most food) and Gourmet (XP per
+  food) for this week, this month and all time. Opt-in with *Join the highscores* on the
+  settings page; the gotchi signs its card with its own key and posts it hourly, or the
+  client posts it for a gotchi on the USB cable. Turning it off removes the entry.
 * Not only Claude Code: the client also reports OpenAI Codex CLI, Gemini CLI,
   GitHub Copilot CLI, Cursor and Devin Desktop (Windsurf) sessions. Pick them with
   `install.py --harness claude,codex,…` or `--harness auto`. The bubble names the

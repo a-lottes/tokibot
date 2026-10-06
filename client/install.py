@@ -13,7 +13,7 @@ macOS, Linux, and Windows with Git for Windows (run it from Git Bash).
   python3 install.py --uninstall
 
 What happens:
-  * tokibot_client.py is copied to ~/.claude/tokibot/
+  * tokibot_client.py is copied to ~/.tokibot/
   * ~/.claude/settings.json gets the hooks and the status line
     (a backup settings.json.tokibot-backup is made first)
   * other harnesses get the hooks in their own settings file (with a backup as well)

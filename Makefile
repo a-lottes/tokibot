@@ -27,10 +27,13 @@ BR_DIR     ?= $(CURDIR)/.buildroot
 OUT        ?= $(CURDIR)/output
 BR_MAKE     = $(MAKE) -C $(BR_DIR) BR2_EXTERNAL=$(CURDIR)/os O=$(OUT)/$@
 
-.PHONY: test sim mockups figures faq social-pics bundle update zero2w zerow clean
+.PHONY: test test-site sim mockups figures faq social-pics bundle update zero2w zerow clean
 
 test:
 	cd app && python3 -m unittest discover -s tests
+
+test-site:
+	cd netlify && npm ci --no-audit --no-fund && npm test
 
 # The simulator works on its own copy of the settings, so the settings page does not
 # change the template in the repository.

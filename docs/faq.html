@@ -250,7 +250,7 @@
    "url": "https://tokibot.lottes.dev/faq.html#windows-terminal",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Git Bash, which comes with Git for Windows. The <code>curl … | sh<\/code> commands and <code>sh ~/.claude/tokibot/tokibot.sh test<\/code> are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.<\/p>"
+    "text": "<p>Git Bash, which comes with Git for Windows. The <code>curl … | sh<\/code> commands and <code>sh ~/.tokibot/tokibot.sh test<\/code> are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.<\/p>"
    }
   },
   {
@@ -286,7 +286,7 @@
    "url": "https://tokibot.lottes.dev/faq.html#test",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Run <code>sh ~/.claude/tokibot/tokibot.sh test<\/code> (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and <code>--statusline-only<\/code> put this file there.<\/p>"
+    "text": "<p>Run <code>sh ~/.tokibot/tokibot.sh test<\/code> (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and <code>--statusline-only<\/code> put this file there.<\/p>"
    }
   },
   {
@@ -295,7 +295,7 @@
    "url": "https://tokibot.lottes.dev/faq.html#not-reacting",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Check these in order:<\/p>\n<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.<\/li><li>Run the test: <code>sh ~/.claude/tokibot/tokibot.sh test<\/code>.<\/li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin<\/code> (plugin) or run the install script again with <code>--token<\/code>.<\/li><li>If the test says 409, the address answered with another gotchi than yours, for example a friend's. Pair again with yours, see <a href=\"https://tokibot.lottes.dev/faq.html#pairing\">How do I pair<\/a>.<\/li><li>Check that plugin and install script are not both installed, see <a href=\"https://tokibot.lottes.dev/faq.html#both-installed\">I installed both<\/a>.<\/li><\/ul>"
+    "text": "<p>Check these in order:<\/p>\n<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.<\/li><li>Run the test: <code>sh ~/.tokibot/tokibot.sh test<\/code>.<\/li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin<\/code> (plugin) or run the install script again with <code>--token<\/code>.<\/li><li>If the test says 409, the address answered with another gotchi than yours, for example a friend's. Pair again with yours, see <a href=\"https://tokibot.lottes.dev/faq.html#pairing\">How do I pair<\/a>.<\/li><li>Check that plugin and install script are not both installed, see <a href=\"https://tokibot.lottes.dev/faq.html#both-installed\">I installed both<\/a>.<\/li><\/ul>"
    }
   },
   {
@@ -349,7 +349,7 @@
    "url": "https://tokibot.lottes.dev/faq.html#pairing",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: <code>--gotchi tokibot-xxxx<\/code>. To pair again later, run <code>sh ~/.claude/tokibot/tokibot.sh pair<\/code> (over USB) or <code>sh ~/.claude/tokibot/tokibot.sh pair tokibot-xxxx<\/code> (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in <code>tokibot.toml<\/code> and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.<\/p>"
+    "text": "<p>The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: <code>--gotchi tokibot-xxxx<\/code>. To pair again later, run <code>sh ~/.tokibot/tokibot.sh pair<\/code> (over USB) or <code>sh ~/.tokibot/tokibot.sh pair tokibot-xxxx<\/code> (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in <code>tokibot.toml<\/code> and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.<\/p>"
    }
   },
   {
@@ -480,6 +480,24 @@
   },
   {
    "@type": "Question",
+   "name": "How do I get on the highscores?",
+   "url": "https://tokibot.lottes.dev/faq.html#highscores",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Tick <em>Join the highscores<\/em> on the settings page (or set <code>[leaderboard] enabled = true<\/code>). The gotchi then posts a small card signed with its own key once an hour: its name from the social page, level, XP, best streak, and food and XP per day. Nothing about your projects, prompts or code. A gotchi without Wi-Fi gets posted by the client on your computer after a reply. Untick it and the gotchi asks the site to delete its entry. The lists are at <a href=\"https://tokibot.lottes.dev/highscores.html\">https://tokibot.lottes.dev/highscores.html<\/a>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "How are the highscores fair across harnesses and plans?",
+   "url": "https://tokibot.lottes.dev/faq.html#highscores-fair",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>They count food points, not raw tokens: input, output and cache writes in full, cache reads at 10 %. Glutton counts only real token counts, never the estimates for harnesses that report none. Gourmet ranks XP per million food points, so getting a lot done with little counts too. Weeks and months are fixed calendar periods in UTC. No list looks at the 5-hour or weekly limits of any plan.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
    "name": "How do I update the gotchi?",
    "url": "https://tokibot.lottes.dev/faq.html#update",
    "acceptedAnswer": {
@@ -506,7 +524,7 @@
     <div class="wrap">
       <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
-      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html" aria-current="page">FAQ</a></nav>
+      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="highscores.html">Highscores</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html" aria-current="page">FAQ</a></nav>
       <span class="sys"><span class="dot">●</span> v0.4.0 · 192.168.77.1:8765</span>
     </div>
   </header>
@@ -522,6 +540,7 @@
         <li><a href="#claude-code-in-the-cloud">Claude Code in the cloud</a></li>
         <li><a href="#battery-and-hardware">Battery and hardware</a></li>
         <li><a href="#friends-over-bluetooth">Friends over Bluetooth</a></li>
+        <li><a href="#highscores">Highscores</a></li>
         <li><a href="#updates">Updates</a></li>
       </ul>
     </nav>
@@ -638,7 +657,7 @@
       </section>
       <section class="faq-q" id="windows-terminal">
         <h3><a class="anchor" href="#windows-terminal">Windows: which terminal do I use for the commands?</a></h3>
-        <p>Git Bash, which comes with Git for Windows. The <code>curl … | sh</code> commands and <code>sh ~/.claude/tokibot/tokibot.sh test</code> are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.</p>
+        <p>Git Bash, which comes with Git for Windows. The <code>curl … | sh</code> commands and <code>sh ~/.tokibot/tokibot.sh test</code> are shell commands and do not work in PowerShell or cmd. Claude Code itself also runs the gotchi's hooks through Git Bash.</p>
       </section>
       <section class="faq-q" id="windows-python">
         <h3><a class="anchor" href="#windows-python">Windows: "python3" opens the Microsoft Store or is not found.</a></h3>
@@ -654,12 +673,12 @@
       </section>
       <section class="faq-q" id="test">
         <h3><a class="anchor" href="#test">How do I test the connection?</a></h3>
-        <p>Run <code>sh ~/.claude/tokibot/tokibot.sh test</code> (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and <code>--statusline-only</code> put this file there.</p>
+        <p>Run <code>sh ~/.tokibot/tokibot.sh test</code> (on Windows in Git Bash). It walks the critter through its moods over about a minute and prints, for every step, which address answered. If a step fails it prints the addresses it tried. Both the full install script and <code>--statusline-only</code> put this file there.</p>
       </section>
       <section class="faq-q" id="not-reacting">
         <h3><a class="anchor" href="#not-reacting">The critter does not react to Claude Code.</a></h3>
         <p>Check these in order:</p>
-<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.</li><li>Run the test: <code>sh ~/.claude/tokibot/tokibot.sh test</code>.</li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin</code> (plugin) or run the install script again with <code>--token</code>.</li><li>If the test says 409, the address answered with another gotchi than yours, for example a friend's. Pair again with yours, see <a href="#pairing">How do I pair</a>.</li><li>Check that plugin and install script are not both installed, see <a href="#both-installed">I installed both</a>.</li></ul>
+<ul><li>Start a new Claude Code session. Sessions that were already running keep their old settings and hooks.</li><li>Run the test: <code>sh ~/.tokibot/tokibot.sh test</code>.</li><li>If the gotchi has a token, the client needs the same one: set it in <code>/plugin</code> (plugin) or run the install script again with <code>--token</code>.</li><li>If the test says 409, the address answered with another gotchi than yours, for example a friend's. Pair again with yours, see <a href="#pairing">How do I pair</a>.</li><li>Check that plugin and install script are not both installed, see <a href="#both-installed">I installed both</a>.</li></ul>
       </section>
       <section class="faq-q" id="ide">
         <h3><a class="anchor" href="#ide">Does it work with Claude Code in VS Code or JetBrains?</a></h3>
@@ -684,7 +703,7 @@
       </section>
       <section class="faq-q" id="pairing">
         <h3><a class="anchor" href="#pairing">How do I pair my computer with my gotchi?</a></h3>
-        <p>The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: <code>--gotchi tokibot-xxxx</code>. To pair again later, run <code>sh ~/.claude/tokibot/tokibot.sh pair</code> (over USB) or <code>sh ~/.claude/tokibot/tokibot.sh pair tokibot-xxxx</code> (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in <code>tokibot.toml</code> and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.</p>
+        <p>The install script pairs right away if the gotchi is plugged in with the USB cable. For Wi-Fi only, pass the name the gotchi shows on screen: <code>--gotchi tokibot-xxxx</code>. To pair again later, run <code>sh ~/.tokibot/tokibot.sh pair</code> (over USB) or <code>sh ~/.tokibot/tokibot.sh pair tokibot-xxxx</code> (over Wi-Fi). Pairing remembers the gotchi's name. If the gotchi has no token yet, it makes one, saves it in <code>tokibot.toml</code> and hands it to your computer, so from then on only your computer gets through. Without pairing, the client learns the name the first time it reaches a gotchi over USB, but without a token.</p>
       </section>
       <section class="faq-q" id="several-gotchis">
         <h3><a class="anchor" href="#several-gotchis">Two gotchis on the same Wi-Fi: does mine get my events?</a></h3>
@@ -746,7 +765,16 @@
         <h3><a class="anchor" href="#backup">How do I keep my critter's progress when I change the card?</a></h3>
         <p>Download a backup on the social page. It is encrypted with a passphrase you choose and holds the identity, friends and progress. Restore it on the new card or gotchi. Without a backup, all of that lives only on the SD card.</p>
       </section>
-      <h2 id="updates" data-n="09">Updates</h2>
+      <h2 id="highscores" data-n="09">Highscores</h2>
+      <section class="faq-q" id="highscores">
+        <h3><a class="anchor" href="#highscores">How do I get on the highscores?</a></h3>
+        <p>Tick <em>Join the highscores</em> on the settings page (or set <code>[leaderboard] enabled = true</code>). The gotchi then posts a small card signed with its own key once an hour: its name from the social page, level, XP, best streak, and food and XP per day. Nothing about your projects, prompts or code. A gotchi without Wi-Fi gets posted by the client on your computer after a reply. Untick it and the gotchi asks the site to delete its entry. The lists are at <a href="https://tokibot.lottes.dev/highscores.html">https://tokibot.lottes.dev/highscores.html</a>.</p>
+      </section>
+      <section class="faq-q" id="highscores-fair">
+        <h3><a class="anchor" href="#highscores-fair">How are the highscores fair across harnesses and plans?</a></h3>
+        <p>They count food points, not raw tokens: input, output and cache writes in full, cache reads at 10 %. Glutton counts only real token counts, never the estimates for harnesses that report none. Gourmet ranks XP per million food points, so getting a lot done with little counts too. Weeks and months are fixed calendar periods in UTC. No list looks at the 5-hour or weekly limits of any plan.</p>
+      </section>
+      <h2 id="updates" data-n="10">Updates</h2>
       <section class="faq-q" id="update">
         <h3><a class="anchor" href="#update">How do I update the gotchi?</a></h3>
         <p>Download <code>tokibot-app.tar.gz</code> from <a href="https://tokibot.lottes.dev/download.html">https://tokibot.lottes.dev/download.html</a> and upload it on the settings page. The gotchi checks that the new version starts and keeps it; if it crashes three times in a row right after starting, it goes back to the version built into the image. Kernel or system changes need a new image on the card.</p>
