@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
 
 * Claudegotchi is now **Tokibot**, at https://tokibot.lottes.dev. Gotchis are called
   `tokibot-xxxx` with the same four digits as before. Clients, plugins and gotchis from
