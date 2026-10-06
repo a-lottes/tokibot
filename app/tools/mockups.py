@@ -1,7 +1,9 @@
-"""Render every mood (and its animation frames) into one contact sheet.
+"""Render every mood (and its animation frames) into one contact sheet, and the
+single mood screens the website shows (docs/img/moods/, also in the blueprints).
 
-  python3 tools/mockups.py [out.png]
+  python3 tools/mockups.py [out.png] [moods dir]
 """
+import os
 import sys
 
 from PIL import Image, ImageDraw
@@ -51,20 +53,40 @@ PROPS = {"struggling": ["wrench"]}
 BATTERY = {"lowbattery": {"pct": 12, "plugged": False}, "done": {"pct": 64, "plugged": True},
            "idle": {"pct": 87, "plugged": False}}
 SCALE, PAD, COLS = 2, 16, 3
+# The moods the website shows one by one, first frame, without battery or harness
+SITE_MOODS = ["ready", "working", "tired", "permission", "waiting", "done", "error", "limit",
+              "idle", "levelup", "summary", "hungry"]
 
 
-def main(out):
+def view_for(mood, msg, project, counts, social, site=False):
+    accessory, nearby, friends = social or ("none", 0, 0)
+    return {"mood": mood, "message": msg, "project": project, "counts": counts,
+            "sessions": sum(counts.values()), "tools_today": 12, "level": 4, "streak": 5,
+            "limits": {} if mood == "idle" else LIMITS, "accessory": accessory,
+            "nearby": nearby, "friends_nearby": friends,
+            "battery": None if site else BATTERY.get(mood),
+            "props": PROPS.get(mood, []), "food": FOOD_OF.get(mood, FOOD),
+            "harness": "claude" if site else HARNESS.get(mood, "claude")}
+
+
+def site_moods(painter, out_dir):
+    os.makedirs(out_dir, exist_ok=True)
+    for mood, msg, project, counts, *social in CASES:
+        if mood in SITE_MOODS:
+            img = painter.render(view_for(mood, msg, project, counts, social, site=True), 0)
+            img.convert("L").resize((W * SCALE, H * SCALE), Image.NEAREST).save(
+                os.path.join(out_dir, f"{mood}.png"), optimize=True)
+    print(f"{len(SITE_MOODS)} mood screens → {out_dir}")
+
+
+def main(out, moods_dir=None):
     painter = Painter()
+    if moods_dir:
+        site_moods(painter, moods_dir)
     tiles = []
     for mood, msg, project, counts, *social in CASES:
-        accessory, nearby, friends = social or ("none", 0, 0)
         for frame in range(critter.frames(mood)):
-            view = {"mood": mood, "message": msg, "project": project, "counts": counts,
-                    "sessions": sum(counts.values()), "tools_today": 12, "level": 4, "streak": 5,
-                    "limits": {} if mood == "idle" else LIMITS, "accessory": accessory,
-                    "nearby": nearby, "friends_nearby": friends, "battery": BATTERY.get(mood),
-                    "props": PROPS.get(mood, []), "food": FOOD_OF.get(mood, FOOD),
-                    "harness": HARNESS.get(mood, "claude")}
+            view = view_for(mood, msg, project, counts, social)
             tiles.append((f"{mood} {frame + 1}/{critter.frames(mood)}", painter.render(view, frame)))
     for accessory in ACCESSORY_CASES:
         view = {"mood": "ready", "message": f"Look, my {accessory}!", "project": "", "counts": {},
@@ -86,4 +108,4 @@ def main(out):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "mockups.png")
+    main(sys.argv[1] if len(sys.argv) > 1 else "mockups.png", sys.argv[2] if len(sys.argv) > 2 else None)
