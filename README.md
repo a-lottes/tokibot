@@ -171,9 +171,12 @@ On a Linux machine (Debian/Ubuntu) with the Buildroot dependencies
 make zero2w      # or: make zerow
 ```
 
-The first build downloads Buildroot and all sources and takes about an hour.
+You only need this to change the image yourself; ready-made images are on the
+[download page](https://claudegotchi.lottes.dev/download.html). The first build
+downloads Buildroot and all sources and takes about an hour.
 Result: `output/zero2w/images/claudegotchi-zero2w.img.xz`. On GitHub, the workflow
-`.github/workflows/image.yml` builds both images for every `v*` tag.
+`.github/workflows/image.yml` builds both images for every `v*` tag and attaches
+them, with the app bundle, to the release.
 
 Flash it with Raspberry Pi Imager: *Use custom* and pick the `.img.xz`.
 
@@ -330,7 +333,8 @@ that metadata passes through the ntfy server you chose.
 
 ## Status
 
-Version 0.3.0. The app runs in the simulator and the Buildroot defconfigs are
-checked against Buildroot 2026.02.3. A full image build and a test on real
-hardware are still open; for the social features this includes the Bluetooth
-radio, which so far is only tested in the simulator.
+Version 0.4.0, the first release ([changelog](CHANGELOG.md)). Ready-made images
+and the app bundle are on the [download page](https://claudegotchi.lottes.dev/download.html)
+and in the GitHub release. The images build cleanly on GitHub and the app runs in
+the simulator; a test on real hardware is still open, including the Bluetooth radio
+for friends.
