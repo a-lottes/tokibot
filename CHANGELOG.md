@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+* Slower progression. Levels need more XP (level 2 at 120, 3 at 480, 4 at 1,080, 5 at
+  1,920: 120 × (level − 1)²), a reply is worth 5 XP instead of 10, and tool calls earn
+  XP only for the first 40 a day. Before, a few agentic prompts reached level 7.
+  Existing XP stay, so a gotchi may show a lower level after the update.
+* The `fed` bar no longer shoots past 100 %. The client counts only the last 30
+  minutes of a session log it sees for the first time instead of its whole history,
+  the assumed usual day before there is history is 6 million food points instead of
+  1.5 million, and the bar stops at 100 % (the critter is stuffed beyond that).
+
 ## 0.5.0
 
 * Claudegotchi is now **Tokibot**, at https://tokibot.lottes.dev. Gotchis are called

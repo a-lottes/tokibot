@@ -96,7 +96,9 @@ HARNESS_LABELS = {"claude": "Claude Code", "codex": "Codex", "copilot": "Copilot
                   "kiro": "Kiro", "cline": "Cline", "opencode": "OpenCode", "amp": "Amp"}
 
 # Experience per hook event (the critter's life, see life.py)
-XP_FOR = {"Stop": 10, "SessionStart": 3, "PreToolUse": 1, "TaskCompleted": 5}
+XP_FOR = {"Stop": 5, "SessionStart": 2, "PreToolUse": 1, "TaskCompleted": 3}
+TOOL_XP_PER_DAY = 40         # tool calls stop earning XP after this much in a day
+XP_LEVEL_STEP = 120          # level n needs XP_LEVEL_STEP * (n - 1)² XP in total
 LEVELUP_SHOW = 90            # celebrate a level-up for this many seconds
 SUMMARY_FROM_HOUR = 18       # when idle after this hour, show the day's tally instead of zZz
 SUMMARY_UNTIL_HOUR = 23
@@ -132,7 +134,7 @@ STOMACH_HALF_LIFE = 90 * 60  # the stomach empties by half in this time
 FOOD_ACTIVE_HOURS = 6        # a usual day's food is eaten over this many hours
 FOOD_HISTORY_DAYS = 14       # "usual" = the average of the days with food in this window
 FOOD_HISTORY_MIN = 3         # fewer days with food than this: assume FOOD_DEFAULT_DAY
-FOOD_DEFAULT_DAY = 1_500_000
+FOOD_DEFAULT_DAY = 6_000_000  # about 30 replies of an agentic coding tool
 STUFFED_FROM = 1.5           # stomach this full (1 = a usual working hour) → stuffed
 PECKISH_BELOW = 0.1          # this empty and idle during the day → peckish
 PECKISH_HOURS = (9, 18)

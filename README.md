@@ -66,11 +66,12 @@ plus a bar for how full the critter is (`fed`) and Claude Code's 5-hour budget. 
 
 ## Growing up
 
-The critter earns experience from your work: 10 XP per finished reply, 5 per
-completed task, 3 per new session and 1 per tool call, plus 5 per commit, 8 per
-push and 15 per pull request. Levels get further apart
-as it grows (level 2 at 50 XP, level 3 at 150, level 4 at 300, …), and the level
-shows in the header. Every day with at least one finished reply extends the streak;
+The critter earns experience from your work: 5 XP per finished reply, 3 per
+completed task, 2 per new session and 1 per tool call (only the first 40 tool calls
+of a day count, agents call hundreds), plus 5 per commit, 8 per push and 15 per pull
+request. Levels get further apart as it grows (level 2 at 120 XP, level 3 at 480,
+level 4 at 1,080, level 5 at 1,920, …): a normal working day is worth a level early
+on, level 10 takes a month or two. The level shows in the header. Every day with at least one finished reply extends the streak;
 skip a day and it starts over. In the evening it shows what you did today, and when
 you leave it alone for two days it gets hungry.
 
@@ -80,13 +81,16 @@ Tokens are the critter's food; XP stay its overall level. After every reply the
 client reads the token counts from the harness's own session log on your computer
 (numbers only) and sends them along. They count as food points: input, output and
 cache writes in full, cache reads at 10 %, since those are cheap and would drown
-everything else.
+everything else. A session log the client sees for the first time (one that was
+already running when you installed it, or a resumed one) only counts its last 30
+minutes, not its whole history.
 
 The food fills a stomach that empties by half every 90 minutes. How full it is (the
 `fed` bar) compares with your own usual day, the average of the last 14 days with
 food, so it works the same for a light and a heavy user and has nothing to do with
-any rate limit. 100 % is as full as while working on a usual day; from 150 % it is
-stuffed, below 10 % and idle during the day it is peckish. Harnesses that report no
+any rate limit. Until there are three days of history, a usual day is assumed to be
+6 million food points, about 30 replies of an agentic coding tool. 100 % is as full
+as while working on a usual day, and the bar stops there; from 150 % it is stuffed, below 10 % and idle during the day it is peckish. Harnesses that report no
 token counts (Copilot, Cursor, Devin, Kiro, Cline, Amp) feed it an estimate per reply and tool call.
 
 The progress lives in `life.json` on the image's small writable `data` partition

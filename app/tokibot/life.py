@@ -18,7 +18,8 @@ from datetime import date, datetime, timedelta
 
 from .mood import (BADGES, ESTIMATED_HARNESSES, FOOD_ACTIVE_HOURS, FOOD_DEFAULT_DAY,
                    FOOD_ESTIMATE, FOOD_HISTORY_DAYS, FOOD_HISTORY_MIN, FOOD_WEIGHTS,
-                   STOMACH_HALF_LIFE, XP_FOR, XP_FOR_SIGNAL)
+                   STOMACH_HALF_LIFE, TOOL_XP_PER_DAY, XP_FOR, XP_FOR_SIGNAL,
+                   XP_LEVEL_STEP)
 
 log = logging.getLogger("tokibot")
 
@@ -27,8 +28,8 @@ SAVE_EVERY = 60
 
 
 def xp_for_level(level):
-    """Total XP needed to reach a level: 0, 50, 150, 300, 500, ..."""
-    return 25 * (level - 1) * level
+    """Total XP needed to reach a level: 0, 120, 480, 1080, 1920, ..."""
+    return XP_LEVEL_STEP * (level - 1) ** 2
 
 
 def level_for(xp):
@@ -40,7 +41,7 @@ def level_for(xp):
 
 def _empty_day():
     return {"turns": 0, "tools": 0, "errors": 0, "sessions": 0, "xp": 0, "commits": 0,
-            "food": 0, "food_est": 0}
+            "food": 0, "food_est": 0, "tool_xp": 0}
 
 
 def food_points(tokens):
@@ -94,6 +95,10 @@ class Life:
             day = st["days"].setdefault(today.isoformat(), _empty_day())
             if counter:
                 day[counter] += 1
+            if name == "PreToolUse":
+                # Busy agents call hundreds of tools a turn; only the first few a day count
+                gain = min(gain, max(0, TOOL_XP_PER_DAY - day.get("tool_xp", 0)))
+                day["tool_xp"] = day.get("tool_xp", 0) + gain
             if not gain:
                 self.dirty = True
                 return False

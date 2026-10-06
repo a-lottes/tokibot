@@ -207,7 +207,7 @@ class SocialTest(unittest.TestCase):
         self.assertTrue(self.a.cowork)
         self.assertIn("coworking", self.a.life.badges())
         xp = self.a.life.summary(self.w.now)["xp"]
-        for _ in range(10):
+        for _ in range(20):
             self.a.life.record("Stop", {}, self.w.now)
         self.assertEqual(self.a.life.summary(self.w.now)["xp"] - xp, 110)
 
