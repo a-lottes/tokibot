@@ -11,6 +11,7 @@ import re
 import subprocess
 
 from . import __version__
+from .displays import DISPLAYS, resolve
 
 # (section, key, label, kind, help)
 FIELDS = [
@@ -18,6 +19,7 @@ FIELDS = [
     ("wifi", "psk", "Wi-Fi password", "secret", ""),
     ("wifi", "country", "Wi-Fi country", "text", "Two letters, e.g. DE."),
     ("device", "timezone", "Time zone", "text", "e.g. Europe/Berlin"),
+    ("device", "display", "Display", "display", "The revision is printed on the back of the display board."),
     ("device", "rotate", "Rotate display", "rotate", ""),
     ("usb", "enabled", "USB network", "bool", "The gotchi shows up as a network adapter on the USB data port."),
     ("server", "token", "Token", "secret", "Clients and this page need it. Strongly recommended."),
@@ -83,6 +85,10 @@ def changes_from_form(form, cfg):
             value = name in form
         elif kind == "rotate":
             value = 180 if form.get(name) == "180" else 0
+        elif kind == "display":
+            value = form.get(name, "")
+            if value not in DISPLAYS or value == resolve(cfg.get(sec, {}).get(key, "")):
+                continue                  # unknown, or the same panel under a Pwnagotchi name
         else:
             value = form.get(name, "").strip()
             if kind == "secret" and not value:
@@ -125,6 +131,13 @@ def page(cfg, token_set, message="", app_source="built-in", error=False):
         elif kind == "rotate":
             opts = "".join(f'<option value={v}{" selected" if int(value or 0) == v else ""}>{v}°</option>'
                            for v in (0, 180))
+            field = f'<label>{e(label)}</label><select name="{name}">{opts}</select>'
+        elif kind == "display":
+            current = resolve(value)
+            opts = "".join(f'<option value="{k}"{" selected" if k == current else ""}>{e(lbl)}</option>'
+                           for k, (lbl, _) in DISPLAYS.items())
+            if current is None:
+                opts = f'<option value="" selected>{e(str(value))} (unknown)</option>' + opts
             field = f'<label>{e(label)}</label><select name="{name}">{opts}</select>'
         elif kind == "secret":
             ph = "unchanged (set)" if value else "not set"

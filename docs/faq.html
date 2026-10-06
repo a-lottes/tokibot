@@ -52,7 +52,7 @@
    "url": "https://claudegotchi.lottes.dev/faq.html#hardware",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT <strong>V4<\/strong>, a microSD card with 8 GB or more and a micro-USB <strong>data<\/strong> cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at <a href=\"https://claudegotchi.lottes.dev/parts.html\">https://claudegotchi.lottes.dev/parts.html<\/a>.<\/p>"
+    "text": "<p>A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT (<strong>V4<\/strong> by default, V1 to V3 work too), a microSD card with 8 GB or more and a micro-USB <strong>data<\/strong> cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at <a href=\"https://claudegotchi.lottes.dev/parts.html\">https://claudegotchi.lottes.dev/parts.html<\/a>.<\/p>"
    }
   },
   {
@@ -61,7 +61,16 @@
    "url": "https://claudegotchi.lottes.dev/faq.html#other-hardware",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>No. The image targets the Pi Zero 2 W and the Pi Zero W only, and it ships a driver only for the V4 revision of the Waveshare 2.13 inch e-Paper HAT. Older revisions (V1, V2, V3) and other sizes need drivers that are not in the image yet. The revision is printed on the back of the display board.<\/p>"
+    "text": "<p>The image targets the Pi Zero 2 W and the Pi Zero W only, so no Pi 3, 4 or 5. For displays, the gotchi supports the Waveshare HATs that Pwnagotchi builds use: the 2.13 inch V1, V2, V3 and V4, the 2.13 inch B V4 (black, white and red) and the 2.7 inch V1 and V2. Pick yours under <em>Display<\/em> on the settings page; the revision is printed on the back of the display board. Smaller displays such as the Inky pHAT, PaPiRus or OLED HATs do not work, because the picture is drawn for 250 × 122 pixels.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "I have a Pwnagotchi. Can I reuse its hardware?",
+   "url": "https://claudegotchi.lottes.dev/faq.html#pwnagotchi",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Yes, if it has one of the displays above: flash the Claudegotchi image onto a second microSD card and keep the Pwnagotchi card as it is. Set the display on the settings page, or copy the name from Pwnagotchi's <code>ui.display.type<\/code> into <code>display<\/code> in <code>claudegotchi.toml<\/code>; names like <code>waveshare_3<\/code> or <code>waveshare_4<\/code> are understood. A PiSugar 3 works as well.<\/p>"
    }
   },
   {
@@ -535,11 +544,15 @@
       </section>
       <section class="faq-q" id="hardware">
         <h3><a class="anchor" href="#hardware">Which hardware do I need?</a></h3>
-        <p>A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT <strong>V4</strong>, a microSD card with 8 GB or more and a micro-USB <strong>data</strong> cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at <a href="https://claudegotchi.lottes.dev/parts.html">https://claudegotchi.lottes.dev/parts.html</a>.</p>
+        <p>A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT (<strong>V4</strong> by default, V1 to V3 work too), a microSD card with 8 GB or more and a micro-USB <strong>data</strong> cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at <a href="https://claudegotchi.lottes.dev/parts.html">https://claudegotchi.lottes.dev/parts.html</a>.</p>
       </section>
       <section class="faq-q" id="other-hardware">
         <h3><a class="anchor" href="#other-hardware">Does it work with a Raspberry Pi 3, 4 or 5, or another display?</a></h3>
-        <p>No. The image targets the Pi Zero 2 W and the Pi Zero W only, and it ships a driver only for the V4 revision of the Waveshare 2.13 inch e-Paper HAT. Older revisions (V1, V2, V3) and other sizes need drivers that are not in the image yet. The revision is printed on the back of the display board.</p>
+        <p>The image targets the Pi Zero 2 W and the Pi Zero W only, so no Pi 3, 4 or 5. For displays, the gotchi supports the Waveshare HATs that Pwnagotchi builds use: the 2.13 inch V1, V2, V3 and V4, the 2.13 inch B V4 (black, white and red) and the 2.7 inch V1 and V2. Pick yours under <em>Display</em> on the settings page; the revision is printed on the back of the display board. Smaller displays such as the Inky pHAT, PaPiRus or OLED HATs do not work, because the picture is drawn for 250 × 122 pixels.</p>
+      </section>
+      <section class="faq-q" id="pwnagotchi">
+        <h3><a class="anchor" href="#pwnagotchi">I have a Pwnagotchi. Can I reuse its hardware?</a></h3>
+        <p>Yes, if it has one of the displays above: flash the Claudegotchi image onto a second microSD card and keep the Pwnagotchi card as it is. Set the display on the settings page, or copy the name from Pwnagotchi's <code>ui.display.type</code> into <code>display</code> in <code>claudegotchi.toml</code>; names like <code>waveshare_3</code> or <code>waveshare_4</code> are understood. A PiSugar 3 works as well.</p>
       </section>
       <section class="faq-q" id="privacy">
         <h3><a class="anchor" href="#privacy">What data does the gotchi get? Does it see my code?</a></h3>

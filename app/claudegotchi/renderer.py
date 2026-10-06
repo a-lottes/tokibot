@@ -20,6 +20,9 @@ class Renderer(threading.Thread):
     def __init__(self, brain, display):
         super().__init__(daemon=True)
         self.brain, self.display, self.painter = brain, display, Painter()
+        # Panels without partial refresh redraw fully every time, so less often.
+        self.partial = getattr(display, "PARTIAL", True)
+        self.interval = max(self.MIN_INTERVAL, getattr(display, "MIN_INTERVAL", 0.0))
         self.last_key, self.last_draw, self.last_full, self.partials = None, 0.0, 0.0, 0
         self.frame = None
         self.farewell = "offline"     # which goodbye to show (MESSAGES key)
@@ -45,17 +48,18 @@ class Renderer(threading.Thread):
     def tick(self):
         now = time.time()
         view = self.brain.view()
-        frame = self.frame_for(view["mood"], now)
+        # A full refresh flashes the panel, so slow panels show no animation.
+        frame = self.frame_for(view["mood"], now) if self.partial else 0
         key = (view["mood"], frame, view["message"], view["project"], json.dumps(view["counts"], sort_keys=True),
                json.dumps({k: int(v["pct"]) for k, v in view["limits"].items()}, sort_keys=True),
                datetime.now().strftime("%H:%M"), view["sessions"], view.get("level"), view.get("streak"),
                view.get("nearby"), view.get("friends_nearby"), view.get("accessory"),
                json.dumps(view.get("battery") and {k: view["battery"][k] for k in ("pct", "plugged")}),
                tuple(view.get("props") or ()))
-        if key == self.last_key or now - self.last_draw < self.MIN_INTERVAL:
+        if key == self.last_key or now - self.last_draw < self.interval:
             return
         img = self.painter.render(view, frame)
-        full = (self.last_draw == 0 or self.partials >= self.FULL_EVERY
+        full = (not self.partial or self.last_draw == 0 or self.partials >= self.FULL_EVERY
                 or now - self.last_full > self.FULL_SECONDS)
         self.display.show(img, full)
         self.frame = img

@@ -1,6 +1,6 @@
 # Claudegotchi
 
-> Claudegotchi is a small e-ink companion for Claude Code: a Raspberry Pi Zero 2 W with a Waveshare 2.13" e-Paper HAT V4 runs its own Buildroot image, and a pixel critter on the display shows what your Claude Code sessions are doing (working, waiting for you, asking for permission, done, rate limit). Claude Code reports to it through hooks and the status line, over a USB cable (the gotchi is at 192.168.77.1:8765) or Wi-Fi, or through an ntfy relay for cloud sessions. It works with macOS, Linux and Windows (Windows needs Git for Windows and Python 3.9+).
+> Claudegotchi is a small e-ink companion for Claude Code: a Raspberry Pi Zero 2 W with a Waveshare 2.13" e-Paper HAT (V4 by default; V1 to V3, the 2.13" B V4 and the 2.7" V1/V2 work too) runs its own Buildroot image, and a pixel critter on the display shows what your Claude Code sessions are doing (working, waiting for you, asking for permission, done, rate limit). Claude Code reports to it through hooks and the status line, over a USB cable (the gotchi is at 192.168.77.1:8765) or Wi-Fi, or through an ntfy relay for cloud sessions. It works with macOS, Linux and Windows (Windows needs Git for Windows and Python 3.9+).
 
 Key facts for helping someone set it up:
 
