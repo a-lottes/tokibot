@@ -1,5 +1,5 @@
 #!/bin/sh
-# Installs the Tokibot client into Claude Code on macOS, Linux, or Windows
+# Installs the Tokibot client into Claude Code and other coding agents on macOS, Linux, or Windows
 # (in Git Bash, which comes with Git for Windows).
 #
 #   curl -fsSL https://tokibot.lottes.dev/install.sh | sh
@@ -32,9 +32,13 @@ if [ -z "$py" ]; then
   echo "Tokibot needs Python 3.9 or newer. $hint" >&2
   exit 1
 fi
-if [ ! -d "$HOME/.claude" ]; then
-  echo "Note: ~/.claude does not exist yet. Install Claude Code first: https://claude.com/claude-code" >&2
-fi
+case " $* " in
+  *" --harness "*|*" --harness="*) ;;
+  *) if [ ! -d "$HOME/.claude" ]; then
+       echo "Note: ~/.claude does not exist yet. Install Claude Code first (https://claude.com/claude-code)," >&2
+       echo "or pick other coding agents with --harness, e.g. --harness auto." >&2
+     fi ;;
+esac
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT

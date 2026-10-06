@@ -449,16 +449,25 @@ def install(args):
                 {"type": "command", "command": f"{cmd} hook", "async": True, "timeout": 10}]})
     if not settings.get("hooks"):
         settings.pop("hooks", None)
-    new_sl = {"type": "command", "command": f"{cmd} statusline"}
-    if sl.get("padding") is not None:
-        new_sl["padding"] = sl["padding"]
-    settings["statusLine"] = new_sl
-    save_settings(settings)
+    claude = args.statusline_only or "claude" in harnesses
+    if claude:
+        new_sl = {"type": "command", "command": f"{cmd} statusline"}
+        if sl.get("padding") is not None:
+            new_sl["padding"] = sl["padding"]
+        settings["statusLine"] = new_sl
+    elif ours(sl.get("command", "")):          # Claude Code left out: give its status line back
+        if chain:
+            settings["statusLine"] = {"type": "command", "command": chain}
+        else:
+            settings.pop("statusLine", None)
+    if claude or os.path.exists(SETTINGS):
+        save_settings(settings)
 
     remove_legacy()
     print(f"✓ Client installed: {CLIENT}")
-    what = "Status line" if args.statusline_only or "claude" not in harnesses else "Hooks and status line"
-    print(f"✓ {what} added to {SETTINGS} (backup: settings.json.tokibot-backup)")
+    if claude:
+        what = "Status line" if args.statusline_only or "claude" not in harnesses else "Hooks and status line"
+        print(f"✓ {what} added to {SETTINGS} (backup: settings.json.tokibot-backup)")
     for name in HARNESSES:
         if name in harnesses:
             print(f"✓ Hooks for {name} added to {install_harness(name, cmd)}")
@@ -466,7 +475,7 @@ def install(args):
                 print(f"  {HARNESSES[name]['note']}")
         elif uninstall_harness(name):
             print(f"✓ Hooks for {name} removed")
-    if chain:
+    if chain and claude:
         print(f"✓ Your existing status line is still shown: {chain}")
     print(f"→ Gotchi address: {url}")
     if relay:
