@@ -3,11 +3,12 @@
 Endpoints:
   POST /hook    hook event (from tokibot_client.py)
   POST /limits  rate_limits from the status line
-  GET  /whoami  this gotchi's network name (tokibot-xxxx), for pairing a client
+  GET  /whoami  this gotchi's network name (tokibot-xxxx), for pairing a client, and an id
+                that changes with every start (pages wait on it after a restart)
   POST /pair    pair a client: creates a token if none is set yet (see pair below)
   GET  /        live preview in the browser
   GET  /frame.png, GET /state
-  GET  /settings, POST /settings   settings page (writes tokibot.toml, then restarts)
+  GET  /settings, POST /settings   settings page (writes tokibot.toml, then restarts to apply it)
   POST /update, POST /update/reset app update bundle (see update.py)
   GET  /social, POST /social        friends, gotchis nearby, profile (see social.py)
   POST /social/backup, /social/restore, /social/reset   the gotchi's identity
@@ -28,6 +29,7 @@ import re
 import secrets
 import signal
 import socket
+import sys
 import tempfile
 import threading
 import time
@@ -39,7 +41,7 @@ from io import BytesIO
 from PIL import Image
 
 from . import battery as battery_mod
-from . import config, identity, settings, socialpage, update
+from . import config, identity, settings, socialpage, update, webui
 from .brain import Brain
 from .displays import open_display
 from .identity import Identity
@@ -52,11 +54,6 @@ from .renderer import Renderer
 from .social import FakePeer, Social
 
 log = logging.getLogger("tokibot")
-
-PREVIEW_HTML = b"""<!doctype html><meta charset=utf-8><title>Tokibot</title>
-<style>body{font-family:system-ui;background:#eee;display:grid;place-items:center;min-height:100vh;margin:0}
-img{image-rendering:pixelated;width:750px;max-width:95vw;border:12px solid #222;border-radius:10px;background:#fff}</style>
-<div><img id=f src=/frame.png><p style="text-align:center"><a href=/settings>Settings</a> &middot; <a href=/social>Friends</a></p></div><script>setInterval(()=>f.src='/frame.png?'+Date.now(),2000)</script>"""
 
 # The Pi has no real-time clock. When it only hangs off the USB cable (no NTP), we take
 # the time from the timestamp the client sends along.
@@ -106,6 +103,12 @@ def make_dispatch(brain, set_clock):
 
 RESTART = 75          # exit code that asks tokibot-run to start the app again
 
+# ?applied=… on a page that was reloaded after a restart
+APPLIED = {"1": "Done: the gotchi runs with the new settings.",
+           "update": "Done: the gotchi runs again.",
+           "restore": "Done: the gotchi runs with the restored backup.",
+           "reset": "Done: the gotchi has a new identity."}
+
 
 class Control:
     """What the web pages may do to the running service."""
@@ -116,6 +119,8 @@ class Control:
         self.stop = lambda: None
 
     def restart(self, reboot=False):
+        """Start the app again (or reboot the device) in a moment, once the answer is out.
+        On the device tokibot-run starts it again; elsewhere main() replaces itself."""
         def later():
             time.sleep(1.5)
             if reboot and self.on_device:
@@ -239,42 +244,48 @@ def make_handler(brain, renderer, token, dispatch, control=None, name="", scores
             if form is None:
                 return self._send(413)
             if token and form.get("_token") != token:
-                return self._html(401, settings.page(control.cfg, True, "Wrong token.",
-                                                     update.running_from(), error=True))
+                return self._settings_page(401, "Wrong token.", True, wrong=True)
             if self.path == "/update/reset":
                 update.reset()
-                self._html(200, settings.page(control.cfg, bool(token),
-                                              "Back to the built-in version. Restarting …"))
+                self._waiting_page("/settings", "Back to the built-in version. Restarting …",
+                                   "/settings?applied=update")
                 return control.restart()
             changes = settings.changes_from_form(form, control.cfg)
             if not changes:
-                return self._html(200, settings.page(control.cfg, bool(token), "Nothing changed.",
-                                                     update.running_from()))
+                return self._settings_page(200, "Nothing changed.")
             try:
                 settings.write_config(control.cfg_path, changes)
             except Exception as e:
                 log.exception("Saving settings failed")
-                return self._html(500, settings.page(control.cfg, bool(token), f"Saving failed: {e}",
-                                                     update.running_from(), error=True))
-            for (sec, key), value in changes.items():
-                control.cfg.setdefault(sec, {})[key] = value
+                return self._settings_page(500, f"Saving failed: {e}", True)
             log.info("Settings changed: %s", ", ".join(f"{s}.{k}" for s, k in changes))
-            note = ("Saved. Restarting the gotchi …" if control.on_device
-                    else "Saved. Restart the simulator to apply.")
-            self._html(200, settings.page(control.cfg, bool(control.cfg["server"]["token"]), note,
-                                          update.running_from()))
-            if control.on_device:
-                control.restart(reboot=True)
+            reboot = control.on_device and settings.needs_reboot(changes)
+            self._waiting_page("/settings", "Saved. " + ("Rebooting to apply them (about a minute) …"
+                                                       if reboot else "Restarting to apply them …"),
+                               "/settings?applied=1")
+            control.restart(reboot=reboot)
 
-        def _social_page(self, code=200, message="", error=False):
-            self._html(code, socialpage.page(control.social.page_data(), bool(token), message, error))
+        def _page_args(self, waiting, wrong):
+            return dict(name=name, cfg_path=control.cfg_path, on_device=control.on_device,
+                        waiting=waiting, wrong_token=wrong)
+
+        def _settings_page(self, code=200, message="", error=False, waiting=False, wrong=False):
+            self._html(code, settings.page(control.cfg, bool(token), message, update.running_from(),
+                                           error, **self._page_args(waiting, wrong)))
+
+        def _social_page(self, code=200, message="", error=False, waiting=False, wrong=False):
+            self._html(code, socialpage.page(control.social.page_data(), bool(token), message, error,
+                                             **self._page_args(waiting, wrong)))
+
+        def _waiting_page(self, active, message, dest):
+            body = f"<h1>{'Friends' if active == '/social' else 'Settings'}</h1>" + \
+                webui.message(message, waiting=True)
+            self._html(200, webui.layout("Restarting", active, body, name, webui.wait_script(dest)))
 
         def social_post(self):
             soc = control.social
             if not soc:
                 return self._send(404, b"Social features are off (see the settings).", "text/plain")
-            restart_note = ("Restarting …" if control.on_device
-                            else "Restart the simulator to load it.")
             if self.path == "/social/restore":
                 if token and self._hdr("Token") != token:
                     return self._send(401, b"Wrong token.", "text/plain")
@@ -291,14 +302,14 @@ def make_handler(brain, renderer, token, dispatch, control=None, name="", scores
                     return self._send(400, str(e).encode(), "text/plain")
                 soc.path = brain.life.path = None      # do not overwrite the restored files
                 log.info("Backup of %s restored", gid)
-                self._send(200, f"Restored gotchi {gid}. {restart_note}".encode(), "text/plain")
+                self._send(200, f"Restored gotchi {gid}. Restarting …".encode(), "text/plain")
                 return control.restart()
 
             form = self._form()
             if form is None:
                 return self._send(413)
             if token and form.get("_token") != token:
-                return self._social_page(401, "Wrong token.", True)
+                return self._social_page(401, "Wrong token.", True, wrong=True)
 
             if self.path == "/social/backup":
                 if not control.data_dir:
@@ -309,10 +320,10 @@ def make_handler(brain, renderer, token, dispatch, control=None, name="", scores
                     blob = identity.make_backup(control.data_dir, form.get("passphrase", ""))
                 except identity.BackupError as e:
                     return self._social_page(400, str(e), True)
-                name = f"tokibot-{soc.me.id}-{time.strftime('%Y-%m-%d')}.json"
+                fname = f"tokibot-{soc.me.id}-{time.strftime('%Y-%m-%d')}.json"
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Disposition", f'attachment; filename="{name}"')
+                self.send_header("Content-Disposition", f'attachment; filename="{fname}"')
                 self.send_header("Content-Length", str(len(blob)))
                 self.end_headers()
                 return self.wfile.write(blob)
@@ -323,8 +334,7 @@ def make_handler(brain, renderer, token, dispatch, control=None, name="", scores
                 soc.path = None
                 identity.reset(control.data_dir)
                 log.info("Identity reset")
-                self._html(200, f"<!doctype html><meta charset=utf-8><p>Identity reset. "
-                                f"{restart_note}</p><p><a href=/>Back</a></p>")
+                self._waiting_page("/social", "Identity reset. Restarting …", "/social?applied=reset")
                 return control.restart()
 
             action, pub = form.get("action"), form.get("pub", "")
@@ -350,17 +360,22 @@ def make_handler(brain, renderer, token, dispatch, control=None, name="", scores
 
         def do_GET(self):
             path = self.path.split("?")[0]
+            applied = APPLIED.get(urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+                                  .get("applied", [""])[0], "")
             if path == "/social" and control:
                 if not control.social:
-                    return self._html(200, "<!doctype html><meta charset=utf-8><p>Social features are "
-                                           "off. Turn them on in the <a href=/settings>settings</a>.</p>")
-                self._social_page()
+                    body = ("<h1>Friends</h1>" + webui.message(applied) +
+                            "<div class=card><p>Meeting other gotchis is off.</p>"
+                            '<a class=go href="/settings#community">Turn it on in the settings →</a></div>')
+                    return self._html(200, webui.layout("Friends", "/social", body, name))
+                self._social_page(message=applied)
             elif path == "/settings" and control:
-                self._html(200, settings.page(control.cfg, bool(token), "", update.running_from()))
+                self._settings_page(message=applied)
             elif path == "/whoami":
-                self._send(200, json.dumps({"gotchi": name, "token": bool(token)}).encode())
+                self._send(200, json.dumps({"gotchi": name, "token": bool(token),
+                                            "started": webui.STARTED}).encode())
             elif path == "/":
-                self._send(200, PREVIEW_HTML, "text/html; charset=utf-8")
+                self._html(200, webui.preview_page(name))
             elif path == "/score":
                 # The signed score card, for a client that posts it for a gotchi without internet
                 if not (scores and scores.enabled):
@@ -428,6 +443,15 @@ def start_social(cfg, brain, data_dir, args, identity=None):
         except OSError as e:
             log.warning("Could not start the pretend gotchi: %s", e)
     return social
+
+
+def restart_in_place(argv):
+    """Run this program again in the same process (and terminal), with the same arguments.
+    The device does not need this: tokibot-run starts the app again on exit code 75."""
+    log.info("Restarting …")
+    logging.shutdown()
+    args = sys.argv[1:] if argv is None else list(argv)
+    os.execv(sys.executable, [sys.executable, "-m", "tokibot", *args])
 
 
 def main(argv=None):
@@ -519,6 +543,8 @@ def main(argv=None):
     if control.exit_code == RESTART:
         renderer.stop_evt.set()
         brain.life.maybe_save(force=True)
+        if not on_device:
+            restart_in_place(argv)          # nobody else would start the simulator again
         return RESTART
     renderer.goodbye()
     return 0

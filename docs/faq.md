@@ -232,7 +232,7 @@ Check that the HAT sits flush on all 40 pins, and that it is the **V4** revision
 
 ### How do gotchis become friends? {#friends}
 
-Gotchis that meet in real life notice each other over Bluetooth LE. Open the social page at `http://tokibot-xxxx.local:8765/social`, tick *Open for new friends*, and press *Befriend* next to a gotchi nearby; its owner presses *Accept* on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (*Meet other gotchis*) or with `[social] enabled = false`.
+Gotchis that meet in real life notice each other over Bluetooth LE. Open the friends page at `http://tokibot-xxxx.local:8765/social` and press *Befriend* next to a gotchi nearby (new gotchis are *Open for new friends* from the start; untick it to stay anonymous); its owner presses *Accept* on their social page. Both gotchis sign the friendship. Only game data travels over Bluetooth: never session contents, folder names or prompts. Turn it off on the settings page (*Meet other gotchis*) or with `[social] enabled = false`.
 
 ### How do I keep my critter's progress when I change the card? {#backup}
 
@@ -242,7 +242,7 @@ Download a backup on the social page. It is encrypted with a passphrase you choo
 
 ### How do I get on the highscores? {#highscores}
 
-Tick *Join the highscores* on the settings page (or set `[leaderboard] enabled = true`). The gotchi then posts a small card signed with its own key once an hour: its name from the social page, level, XP, best streak, and food and XP per day. Nothing about your projects, prompts or code. A gotchi without Wi-Fi gets posted by the client on your computer after a reply. Untick it and the gotchi asks the site to delete its entry. The lists are at https://tokibot.lottes.dev/highscores.html.
+New gotchis join right away: *Join the highscores* on the settings page is ticked from the start (`[leaderboard] enabled = true`). The gotchi posts a small card signed with its own key once an hour: its name from the social page, level, XP, best streak, and food and XP per day. Nothing about your projects, prompts or code. A gotchi without Wi-Fi gets posted by the client on your computer after a reply. Untick it and the gotchi asks the site to delete its entry. The lists are at https://tokibot.lottes.dev/highscores.html.
 
 ### How are the highscores fair across harnesses and plans? {#highscores-fair}
 

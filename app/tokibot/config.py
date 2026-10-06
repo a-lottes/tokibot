@@ -36,7 +36,7 @@ DEFAULTS = {
     "usb": {"enabled": True, "address": "192.168.77.1"},
     "relay": {"url": "", "auth": ""},
     "social": {"enabled": True, "radio": "auto"},
-    "leaderboard": {"enabled": False, "url": ""},
+    "leaderboard": {"enabled": True, "url": ""},
     "battery": {"model": "auto", "shutdown_at": 5, "i2c_bus": 1},
 }
 
