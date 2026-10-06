@@ -235,6 +235,34 @@ class InstallerTest(unittest.TestCase):
             self.assertTrue(self.inst.uninstall_harness(name))
             self.assertFalse(os.path.exists(path))
 
+    def run_install(self, *argv):
+        import contextlib
+        import io
+        import sys
+        old = sys.argv
+        sys.argv = ["install.py", "--url", "none", *argv]
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.inst.main()
+        finally:
+            sys.argv = old
+
+    def test_without_claude_code_its_settings_stay_untouched(self):
+        self.run_install("--harness", "codex")
+        self.assertFalse(os.path.exists(self.path(".claude/settings.json")))
+        self.assertTrue(os.path.exists(self.path(".codex/hooks.json")))
+
+    def test_leaving_claude_out_gives_its_status_line_back(self):
+        os.makedirs(self.path(".claude"))
+        with open(self.path(".claude/settings.json"), "w") as f:
+            json.dump({"statusLine": {"type": "command", "command": "my-line"}}, f)
+        self.run_install()
+        self.run_install("--harness", "codex")
+        with open(self.path(".claude/settings.json")) as f:
+            settings = json.load(f)
+        self.assertEqual(settings["statusLine"]["command"], "my-line")
+        self.assertNotIn("hooks", settings)
+
     def test_auto_finds_the_new_harnesses(self):
         os.makedirs(self.path(".kiro"))
         os.makedirs(self.path(".config/amp"))

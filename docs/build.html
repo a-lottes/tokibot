@@ -24,13 +24,13 @@
   <main class="wrap">
     <span class="kicker"><b>§ assembly</b> / 7 steps · about 30 minutes</span>
     <h1>Assembly <em>guide</em>.</h1>
-    <p class="lead">From a bag of parts to a critter that reacts to Claude Code. Plan about half an hour, plus the time to build the image if you build it yourself.</p>
+    <p class="lead">From a bag of parts to a critter that reacts to your coding agents. Plan about half an hour, plus the time to build the image if you build it yourself.</p>
 
     <div class="note"><p><span class="tag">early days</span>The image has not been tested on real hardware yet. If something below does not match what you see, the <a href="docs.html#troubleshooting">troubleshooting notes</a> may help.</p></div>
 
     <h3>You need</h3>
     <ul>
-      <li><strong><a href="https://claude.com/claude-code">Claude Code</a></strong>, set up and working on your computer. The gotchi shows what Claude Code is doing, so without it there is nothing to show. Claude Code needs a Claude subscription or an Anthropic API account.</li>
+      <li><strong>A coding agent</strong>, set up and working on your computer: <a href="https://claude.com/claude-code">Claude Code</a>, OpenAI Codex CLI, Gemini CLI, GitHub Copilot CLI, Cursor, Devin Desktop (Windsurf), Kiro CLI, Cline, OpenCode or Amp. The gotchi shows what they are doing, so without one there is nothing to show.</li>
       <li>A <strong>Mac, Linux or Windows computer</strong> with Python 3.9 or newer. macOS ships it with the command line tools (<code>xcode-select --install</code>), most Linux systems have it already, and on Windows you get it from <a href="https://www.python.org/downloads/">python.org</a>. Windows also needs <a href="https://git-scm.com/downloads/win">Git for Windows</a>, which Claude Code recommends anyway: hooks and the status line run in its Git Bash, and that is where you paste the commands below.</li>
       <li>The parts from the <a href="parts.html">shopping list</a></li>
       <li><a href="https://www.raspberrypi.com/software/">Raspberry Pi Imager</a> to flash the card</li>
@@ -77,22 +77,23 @@ country = "DE"</code></pre>
         <p>After booting, the critter appears on the display. On a Mac, if macOS asks whether to allow the new accessory to connect, allow it. Windows sets it up as a USB network adapter (RNDIS) on its own; Linux usually brings it up through NetworkManager.</p>
       </div></li>
       <li id="connect"><div>
-        <h3>Connect Claude Code</h3>
-        <p>Now teach Claude Code to talk to the gotchi. It comes as a Claude Code plugin. In Claude Code, add the Tokibot marketplace and install the plugin:</p>
-        <pre data-title="claude code"><code><span class="p">$ </span>/plugin marketplace add https://tokibot.lottes.dev/marketplace.json
-<span class="p">$ </span>/plugin install tokibot@tokibot</code></pre>
-        <p>The plugin adds <a href="https://docs.claude.com/en/docs/claude-code/hooks">hooks</a> that report each event to the gotchi. It asks for an address, the gotchi's name, a token and a relay; leave them all empty for now. You can change them later in <code>/plugin</code>.</p>
-        <p>Plugins cannot set the status line, and the status line is where the gotchi learns how much of your 5-hour and 7-day budget is left. To add it, run this in a terminal:</p>
-        <pre data-title="your computer · terminal"><code><span class="p">$ </span>curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --statusline-only</code></pre>
-        <p>With the gotchi plugged in, this also pairs your computer with it: the client remembers the gotchi's name and gets a token from it, so a friend's gotchi on the same Wi-Fi never shows your sessions. It keeps your existing status line and still shows it. You can <a href="install.sh">read the script</a> before you run it.</p>
-        <div class="note"><p><strong>No plugin?</strong> <code>curl -fsSL https://tokibot.lottes.dev/install.sh | sh</code> installs hooks and status line in one go, straight into <code>~/.claude/settings.json</code>. Use either the plugin or this, not both, or every event reaches the gotchi twice.</p></div>
+        <h3>Connect your agents</h3>
+        <p>Now teach your coding agents to talk to the gotchi. One line in a terminal installs the client and adds its hooks. Pick your harnesses with <code>--harness</code>, or let <code>auto</code> find every one installed on this computer:</p>
+        <pre data-title="your computer · terminal"><code><span class="c"># Claude Code only (the default)</span>
+<span class="p">$ </span>curl -fsSL https://tokibot.lottes.dev/install.sh | sh
+<span class="c"># every harness found on this computer</span>
+<span class="p">$ </span>curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --harness auto
+<span class="c"># or pick them</span>
+<span class="p">$ </span>curl -fsSL https://tokibot.lottes.dev/install.sh | sh -s -- --harness codex,gemini,opencode</code></pre>
+        <p>Known names: <code>claude</code>, <code>codex</code>, <code>gemini</code>, <code>copilot</code>, <code>cursor</code>, <code>devin</code>, <code>kiro</code>, <code>cline</code>, <code>opencode</code>, <code>amp</code>. Each harness gets the hooks in its own settings, see <a href="docs.html#harnesses">which file each one uses</a>. Codex asks before it runs new hooks: approve them once with <code>/hooks</code> in Codex. With the gotchi plugged in, the installer also pairs your computer with it: the client remembers the gotchi's name and gets a token from it, so a friend's gotchi on the same Wi-Fi never shows your sessions. You can <a href="install.sh">read the script</a> before you run it.</p>
+        <div class="note"><p><strong>Claude Code as a plugin?</strong> Instead of its hooks from the script, Claude Code can get them as a plugin: <code>/plugin marketplace add https://tokibot.lottes.dev/marketplace.json</code>, then <code>/plugin install tokibot@tokibot</code>. Plugins cannot set the status line, which carries the 5-hour and 7-day budget, so add that with <code>… | sh -s -- --statusline-only</code> (plus <code>--harness</code> for your other agents). Use either the plugin or the script's Claude Code hooks, not both, or every event reaches the gotchi twice.</p></div>
         <p>On Windows, run the terminal commands in Git Bash. Then check that the gotchi answers. The test walks the critter through its moods over about a minute:</p>
         <pre data-title="your computer · terminal"><code><span class="p">$ </span>sh ~/.tokibot/tokibot.sh test</code></pre>
         <p>By default the client tries the USB cable first and then your gotchi's own name, <code>tokibot-xxxx.local</code>, on your Wi-Fi. The gotchi shows that name on screen until a client talks to it. You can also watch the display live in a browser at <a href="http://192.168.77.1:8765/"><code>http://192.168.77.1:8765/</code></a>.</p>
       </div></li>
       <li><div>
-        <h3>Start Claude Code</h3>
-        <p>Close running Claude Code sessions and open a new one, so it picks up the plugin. The critter says hello, gets busy while Claude works, raises its arms when Claude needs your permission and lets you know when the reply is done.</p>
+        <h3>Start your agent</h3>
+        <p>Close running sessions and open a new one, so the agent picks up the hooks. The critter says hello, gets busy while the agent works, raises its arms when it needs your permission and lets you know when the reply is done. Next to the project it shows which harness is talking.</p>
       </div></li>
     </ol>
 
@@ -100,7 +101,7 @@ country = "DE"</code></pre>
       <span class="kicker"><b>§ next</b> / where to go from here</span>
       <div class="cols">
         <div><h3>Upside down?</h3><p>Set <code>rotate = 180</code> on the <a href="docs.html#settings">settings page</a>.</p></div>
-        <div><h3>Claude in the cloud?</h3><p>Sessions in a Claude Project or Claude Code on the web reach the gotchi through a <a href="docs.html#cloud">relay</a>. Four steps, once.</p></div>
+        <div><h3>Agents in the cloud?</h3><p>Sessions in a Claude Project, Claude Code on the web or another cloud container reach the gotchi through a <a href="docs.html#cloud">relay</a>. Four steps, once.</p></div>
         <div><h3>Wi-Fi only?</h3><p>Pair by the name on the screen, see <a href="docs.html#pairing">pairing</a>.</p></div>
       </div>
     </section>

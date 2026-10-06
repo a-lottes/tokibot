@@ -10,6 +10,9 @@
   Run `install.py` once to move the client to `~/.tokibot`. A gotchi on 0.4.0 cannot
   update itself to this version, the app moved; flash the new image instead.
 * The website menu folds into a button on phones and small windows.
+* The website and the assembly guide explain the other harnesses: step 7 installs
+  hooks with `--harness`, the docs list which file each harness uses. Installing for
+  other harnesses only no longer creates or changes Claude Code's settings.
 * Four more harnesses: Kiro CLI 3, Cline, OpenCode and Amp (`install.py --harness`).
   OpenCode and Amp get a small plugin; the OpenCode one brings the token counts of
   every reply. Not yet tried against the real tools.
