@@ -1,4 +1,4 @@
-"""The hook client: harness adapters and token counting (client/claudegotchi_client.py)."""
+"""The hook client: harness adapters and token counting (client/tokibot_client.py)."""
 import importlib.util
 import json
 import os
@@ -7,7 +7,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location(
-    "claudegotchi_client", os.path.join(HERE, "..", "..", "client", "claudegotchi_client.py"))
+    "tokibot_client", os.path.join(HERE, "..", "..", "client", "tokibot_client.py"))
 client = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(client)
 

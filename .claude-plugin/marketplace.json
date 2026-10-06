@@ -1,15 +1,15 @@
 {
-  "name": "claudegotchi",
-  "description": "The Claudegotchi plugin for Claude Code",
+  "name": "tokibot",
+  "description": "The Tokibot plugin for Claude Code",
   "owner": {
     "name": "Andreas Lottes",
-    "url": "https://claudegotchi.lottes.dev"
+    "url": "https://tokibot.lottes.dev"
   },
   "plugins": [
     {
-      "name": "claudegotchi",
-      "source": "./plugin/claudegotchi",
-      "description": "Reports Claude Code events to your Claudegotchi e-ink companion"
+      "name": "tokibot",
+      "source": "./plugin/tokibot",
+      "description": "Reports Claude Code events to your Tokibot e-ink companion"
     }
   ]
 }

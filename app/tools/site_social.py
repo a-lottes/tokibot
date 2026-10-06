@@ -15,9 +15,9 @@ from unittest import mock
 
 from PIL import Image, ImageDraw
 
-from claudegotchi import critter, painter
-from claudegotchi.mood import ACCESSORIES
-from claudegotchi.painter import Painter
+from tokibot import critter, painter
+from tokibot.mood import ACCESSORIES
+from tokibot.painter import Painter
 
 SCALE = 2
 LIMITS = {"five_hour": {"pct": 38.0, "reset": 0}, "seven_day": {"pct": 21.0, "reset": 0}}

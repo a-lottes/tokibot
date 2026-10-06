@@ -15,7 +15,7 @@ import os
 import re
 import sys
 
-SITE = "https://claudegotchi.lottes.dev"
+SITE = "https://tokibot.lottes.dev"
 
 
 def inline(text):
@@ -132,10 +132,10 @@ def build(docs):
           "url": f"{SITE}/faq.html", "inLanguage": "en", "mainEntity": entities}
     ld_json = json.dumps(ld, ensure_ascii=False, indent=1).replace("</", "<\\/")
 
-    head = re.sub(r"<title>.*?</title>", "<title>FAQ · Claudegotchi</title>", head)
+    head = re.sub(r"<title>.*?</title>", "<title>FAQ · Tokibot</title>", head)
     head = re.sub(r'<meta name="description" content="[^"]*">',
                   '<meta name="description" content="Answers to setup questions and problems with '
-                  'Claudegotchi on macOS, Linux and Windows: USB, drivers, Python, the Claude Code '
+                  'Tokibot on macOS, Linux and Windows: USB, drivers, Python, the Claude Code '
                   'plugin, Wi-Fi, the cloud relay, battery and updates.">', head)
     head = head.replace('<link rel="stylesheet" href="style.css">',
                         '<link rel="stylesheet" href="style.css">\n'

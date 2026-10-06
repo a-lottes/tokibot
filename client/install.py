@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Sets up the Claudegotchi client in Claude Code and other coding harnesses (or removes it).
+"""Sets up the Tokibot client in Claude Code and other coding harnesses (or removes it).
 macOS, Linux, and Windows with Git for Windows (run it from Git Bash).
 
   python3 install.py                         # default: automatic (USB cable, then Wi-Fi)
   python3 install.py --harness claude,codex  # also report Codex sessions (see HARNESSES)
   python3 install.py --harness auto          # every harness found on this computer
-  python3 install.py --gotchi claudegotchi-3f2a   # pair over Wi-Fi by the name on its screen
+  python3 install.py --gotchi tokibot-3f2a   # pair over Wi-Fi by the name on its screen
   python3 install.py --url http://192.168.1.50:8765 --token secret
   python3 install.py --new-relay             # also send through a new ntfy relay topic
   python3 install.py --cloud-setup > setup.sh   # script for a cloud environment
@@ -13,9 +13,9 @@ macOS, Linux, and Windows with Git for Windows (run it from Git Bash).
   python3 install.py --uninstall
 
 What happens:
-  * claudegotchi_client.py is copied to ~/.claude/claudegotchi/
+  * tokibot_client.py is copied to ~/.claude/tokibot/
   * ~/.claude/settings.json gets the hooks and the status line
-    (a backup settings.json.claudegotchi-backup is made first)
+    (a backup settings.json.tokibot-backup is made first)
   * other harnesses get the hooks in their own settings file (with a backup as well)
   * an existing status line is kept and still shown
   * the client pairs with your gotchi (USB cable, or --gotchi NAME): it remembers the
@@ -30,11 +30,14 @@ import subprocess
 import sys
 
 CLAUDE_DIR = os.path.expanduser("~/.claude")
-TARGET_DIR = os.path.join(CLAUDE_DIR, "claudegotchi")
+TARGET_DIR = os.path.expanduser("~/.tokibot")
 SETTINGS = os.path.join(CLAUDE_DIR, "settings.json")
-CLIENT = os.path.join(TARGET_DIR, "claudegotchi_client.py")
-LAUNCHER = os.path.join(TARGET_DIR, "claudegotchi.sh")
-MARKS = ("claudegotchi_client.py", "claudegotchi/claudegotchi.sh")
+CLIENT = os.path.join(TARGET_DIR, "tokibot_client.py")
+LAUNCHER = os.path.join(TARGET_DIR, "tokibot.sh")
+# Before the rename (Claudegotchi) the client lived in ~/.claude/claudegotchi/
+LEGACY_DIR = os.path.join(CLAUDE_DIR, "claudegotchi")
+MARKS = ("tokibot_client.py", ".tokibot/tokibot.sh",
+         "claudegotchi_client.py", "claudegotchi/claudegotchi.sh")
 
 
 def ours(command):
@@ -59,7 +62,7 @@ HARNESSES = {
     "gemini": {"path": "~/.gemini/settings.json", "style": "nested", "found": "~/.gemini",
                "events": ["SessionStart", "SessionEnd", "BeforeAgent", "AfterAgent", "BeforeTool",
                           "AfterTool", "Notification", "PreCompress"]},
-    "copilot": {"path": "~/.copilot/hooks/claudegotchi.json", "style": "flat", "found": "~/.copilot",
+    "copilot": {"path": "~/.copilot/hooks/tokibot.json", "style": "flat", "found": "~/.copilot",
                 "version": 1,
                 # PascalCase events get Claude Code's payloads; the rest only exist in camelCase
                 "events": ["SessionStart", "SessionEnd", "UserPromptSubmit", "PreToolUse",
@@ -82,7 +85,7 @@ def harness_entry(name, cmd, event):
         entry = {"type": "command", "command": command}
         entry["timeout"] = 10_000 if name == "gemini" else 10      # Gemini counts milliseconds
         if name == "gemini":
-            entry["name"] = "claudegotchi"
+            entry["name"] = "tokibot"
         return entry
     if name == "copilot":
         return {"type": "command", "bash": command, "command": command, "timeoutSec": 10}
@@ -98,10 +101,23 @@ def load_json(path):
         return json.load(f)
 
 
+def has_backup(path):
+    """Only the original version is backed up (also by the installer before the rename)."""
+    return any(os.path.exists(path + suffix) for suffix in (".tokibot-backup", ".claudegotchi-backup"))
+
+
+def remove_legacy():
+    """Removes what the installer put in place before the rename (Claudegotchi)."""
+    shutil.rmtree(LEGACY_DIR, ignore_errors=True)
+    old = os.path.expanduser("~/.copilot/hooks/claudegotchi.json")
+    if os.path.exists(old):
+        os.remove(old)
+
+
 def save_json(path, data, backup=True):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    if backup and os.path.exists(path) and not os.path.exists(path + ".claudegotchi-backup"):
-        shutil.copy2(path, path + ".claudegotchi-backup")
+    if backup and os.path.exists(path) and not has_backup(path):
+        shutil.copy2(path, path + ".tokibot-backup")
     tmp = path + ".tmp"
     with open(tmp, "w") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
@@ -206,11 +222,14 @@ def strip_ours(settings):
 
 
 def read_cfg():
-    try:
-        with open(os.path.join(TARGET_DIR, "claudegotchi.json")) as f:
-            return json.load(f)
-    except (OSError, ValueError):
-        return {}
+    for path in (os.path.join(TARGET_DIR, "tokibot.json"),
+                 os.path.join(LEGACY_DIR, "claudegotchi.json")):
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            pass
+    return {}
 
 
 def resolve(args, old_cfg):
@@ -219,7 +238,7 @@ def resolve(args, old_cfg):
     token = args.token if args.token is not None else old_cfg.get("token", "")
     relay = args.relay if args.relay is not None else old_cfg.get("relay", "")
     if args.new_relay:
-        relay = f"{RELAY_SERVER}/claudegotchi-{secrets.token_urlsafe(18)}"
+        relay = f"{RELAY_SERVER}/tokibot-{secrets.token_urlsafe(18)}"
         token = token or secrets.token_urlsafe(18)
     return url, token, relay.rstrip("/")
 
@@ -237,15 +256,15 @@ def gotchi_settings(token, relay):
 def install(args):
     os.makedirs(TARGET_DIR, exist_ok=True)
     here = os.path.dirname(os.path.abspath(__file__))
-    for src, dst in (("claudegotchi_client.py", CLIENT), ("claudegotchi.sh", LAUNCHER)):
+    for src, dst in (("tokibot_client.py", CLIENT), ("tokibot.sh", LAUNCHER)):
         shutil.copy2(os.path.join(here, src), dst)
         os.chmod(dst, 0o755)
 
     settings = load_settings()
-    if os.path.exists(SETTINGS) and not os.path.exists(SETTINGS + ".claudegotchi-backup"):
-        shutil.copy2(SETTINGS, SETTINGS + ".claudegotchi-backup")   # back up the original version only
+    if os.path.exists(SETTINGS) and not has_backup(SETTINGS):
+        shutil.copy2(SETTINGS, SETTINGS + ".tokibot-backup")   # back up the original version only
 
-    cfg_path = os.path.join(TARGET_DIR, "claudegotchi.json")
+    cfg_path = os.path.join(TARGET_DIR, "tokibot.json")
     old_cfg = read_cfg()
 
     # Chain an existing status line instead of replacing it
@@ -277,9 +296,10 @@ def install(args):
     settings["statusLine"] = new_sl
     save_settings(settings)
 
+    remove_legacy()
     print(f"✓ Client installed: {CLIENT}")
     what = "Status line" if args.statusline_only or "claude" not in harnesses else "Hooks and status line"
-    print(f"✓ {what} added to {SETTINGS} (backup: settings.json.claudegotchi-backup)")
+    print(f"✓ {what} added to {SETTINGS} (backup: settings.json.tokibot-backup)")
     for name in HARNESSES:
         if name in harnesses:
             print(f"✓ Hooks for {name} added to {install_harness(name, cmd)}")
@@ -292,12 +312,12 @@ def install(args):
     print(f"→ Gotchi address: {url}")
     if relay:
         print(f"→ Relay: {relay}")
-        print("→ Put this into claudegotchi.toml on the gotchi (it needs Wi-Fi for the relay):\n")
+        print("→ Put this into tokibot.toml on the gotchi (it needs Wi-Fi for the relay):\n")
         print(gotchi_settings(token, relay))
     if url != "none":
         print("→ Pairing with your gotchi …")
         if subprocess.run([sys.executable, CLIENT, "pair", resolve_gotchi(args, old_cfg)]).returncode:
-            print(f"→ Pair later:  {cmd} pair [claudegotchi-xxxx]")
+            print(f"→ Pair later:  {cmd} pair [tokibot-xxxx]")
     print(f"→ Test:  {cmd} test")
     print("→ Restart running Claude Code sessions once so the hooks take effect.")
 
@@ -312,10 +332,10 @@ def cloud_setup(args):
                  "(or install locally with a relay first).")
     here = os.path.dirname(os.path.abspath(__file__))
     files = {}
-    for name in ("claudegotchi_client.py", "claudegotchi.sh", "install.py"):
+    for name in ("tokibot_client.py", "tokibot.sh", "install.py"):
         with open(os.path.join(here, name)) as f:
             files[name] = f.read()
-    out = ["#!/bin/sh", "# Claudegotchi: install the hook client in this cloud environment.",
+    out = ["#!/bin/sh", "# Tokibot: install the hook client in this cloud environment.",
            "set -e", 'd="$(mktemp -d)"']
     for name, text in files.items():
         mark = "END_OF_" + name.replace(".", "_").upper()
@@ -325,7 +345,7 @@ def cloud_setup(args):
     out.append('rm -rf "$d"')
     print("\n".join(out))
     print("Paste the script above into the cloud environment's setup script.\n"
-          "Put this into claudegotchi.toml on the gotchi:\n\n" + gotchi_settings(token, relay),
+          "Put this into tokibot.toml on the gotchi:\n\n" + gotchi_settings(token, relay),
           file=sys.stderr)
 
 
@@ -333,7 +353,7 @@ def uninstall():
     settings = load_settings()
     strip_ours(settings)
     chain = ""
-    cfg_path = os.path.join(TARGET_DIR, "claudegotchi.json")
+    cfg_path = os.path.join(TARGET_DIR, "tokibot.json")
     if os.path.exists(cfg_path):
         with open(cfg_path) as f:
             chain = json.load(f).get("statusline_chain", "")
@@ -346,9 +366,10 @@ def uninstall():
     save_settings(settings)
     for name in HARNESSES:
         if uninstall_harness(name):
-            print(f"✓ Claudegotchi removed from {name}")
+            print(f"✓ Tokibot removed from {name}")
     shutil.rmtree(TARGET_DIR, ignore_errors=True)
-    print("✓ Claudegotchi removed from Claude Code" + (f"; status line restored to: {chain}" if chain else ""))
+    remove_legacy()
+    print("✓ Tokibot removed from Claude Code" + (f"; status line restored to: {chain}" if chain else ""))
 
 
 def main():
@@ -356,7 +377,7 @@ def main():
     ap.add_argument("--url", default=None, help=f"address of the gotchi, or none for relay only (default: {DEFAULT_URL})")
     ap.add_argument("--token", default=None, help="optional token, must match the gotchi")
     ap.add_argument("--gotchi", default=None,
-                    help="your gotchi's name as shown on its screen (claudegotchi-xxxx); "
+                    help="your gotchi's name as shown on its screen (tokibot-xxxx); "
                          "not needed if it is plugged in with the USB cable")
     ap.add_argument("--relay", default=None, help="ntfy topic URL to publish to as well (\"\" to turn it off)")
     ap.add_argument("--new-relay", action="store_true", help="create a random ntfy.sh topic (and a token)")

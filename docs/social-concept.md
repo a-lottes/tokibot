@@ -201,10 +201,10 @@ public profile page for those who want one.
 | Where | What |
 |---|---|
 | `os/` | BlueZ and Bluetooth firmware in the defconfigs; `dbus`; enable the BT UART |
-| `app/claudegotchi/identity.py` | key pair, profile, signing, backup/restore |
-| `app/claudegotchi/social.py` | BLE beacon, scanning, GATT exchange, friends store |
-| `app/claudegotchi/mood.py` | social XP, badges, texts for encounters |
-| `app/claudegotchi/painter.py` | wave, friend name in the header, message icon |
+| `app/tokibot/identity.py` | key pair, profile, signing, backup/restore |
+| `app/tokibot/social.py` | BLE beacon, scanning, GATT exchange, friends store |
+| `app/tokibot/mood.py` | social XP, badges, texts for encounters |
+| `app/tokibot/painter.py` | wave, friend name in the header, message icon |
 | settings page | name, variant, social on/off, friends list, backup, linked browsers |
 | simulator | a fake nearby gotchi so all of this can be tried without hardware |
 | new: `community/` | site and API (phase 5+), separate from the device code |

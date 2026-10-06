@@ -3,11 +3,11 @@ import time
 import unittest
 from unittest import mock
 
-from claudegotchi import battery
-from claudegotchi.brain import Brain
-from claudegotchi import server
-from claudegotchi.painter import Painter
-from claudegotchi.renderer import Renderer
+from tokibot import battery
+from tokibot.brain import Brain
+from tokibot import server
+from tokibot.painter import Painter
+from tokibot.renderer import Renderer
 
 
 class FakeI2C:

@@ -1,12 +1,12 @@
 import time
 import unittest
 
-from claudegotchi.brain import Brain
+from tokibot.brain import Brain
 import os
 
-from claudegotchi.config import _parse_simple_toml, load, shell
+from tokibot.config import _parse_simple_toml, load, shell
 
-DEFAULT_TOML = os.path.join(os.path.dirname(__file__), "..", "..", "os", "board", "claudegotchi", "claudegotchi.toml")
+DEFAULT_TOML = os.path.join(os.path.dirname(__file__), "..", "..", "os", "board", "tokibot", "tokibot.toml")
 
 
 def hook(brain, name, **kw):
@@ -77,7 +77,7 @@ class FoodMoodTest(unittest.TestCase):
     def test_peckish_when_idle_and_empty_during_the_day(self):
         from datetime import datetime
         from unittest import mock
-        from claudegotchi import brain as brain_mod
+        from tokibot import brain as brain_mod
         b = Brain()
         b.life.state["food_total"] = 1        # it has eaten before
         noon = datetime(2026, 10, 6, 12).timestamp()

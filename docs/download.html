@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Download · Claudegotchi</title>
-  <meta name="description" content="Download the Claudegotchi images and app bundle.">
+  <title>Download · Tokibot</title>
+  <meta name="description" content="Download the Tokibot images and app bundle.">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
+  <script src="nav.js" defer></script>
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
-      <nav class="site-nav"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="download.html" aria-current="page">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
+      <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="download.html" aria-current="page">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
       <span class="sys"><span class="dot">●</span> v0.4.0 · 192.168.77.1:8765</span>
     </div>
   </header>
@@ -38,11 +40,11 @@
           <span class="kicker"><b>§ 01</b> / which file</span>
           <h2>Which file do I need?</h2>
           <ul>
-            <li><code>claudegotchi-zero2w.img.xz</code>: the image for the <strong>Raspberry Pi Zero 2 W</strong> (the default board).</li>
-            <li><code>claudegotchi-zerow.img.xz</code>: the image for the first <strong>Raspberry Pi Zero W</strong>.</li>
-            <li><a href="marketplace.json"><code>marketplace.json</code></a> and <a href="plugin/claudegotchi.zip"><code>claudegotchi.zip</code></a>: the Claude Code plugin for <strong>your computer</strong>, which connects Claude Code to the gotchi. Add it with <code>/plugin marketplace add https://claudegotchi.lottes.dev/marketplace.json</code>, see <a href="build.html#connect">step 7</a>.</li>
+            <li><code>tokibot-zero2w.img.xz</code>: the image for the <strong>Raspberry Pi Zero 2 W</strong> (the default board).</li>
+            <li><code>tokibot-zerow.img.xz</code>: the image for the first <strong>Raspberry Pi Zero W</strong>.</li>
+            <li><a href="marketplace.json"><code>marketplace.json</code></a> and <a href="plugin/tokibot.zip"><code>tokibot.zip</code></a>: the Claude Code plugin for <strong>your computer</strong>, which connects Claude Code to the gotchi. Add it with <code>/plugin marketplace add https://tokibot.lottes.dev/marketplace.json</code>, see <a href="build.html#connect">step 7</a>.</li>
             <li><a href="install.sh"><code>install.sh</code></a>: adds the status line, or installs the client without the plugin.</li>
-            <li><code>claudegotchi-app.tar.gz</code>: only the app. Upload it on the gotchi's <a href="docs.html#updates">settings page</a> to update without reflashing.</li>
+            <li><code>tokibot-app.tar.gz</code>: only the app. Upload it on the gotchi's <a href="docs.html#updates">settings page</a> to update without reflashing.</li>
           </ul>
           <p>Flash an image with Raspberry Pi Imager (<em>Choose OS</em> → <em>Use custom</em>). There is no need to unpack the <code>.xz</code> file first. The <a href="build.html">assembly guide</a> walks through the rest.</p>
         </div>
@@ -50,8 +52,8 @@
           <span class="kicker"><b>§ 02</b> / verify</span>
           <h2>Check the download.</h2>
           <p>Compare the SHA-256 checksum with the one in the table:</p>
-          <pre data-title="checksum"><code><span class="p">$ </span>shasum -a 256 claudegotchi-zero2w.img.xz   <span class="c"># macOS</span>
-<span class="p">$ </span>sha256sum claudegotchi-zero2w.img.xz       <span class="c"># Linux</span></code></pre>
+          <pre data-title="checksum"><code><span class="p">$ </span>shasum -a 256 tokibot-zero2w.img.xz   <span class="c"># macOS</span>
+<span class="p">$ </span>sha256sum tokibot-zero2w.img.xz       <span class="c"># Linux</span></code></pre>
         </div>
       </div>
     </section>
@@ -61,9 +63,9 @@
     (function () {
       var box = document.getElementById("release");
       var boards = {
-        "claudegotchi-zero2w.img.xz": "Image for Raspberry Pi Zero 2 W",
-        "claudegotchi-zerow.img.xz": "Image for Raspberry Pi Zero W",
-        "claudegotchi-app.tar.gz": "App bundle (update without flashing)"
+        "tokibot-zero2w.img.xz": "Image for Raspberry Pi Zero 2 W",
+        "tokibot-zerow.img.xz": "Image for Raspberry Pi Zero W",
+        "tokibot-app.tar.gz": "App bundle (update without flashing)"
       };
       function esc(s) {
         return String(s).replace(/[&<>"]/g, function (c) {
@@ -97,7 +99,7 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <span><b>▚</b> claudegotchi · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span><b>▚</b> tokibot · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
       <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
     </div>
   </footer>

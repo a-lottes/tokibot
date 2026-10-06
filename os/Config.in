@@ -1,1 +1,1 @@
-source "$BR2_EXTERNAL_CLAUDEGOTCHI_PATH/package/claudegotchi/Config.in"
+source "$BR2_EXTERNAL_TOKIBOT_PATH/package/tokibot/Config.in"

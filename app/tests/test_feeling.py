@@ -4,11 +4,11 @@ import os
 import unittest
 from unittest import mock
 
-from claudegotchi.brain import Brain
-from claudegotchi.life import Life
-from claudegotchi.mood import MESSAGES
+from tokibot.brain import Brain
+from tokibot.life import Life
+from tokibot.mood import MESSAGES
 
-CLIENT = os.path.join(os.path.dirname(__file__), "..", "..", "client", "claudegotchi_client.py")
+CLIENT = os.path.join(os.path.dirname(__file__), "..", "..", "client", "tokibot_client.py")
 
 
 class Clock:
@@ -146,7 +146,7 @@ class FeelingTest(unittest.TestCase):
 class ClientSignalTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        spec = importlib.util.spec_from_file_location("claudegotchi_client", CLIENT)
+        spec = importlib.util.spec_from_file_location("tokibot_client", CLIENT)
         cls.client = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(cls.client)
 

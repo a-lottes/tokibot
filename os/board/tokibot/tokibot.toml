@@ -1,0 +1,60 @@
+# Tokibot settings
+#
+# This file lives on the SD card's boot partition. You can edit it directly on
+# your Mac (drive "GOTCHI"), then put the card back into the Pi.
+
+[device]
+# Display driver. The revision is printed on the back of the display board.
+#   "waveshare_2in13_v4"   Waveshare 2.13" V4 (default)
+#   "waveshare_2in13_v3"   Waveshare 2.13" V3
+#   "waveshare_2in13_v2"   Waveshare 2.13" V2
+#   "waveshare_2in13_v1"   Waveshare 2.13" V1
+#   "waveshare_2in13b_v4"  Waveshare 2.13" B V4, black/white/red (full refresh only, slow)
+#   "waveshare_2in7_v2"    Waveshare 2.7" V2
+#   "waveshare_2in7_v1"    Waveshare 2.7" V1 (full refresh only, slow)
+# Pwnagotchi's names work too, e.g. "waveshare_3" or "waveshare_4".
+display = "waveshare_2in13_v4"
+# 180 if the picture is upside down
+rotate = 0
+timezone = "Europe/Berlin"
+
+[server]
+port = 8765
+# Only accept clients that send this token. Pairing a client sets it for you.
+token = ""
+
+[usb]
+# On the Pi's USB data port (not "PWR") the gotchi shows up as a network adapter.
+# Your computer gets an address automatically; the gotchi is reachable at 192.168.77.1.
+enabled = true
+address = "192.168.77.1"
+
+[wifi]
+# Leave empty if the gotchi only hangs off the USB cable.
+ssid = ""
+psk = ""
+country = "DE"
+
+[relay]
+# For Claude Code running in the cloud (e.g. Claude Projects), which cannot reach the
+# gotchi directly. Cloud hooks publish to this ntfy topic and the gotchi listens to it
+# over Wi-Fi. Generate a URL with: python3 client/install.py --new-relay
+# The topic name is the secret, so keep it long and random. Also set [server] token.
+url = ""
+# Optional access token for a protected or self-hosted ntfy server
+auth = ""
+
+[social]
+# Meet other gotchis over Bluetooth LE and make friends (see docs/social-concept.md).
+# Your gotchi stays anonymous until you open it on the social page (/social).
+enabled = true
+# "auto" (Bluetooth on the device, a simulated radio in the simulator), "ble", "udp" or "off"
+radio = "auto"
+
+[battery]
+# Optional battery under the Pi. "auto" looks for a PiSugar 3 (or 3 Plus) on I2C and
+# shows nothing battery related without one. "pisugar3" insists on one, "none" turns it off.
+model = "auto"
+# Shut down cleanly at this charge (percent) when not on power, so the SD card stays
+# intact. 0 = never.
+shutdown_at = 5

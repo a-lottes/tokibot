@@ -11,9 +11,9 @@ import urllib.request
 from http.server import ThreadingHTTPServer
 from unittest import mock
 
-from claudegotchi import config
-from claudegotchi.brain import Brain
-from claudegotchi.server import Control, make_dispatch, make_handler
+from tokibot import config
+from tokibot.brain import Brain
+from tokibot.server import Control, make_dispatch, make_handler
 from test_relay import load_client
 
 
@@ -21,7 +21,7 @@ class Gotchi:
     """A gotchi server on a free local port, with its settings in a temp file."""
     def __init__(self, name, token=""):
         self.dir = tempfile.mkdtemp()
-        self.cfg_path = os.path.join(self.dir, "claudegotchi.toml")
+        self.cfg_path = os.path.join(self.dir, "tokibot.toml")
         with open(self.cfg_path, "w") as f:
             f.write(f'[server]\ntoken = "{token}"\n')
         cfg = config.load(self.cfg_path)
@@ -46,58 +46,67 @@ def post(url, body=b"{}", **headers):
 
 class ServerTest(unittest.TestCase):
     def setUp(self):
-        self.g = Gotchi("claudegotchi-aaaa")
+        self.g = Gotchi("tokibot-aaaa")
 
     def tearDown(self):
         self.g.close()
 
     def test_whoami_and_name_header(self):
         with urllib.request.urlopen(self.g.url + "/whoami", timeout=3) as resp:
-            self.assertEqual(json.load(resp), {"gotchi": "claudegotchi-aaaa", "token": False})
-            self.assertEqual(resp.headers["X-Claudegotchi-Gotchi"], "claudegotchi-aaaa")
+            self.assertEqual(json.load(resp), {"gotchi": "tokibot-aaaa", "token": False})
+            self.assertEqual(resp.headers["X-Tokibot-Gotchi"], "tokibot-aaaa")
 
     def test_event_for_another_gotchi_is_refused(self):
         ev = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": "s"}).encode()
         with self.assertRaises(urllib.error.HTTPError) as cm:
-            post(self.g.url + "/hook", ev, **{"X-Claudegotchi-Gotchi": "claudegotchi-bbbb"})
+            post(self.g.url + "/hook", ev, **{"X-Tokibot-Gotchi": "tokibot-bbbb"})
         self.assertEqual(cm.exception.code, 409)
         self.assertEqual(self.g.brain.view()["state"], "idle")
-        status, _, _ = post(self.g.url + "/hook", ev, **{"X-Claudegotchi-Gotchi": "Claudegotchi-AAAA"})
+        status, _, _ = post(self.g.url + "/hook", ev, **{"X-Tokibot-Gotchi": "Tokibot-AAAA"})
         self.assertEqual(status, 204)
         self.assertEqual(self.g.brain.view()["state"], "working")
 
+    def test_clients_from_before_the_rename(self):
+        """Clients installed as Claudegotchi send the old headers and the old name."""
+        ev = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": "s"}).encode()
+        status, headers, _ = post(self.g.url + "/hook", ev, **{"X-Claudegotchi-Gotchi": "claudegotchi-aaaa"})
+        self.assertEqual((status, headers["X-Claudegotchi-Gotchi"]), (204, "tokibot-aaaa"))
+        with self.assertRaises(urllib.error.HTTPError) as cm:
+            post(self.g.url + "/hook", ev, **{"X-Claudegotchi-Gotchi": "claudegotchi-bbbb"})
+        self.assertEqual(cm.exception.code, 409)
+
     def test_screen_shows_the_address_until_someone_talks(self):
-        self.assertIn("claudegotchi-aaaa.local", self.g.brain.view()["message"])
+        self.assertIn("tokibot-aaaa.local", self.g.brain.view()["message"])
         post(self.g.url + "/limits", b'{"rate_limits": {}}')
-        self.assertNotIn("claudegotchi-aaaa", self.g.brain.view()["message"])
+        self.assertNotIn("tokibot-aaaa", self.g.brain.view()["message"])
 
     def test_pair_creates_and_saves_a_token_once(self):
         with self.assertRaises(urllib.error.HTTPError) as cm:      # no header: a web page
             post(self.g.url + "/pair")
         self.assertEqual(cm.exception.code, 400)
-        _, _, body = post(self.g.url + "/pair", **{"X-Claudegotchi-Pair": "1"})
+        _, _, body = post(self.g.url + "/pair", **{"X-Tokibot-Pair": "1"})
         info = json.loads(body)
-        self.assertEqual(info["gotchi"], "claudegotchi-aaaa")
+        self.assertEqual(info["gotchi"], "tokibot-aaaa")
         self.assertTrue(info["token"])
         self.assertEqual(config.load(self.g.cfg_path)["server"]["token"], info["token"])
         # From now on the token is needed, for events and for pairing again
         for path in ("/hook", "/pair"):
             with self.assertRaises(urllib.error.HTTPError) as cm:
-                post(self.g.url + path, **{"X-Claudegotchi-Pair": "1"})
+                post(self.g.url + path, **{"X-Tokibot-Pair": "1"})
             self.assertEqual(cm.exception.code, 401)
         status, _, _ = post(self.g.url + "/hook", b'{"hook_event_name": "Stop"}',
-                            **{"X-Claudegotchi-Token": info["token"]})
+                            **{"X-Tokibot-Token": info["token"]})
         self.assertEqual(status, 204)
 
 
 class ClientTest(unittest.TestCase):
     def setUp(self):
-        self.mine, self.friends = Gotchi("claudegotchi-aaaa"), Gotchi("claudegotchi-bbbb")
+        self.mine, self.friends = Gotchi("tokibot-aaaa"), Gotchi("tokibot-bbbb")
         self.client = load_client()
         self.tmp = tempfile.mkdtemp()
         self.client.LEARNED = os.path.join(self.tmp, "gotchi")
         self.client.LAST_URL = os.path.join(self.tmp, "last_url")
-        self.client.INSTALLED_CFG = os.path.join(self.tmp, "claudegotchi.json")
+        self.client.INSTALLED_CFG = os.path.join(self.tmp, "tokibot.json")
 
     def tearDown(self):
         self.mine.close()
@@ -110,9 +119,9 @@ class ClientTest(unittest.TestCase):
         cfg = {"url": "auto", "token": "", "relay": "", "gotchi": ""}
         with mock.patch.object(self.client, "USB_URL", self.mine.url):
             self.client.send(cfg, "/hook", self.ev("UserPromptSubmit"))
-        self.assertEqual(self.client.read_state(self.client.LEARNED), "claudegotchi-aaaa")
+        self.assertEqual(self.client.read_state(self.client.LEARNED), "tokibot-aaaa")
         # Unplugged; a friend's gotchi now answers where ours was. It refuses our events.
-        cfg["gotchi"] = "claudegotchi-aaaa"
+        cfg["gotchi"] = "tokibot-aaaa"
         with mock.patch.object(self.client, "USB_URL", self.friends.url):
             with self.assertRaises(urllib.error.HTTPError):
                 self.client.post(dict(cfg, url=self.friends.url), "/hook", self.ev("Stop"))
@@ -123,7 +132,7 @@ class ClientTest(unittest.TestCase):
         self.assertEqual(self.client.cmd_pair(cfg, self.mine.url), 0)
         with open(self.client.INSTALLED_CFG) as f:
             saved = json.load(f)
-        self.assertEqual(saved["gotchi"], "claudegotchi-aaaa")
+        self.assertEqual(saved["gotchi"], "tokibot-aaaa")
         self.assertEqual(saved["token"], config.load(self.mine.cfg_path)["server"]["token"])
         cfg.update(saved)
         self.client.post(dict(cfg, url=self.mine.url), "/hook", self.ev("UserPromptSubmit"))

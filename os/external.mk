@@ -1,1 +1,1 @@
-include $(sort $(wildcard $(BR2_EXTERNAL_CLAUDEGOTCHI_PATH)/package/*/*.mk))
+include $(sort $(wildcard $(BR2_EXTERNAL_TOKIBOT_PATH)/package/*/*.mk))

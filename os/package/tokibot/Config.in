@@ -1,0 +1,15 @@
+config BR2_PACKAGE_TOKIBOT
+	bool "tokibot"
+	depends on BR2_PACKAGE_PYTHON3
+	depends on BR2_INSTALL_LIBSTDCPP # python-pillow
+	select BR2_PACKAGE_PYTHON_PILLOW
+	select BR2_PACKAGE_FREETYPE
+	select BR2_PACKAGE_PYTHON_SPIDEV
+	select BR2_PACKAGE_PYTHON_RPI_GPIO
+	select BR2_PACKAGE_PYTHON3_SSL # relay over https
+	select BR2_PACKAGE_CA_CERTIFICATES
+	select BR2_PACKAGE_BLUEZ5_UTILS_HEADERS # socket.AF_BLUETOOTH in Python
+	select BR2_PACKAGE_PYTHON_PYNACL # identity, friendship proofs, backups (libsodium)
+	help
+	  The Tokibot service: receives hook events from Claude Code
+	  and shows the mood on the e-paper.

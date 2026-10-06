@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shopping List · Claudegotchi</title>
-  <meta name="description" content="Everything you need to build a Claudegotchi.">
+  <title>Shopping List · Tokibot</title>
+  <meta name="description" content="Everything you need to build a Tokibot.">
   <meta name="color-scheme" content="light dark">
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
+  <script src="nav.js" defer></script>
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="./"><span class="px">▚</span>claudegotchi</a>
-      <nav class="site-nav"><a href="./">Home</a><a href="parts.html" aria-current="page">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
+      <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+      <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html" aria-current="page">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
       <span class="sys"><span class="dot">●</span> v0.4.0 · 192.168.77.1:8765</span>
     </div>
   </header>
@@ -68,7 +70,7 @@
           <h2>Also works.</h2>
           <ul>
             <li><strong>Raspberry Pi Zero W / WH</strong> (the first generation). There is a separate image for it. It is slower, which is fine for a display that refreshes a few times a minute.</li>
-            <li><strong>Other Waveshare displays from Pwnagotchi builds</strong>: the 2.13″ V1, V2 and V3, the 2.13″ B V4 (black, white and red) and the 2.7″ V1 and V2. Choose yours under <em>Display</em> on the settings page, or set <code>display</code> in <code>claudegotchi.toml</code>; Pwnagotchi's names such as <code>waveshare_3</code> work too. The B V4 and the 2.7″ V1 cannot refresh partially, so they update at most once a minute and without animations. On the 2.7″ the picture sits in the middle with a white margin. <a href="docs.html#displays">All names</a></li>
+            <li><strong>Other Waveshare displays from Pwnagotchi builds</strong>: the 2.13″ V1, V2 and V3, the 2.13″ B V4 (black, white and red) and the 2.7″ V1 and V2. Choose yours under <em>Display</em> on the settings page, or set <code>display</code> in <code>tokibot.toml</code>; Pwnagotchi's names such as <code>waveshare_3</code> work too. The B V4 and the 2.7″ V1 cannot refresh partially, so they update at most once a minute and without animations. On the 2.7″ the picture sits in the middle with a white margin. <a href="docs.html#displays">All names</a></li>
           </ul>
           <h2>Does not work.</h2>
           <ul>
@@ -85,7 +87,7 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <span><b>▚</b> claudegotchi · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
+      <span><b>▚</b> tokibot · a hobby project inspired by Pwnagotchi · not affiliated with Anthropic</span>
       <span>MIT · fonts: Departure Mono (OFL), DejaVu</span>
     </div>
   </footer>

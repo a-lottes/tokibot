@@ -46,12 +46,12 @@ jobs:
       - name: Add the client, so install.sh works without access to the repository
         run: |
           mkdir -p docs/client
-          cp client/claudegotchi_client.py client/claudegotchi.sh client/install.py docs/client/
+          cp client/tokibot_client.py client/tokibot.sh client/install.py docs/client/
       - name: Add the Claude Code plugin and its marketplace
         env:
           PR: ${{ github.event.pull_request.number }}
         run: |
-          if [ -n "$PR" ]; then site="https://pr-$PR--claude-gotchi.netlify.app"; else site="https://claudegotchi.lottes.dev"; fi
+          if [ -n "$PR" ]; then site="https://pr-$PR--claude-gotchi.netlify.app"; else site="https://tokibot.lottes.dev"; fi
           python3 plugin/build.py docs "$site"
       - name: Add the latest release to the download page
         env:
@@ -63,13 +63,13 @@ jobs:
             exit 0
           fi
           gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir docs/downloads \
-            --pattern '*.img.xz' --pattern 'claudegotchi-app.tar.gz'
+            --pattern '*.img.xz' --pattern 'tokibot-app.tar.gz'
           published=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json publishedAt --jq .publishedAt)
           python3 - "$tag" "$published" <<'PY'
           import hashlib, json, os, sys
           tag, published = sys.argv[1], sys.argv[2]
           d = "docs/downloads"
-          order = ["claudegotchi-zero2w.img.xz", "claudegotchi-zerow.img.xz", "claudegotchi-app.tar.gz"]
+          order = ["tokibot-zero2w.img.xz", "tokibot-zerow.img.xz", "tokibot-app.tar.gz"]
           files = []
           for name in sorted(os.listdir(d), key=lambda n: (order.index(n) if n in order else 99, n)):
               h = hashlib.sha256()

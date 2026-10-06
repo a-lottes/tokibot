@@ -5,9 +5,9 @@ import unittest
 from datetime import datetime, timedelta
 from unittest import mock
 
-from claudegotchi import brain as brain_mod
-from claudegotchi.brain import Brain
-from claudegotchi.life import Life, level_for, xp_for_level
+from tokibot import brain as brain_mod
+from tokibot.brain import Brain
+from tokibot.life import Life, level_for, xp_for_level
 
 
 def at(day, hour=12):
@@ -95,12 +95,12 @@ if __name__ == "__main__":
 
 class FoodTest(unittest.TestCase):
     def test_food_points_weigh_cache_reads_lightly(self):
-        from claudegotchi.life import food_points
+        from tokibot.life import food_points
         self.assertEqual(food_points({"input": 100, "output": 50, "cache_write": 10,
                                       "cache_read": 1000}), 260)
 
     def test_stomach_fills_and_empties(self):
-        from claudegotchi.mood import STOMACH_HALF_LIFE
+        from tokibot.mood import STOMACH_HALF_LIFE
         life = Life()
         now = 1_800_000_000
         life.eat("Stop", {"tokens": {"output": 400_000}}, now)
@@ -111,7 +111,7 @@ class FoodTest(unittest.TestCase):
         self.assertEqual(life.stomach(now)["today"], 400_000)
 
     def test_estimated_food_for_harnesses_without_tokens(self):
-        from claudegotchi.mood import FOOD_ESTIMATE
+        from tokibot.mood import FOOD_ESTIMATE
         life = Life()
         now = 1_800_000_000
         self.assertEqual(life.eat("Stop", {"harness": "copilot"}, now), FOOD_ESTIMATE["Stop"])
@@ -121,7 +121,7 @@ class FoodTest(unittest.TestCase):
 
     def test_usual_day_from_history(self):
         from datetime import datetime, timedelta
-        from claudegotchi.mood import FOOD_DEFAULT_DAY
+        from tokibot.mood import FOOD_DEFAULT_DAY
         life = Life()
         now = datetime(2026, 10, 6, 12).timestamp()
         self.assertEqual(life.usual_day(now), FOOD_DEFAULT_DAY)

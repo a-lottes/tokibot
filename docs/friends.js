@@ -1,5 +1,5 @@
 // The demo on friends.html: Pixel (you) meets Mochi at the next desk.
-// Numbers follow app/claudegotchi/mood.py and life.py; the screens come from
+// Numbers follow app/tokibot/mood.py and life.py; the screens come from
 // app/tools/site_social.py (make social-pics).
 (function () {
   "use strict";
