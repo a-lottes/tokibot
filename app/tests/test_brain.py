@@ -60,3 +60,34 @@ class ConfigTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FoodMoodTest(unittest.TestCase):
+    def test_stuffed_while_working_with_a_full_stomach(self):
+        b = Brain()
+        hook(b, "UserPromptSubmit")
+        self.assertEqual(b.view()["mood"], "working")
+        b2 = Brain()
+        hook(b2, "Stop", tokens={"output": 5_000_000})
+        hook(b2, "UserPromptSubmit")
+        v = b2.view()
+        self.assertEqual(v["mood"], "stuffed")
+        self.assertGreaterEqual(v["food"]["fullness"], 1.5)
+
+    def test_peckish_when_idle_and_empty_during_the_day(self):
+        from datetime import datetime
+        from unittest import mock
+        from claudegotchi import brain as brain_mod
+        b = Brain()
+        b.life.state["food_total"] = 1        # it has eaten before
+        noon = datetime(2026, 10, 6, 12).timestamp()
+        with mock.patch.object(brain_mod.time, "time", return_value=noon):
+            self.assertEqual(b.view()["mood"], "peckish")
+        night = datetime(2026, 10, 6, 23).timestamp()
+        with mock.patch.object(brain_mod.time, "time", return_value=night):
+            self.assertEqual(b.view()["mood"], "idle")
+
+    def test_harness_is_shown(self):
+        b = Brain()
+        hook(b, "UserPromptSubmit", harness="codex", project="api")
+        self.assertEqual(b.view()["harness"], "codex")

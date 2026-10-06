@@ -55,7 +55,8 @@ class Renderer(threading.Thread):
                datetime.now().strftime("%H:%M"), view["sessions"], view.get("level"), view.get("streak"),
                view.get("nearby"), view.get("friends_nearby"), view.get("accessory"),
                json.dumps(view.get("battery") and {k: view["battery"][k] for k in ("pct", "plugged")}),
-               tuple(view.get("props") or ()))
+               tuple(view.get("props") or ()), view.get("harness"),
+               int((view.get("food") or {}).get("fullness", 0) * 20))
         if key == self.last_key or now - self.last_draw < self.interval:
             return
         img = self.painter.render(view, frame)

@@ -31,6 +31,8 @@ Claude Code ── hooks + status line ──► claudegotchi_client.py ──HT
 | levelup | the critter just reached a new level |
 | summary | idle in the evening (18–23 h): the day's tally |
 | hungry | no work for two days or more |
+| stuffed | working with a very full stomach (see [Food](#food)) |
+| peckish | idle during the day (9–18 h) with an empty stomach |
 | lowbattery | on battery with 15 % or less left (only with a PiSugar) |
 
 ### How it's going
@@ -57,7 +59,8 @@ sends the category, never the command.
 
 With several sessions (e.g. worktrees), the state that needs you most wins. The
 footer shows how many sessions are working (▶), waiting for you (?) or done (✓),
-plus bars for the 5-hour and 7-day budget.
+plus a bar for how full the critter is (`fed`) and Claude Code's 5-hour budget. The
+7-day budget only shows when it is 80 % used or more.
 
 ## Growing up
 
@@ -68,6 +71,21 @@ as it grows (level 2 at 50 XP, level 3 at 150, level 4 at 300, …), and the lev
 shows in the header. Every day with at least one finished reply extends the streak;
 skip a day and it starts over. In the evening it shows what you did today, and when
 you leave it alone for two days it gets hungry.
+
+### Food
+
+Tokens are the critter's food; XP stay its overall level. After every reply the
+client reads the token counts from the harness's own session log on your computer
+(numbers only) and sends them along. They count as food points: input, output and
+cache writes in full, cache reads at 10 %, since those are cheap and would drown
+everything else.
+
+The food fills a stomach that empties by half every 90 minutes. How full it is (the
+`fed` bar) compares with your own usual day, the average of the last 14 days with
+food, so it works the same for a light and a heavy user and has nothing to do with
+any rate limit. 100 % is as full as while working on a usual day; from 150 % it is
+stuffed, below 10 % and idle during the day it is peckish. Harnesses that report no
+token counts (Copilot, Cursor, Devin) feed it an estimate per reply and tool call.
 
 The progress lives in `life.json` on the image's small writable `data` partition
 (`~/.claudegotchi/` in the simulator), so it survives reboots and updates of the
@@ -209,6 +227,32 @@ python3 client/install.py          # address "auto": USB first, then your gotchi
 sh ~/.claude/claudegotchi/claudegotchi.sh test
 ```
 
+### Other coding harnesses
+
+The gotchi is not only for Claude Code. The installer can add its hooks to other
+harnesses too; their sessions show up like Claude Code's, with the harness's name
+next to the project:
+
+```bash
+python3 client/install.py --harness claude,codex,gemini   # pick them
+python3 client/install.py --harness auto                  # all found on this computer
+```
+
+| Harness | Hooks go to | Tokens |
+|---|---|---|
+| Claude Code | `~/.claude/settings.json` (or the plugin) | from the transcript |
+| OpenAI Codex CLI | `~/.codex/hooks.json` (approve them once with `/hooks` in Codex) | from the rollout log |
+| Gemini CLI | `~/.gemini/settings.json` | from the session file |
+| GitHub Copilot CLI | `~/.copilot/hooks/claudegotchi.json` | estimated |
+| Cursor | `~/.cursor/hooks.json` | estimated |
+| Devin Desktop (Windsurf) | `~/.codeium/windsurf/hooks.json` | estimated |
+
+The client translates every harness into Claude Code's hook events, so the gotchi
+only knows one vocabulary. Cursor also runs the hooks from `~/.claude/settings.json`;
+the client recognises that and reports those sessions as Cursor (or drops them, when
+Cursor's own hooks are installed). Without Claude Code there is no 5-hour budget bar,
+and the limit mood only shows when a harness reports a rate-limit error.
+
 ### Which gotchi?
 
 Every gotchi has its own network name, `claudegotchi-xxxx`, where `xxxx` comes from
@@ -341,8 +385,8 @@ recharges, or `BATTERY=sim:20` to start at 20 %).
 
 ## Privacy
 
-Only metadata is sent: event, session ID, folder name, tool name, limit and
-context percentages, and categories of shell commands (test run, commit, push,
+Only metadata is sent: event, harness, session ID, folder name, tool name, limit and
+context percentages, token counts, and categories of shell commands (test run, commit, push,
 pull request) recognised on your computer. Prompts, code and replies never leave your computer. With a relay,
 that metadata passes through the ntfy server you chose.
 

@@ -209,6 +209,12 @@ LOOKS = {
                    "props": [[("check", 70, -14)], [("check", 70, -20), ("sparkle", -2, -6)]]},
     "relieved":   {"eyes": ["happy", "closed"], "mouth": "smile", "arms": ("down", "down"),
                    "props": [[("sparkle", 72, -10)], [("sparkle", 68, -4)]]},
+    # food (life.py): a full belly while working, an empty one while idle
+    "stuffed":    {"eyes": ["tired", "closed"], "mouth": "wavy", "arms": ("out", "out"),
+                   "legs": ["step_a", "step_b"],
+                   "props": [[("bubble", 70, -8)], [("bubble", 72, -14), ("dot", 66, -2)]]},
+    "peckish":    {"eyes": ["left", "open"], "mouth": "o", "arms": ("out", "down"),
+                   "props": [[("crumb", 70, 0), ("question", 70, -16)], [("crumb", 72, 4)]]},
     "offline":    {"eyes": ["closed"], "mouth": "dot", "arms": ("down", "down"),
                    "props": [[("z_small", 66, -6), ("z_big", 74, -18)]]},
 }

@@ -36,7 +36,14 @@ CASES = [
     ("juggling", "Juggling 3 sessions!", "claudegotchi", {"working": 3}),
     ("proud", "Committed! 4 today.", "claudegotchi", {"working": 1}),
     ("relieved", "Green again. Phew!", "claudegotchi", {"working": 1}),
+    ("stuffed", "I'm stuffed! 2.4M tokens today.", "claudegotchi", {"working": 1}),
+    ("peckish", "My tummy is empty … feed me tokens?", "", {}),
 ]
+# How full the critter is (tokens are its food); FOOD_OF wins for single moods
+FOOD = {"fullness": 0.8, "total": 1}
+FOOD_OF = {"stuffed": {"fullness": 2.1, "total": 1}, "peckish": {"fullness": 0.05, "total": 1}}
+# Sessions from another harness show its name next to the project
+HARNESS = {"juggling": "codex", "permission": "copilot"}
 ACCESSORY_CASES = ["cap", "bow", "glasses", "headphones", "nightcap", "party", "crown"]
 # A nearly full context window: the critter carries a wrench
 PROPS = {"struggling": ["wrench"]}
@@ -56,7 +63,8 @@ def main(out):
                     "sessions": sum(counts.values()), "tools_today": 12, "level": 4, "streak": 5,
                     "limits": {} if mood == "idle" else LIMITS, "accessory": accessory,
                     "nearby": nearby, "friends_nearby": friends, "battery": BATTERY.get(mood),
-                    "props": PROPS.get(mood, [])}
+                    "props": PROPS.get(mood, []), "food": FOOD_OF.get(mood, FOOD),
+                    "harness": HARNESS.get(mood, "claude")}
             tiles.append((f"{mood} {frame + 1}/{critter.frames(mood)}", painter.render(view, frame)))
     for accessory in ACCESSORY_CASES:
         view = {"mood": "ready", "message": f"Look, my {accessory}!", "project": "", "counts": {},

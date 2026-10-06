@@ -1,4 +1,8 @@
-"""The brain: folds all Claude Code sessions into a single mood."""
+"""The brain: folds all coding sessions (Claude Code, Codex, Copilot, …) into a single mood.
+
+Events use Claude Code's hook names as the common vocabulary; the client translates
+the other harnesses into them and says which harness it was ("harness").
+"""
 import random
 import threading
 import time
@@ -9,7 +13,7 @@ from .life import Life
 from .mood import (BADGES, CONTEXT_FULL_PCT, DONE_DECAY, ERROR_LABELS, FILL_DEFAULTS,
                    FOCUS_WEIGHT, HUNGRY_AFTER_DAYS, JUGGLING_FROM, LABELS, LEVELUP_SHOW,
                    LIMIT_FALLBACK, LIMIT_WARN_PCT, MESSAGES, MOMENT_SHOW, MOOD_HOLD,
-                   PERMISSION_DECAY, PRIORITY, SESSION_FORGET, SOCIAL_SHOW, SUMMARY_FROM_HOUR,
+                   PECKISH_BELOW, PECKISH_HOURS, PERMISSION_DECAY, PRIORITY, STUFFED_FROM, SESSION_FORGET, SOCIAL_SHOW, SUMMARY_FROM_HOUR,
                    SUMMARY_UNTIL_HOUR, WAITING_NOTIFICATIONS, WORKING_EVENTS, WORKING_STALE)
 
 # Moods a level-up celebration may cover; anything that needs you wins over it.
@@ -17,7 +21,7 @@ CELEBRATE_OVER = {"working", "done", "ready", "idle", "error"}
 # Situations the feeling layer may tint; permission, waiting, limit and error never are.
 TINTABLE = {"working", "done", "ready", "idle"}
 # Tints of "working": they swap among each other at most every MOOD_HOLD seconds.
-WORKING_MOODS = {"working", "flow", "struggling", "juggling", "tired"}
+WORKING_MOODS = {"working", "flow", "struggling", "juggling", "tired", "stuffed"}
 # Every mood the feeling layer can produce
 TINTS = {"flow", "struggling", "stuck", "juggling", "oops", "proud", "relieved"}
 
@@ -45,6 +49,7 @@ class Brain:
         now = time.time()
         self.heard = True
         self.life.record(name, ev, now)
+        self.life.eat(name, ev, now)
         with self.lock:
             if name == "SessionEnd":
                 self.sessions.pop(sid, None)
@@ -53,7 +58,7 @@ class Brain:
                 return
             s = self.sessions.setdefault(sid, {
                 "state": "ready", "since": now, "updated": now, "ts": 0.0,
-                "project": "", "tool": "", "error": ""})
+                "project": "", "tool": "", "error": "", "harness": ""})
             # Hooks run asynchronously, so events can overtake each other. Ignore older ones.
             if ts < s["ts"]:
                 return
@@ -61,6 +66,7 @@ class Brain:
             s["updated"] = now
             if ev.get("project"):
                 s["project"] = ev["project"]
+            s["harness"] = str(ev.get("harness") or "claude")
             signals = self.feeling.record(sid, ev, now)
             self.life.reward(signals, now)
 
@@ -139,6 +145,7 @@ class Brain:
 
     def view(self):
         now = time.time()
+        food = self.life.stomach(now)
         with self.lock:
             for sid in [k for k, s in self.sessions.items() if now - s["updated"] > SESSION_FORGET]:
                 del self.sessions[sid]
@@ -166,6 +173,8 @@ class Brain:
             pct5 = limits.get("five_hour", {}).get("pct")
             if mood in ("working", "flow", "juggling") and pct5 is not None and pct5 >= LIMIT_WARN_PCT:
                 mood = "tired"
+            elif mood in ("working", "flow", "juggling") and food["fullness"] >= STUFFED_FROM:
+                mood = "stuffed"
             if (mood in WORKING_MOODS and self.shown in WORKING_MOODS and mood != self.shown
                     and now - self.shown_since < MOOD_HOLD):
                 mood = self.shown
@@ -179,7 +188,7 @@ class Brain:
         soc = {"nearby": 0, "friends_nearby": [], "event": None, "invite": None}
         if self.social:
             # Friends nearby see the situation, not how it is going (social.MOOD_CODES)
-            self.social.my_mood = state if mood in TINTS else mood
+            self.social.my_mood = state if mood in TINTS or mood == "stuffed" else mood
             soc = self.social.view(now)
         event = soc["event"] or {}
         celebrate = state in CELEBRATE_OVER
@@ -198,6 +207,9 @@ class Brain:
             mood = "friend" if event["kind"] == "friend" else "encounter"
         elif state == "idle" and (life["idle_days"] or 0) >= HUNGRY_AFTER_DAYS:
             mood = "hungry"
+        elif (state == "idle" and food["total"] and food["fullness"] < PECKISH_BELOW
+              and PECKISH_HOURS[0] <= hour < PECKISH_HOURS[1]):
+            mood = "peckish"
         elif (state == "idle" and life["today"]["turns"]
               and SUMMARY_FROM_HOUR <= hour < SUMMARY_UNTIL_HOUR):
             mood = "summary"
@@ -216,7 +228,7 @@ class Brain:
             "badge": BADGES.get(life["last_badge"], ("?",))[0],
             "battery": battery["pct"] if battery else "?",
             "n": counts.get("working", 0), "commits": life["today"].get("commits", 0),
-            "address": self.address,
+            "address": self.address, "food": short_number(food["today"]),
         }
         if mood == "stuck":
             fill["tool"] = feel["tool"] or fill["tool"]
@@ -231,7 +243,8 @@ class Brain:
             key = "permission_notool"
         if mood == "idle" and not self.heard and self.address:
             key = "address"           # nobody has talked to us yet: say where to find us
-        seed = datetime.fromtimestamp(now).date() if mood in ("summary", "hungry") else s.get("since")
+        seed = (datetime.fromtimestamp(now).date() if mood in ("summary", "hungry", "peckish")
+                else s.get("since"))
         if mood in ("encounter", "friend", "newfriend"):
             seed = event.get("at")
         rng = random.Random(f"{sid}|{state}|{seed}|{key}|{life['level_up_at']}")
@@ -239,14 +252,14 @@ class Brain:
 
         return {
             "state": state, "mood": mood, "message": message,
-            "project": s.get("project", ""), "counts": counts,
+            "project": s.get("project", ""), "harness": s.get("harness", ""), "counts": counts,
             "sessions": len(eff), "limits": limits, "tools_today": tools_today,
             "level": life["level"], "streak": life["streak"], "life": life,
             "nearby": soc["nearby"], "friends_nearby": len(soc["friends_nearby"]),
             "accessory": self.social.accessory() if self.social else "none",
             "battery": dict(battery) if battery else None,
             "feeling": {"valence": round(valence, 2), "energy": round(energy, 2)},
-            "context_pct": context_pct,
+            "context_pct": context_pct, "food": food,
             "props": (["wrench"] if context_pct is not None and context_pct >= CONTEXT_FULL_PCT
                       and mood in WORKING_MOODS | {"stuck"} else []),
         }
@@ -269,3 +282,12 @@ class Brain:
         if working >= JUGGLING_FROM:
             return "juggling"
         return "flow" if tone > 0 else "working"
+
+
+def short_number(n):
+    """1234 → 1.2k, 2500000 → 2.5M"""
+    n = int(n or 0)
+    for size, unit in ((1_000_000_000, "B"), (1_000_000, "M"), (1_000, "k")):
+        if n >= size:
+            return f"{n / size:.1f}".rstrip("0").rstrip(".") + unit
+    return str(n)

@@ -91,3 +91,41 @@ class MoodTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FoodTest(unittest.TestCase):
+    def test_food_points_weigh_cache_reads_lightly(self):
+        from claudegotchi.life import food_points
+        self.assertEqual(food_points({"input": 100, "output": 50, "cache_write": 10,
+                                      "cache_read": 1000}), 260)
+
+    def test_stomach_fills_and_empties(self):
+        from claudegotchi.mood import STOMACH_HALF_LIFE
+        life = Life()
+        now = 1_800_000_000
+        life.eat("Stop", {"tokens": {"output": 400_000}}, now)
+        full = life.stomach(now)["fullness"]
+        self.assertGreater(full, 0)
+        later = life.stomach(now + STOMACH_HALF_LIFE)["fullness"]
+        self.assertAlmostEqual(later, full / 2, places=2)
+        self.assertEqual(life.stomach(now)["today"], 400_000)
+
+    def test_estimated_food_for_harnesses_without_tokens(self):
+        from claudegotchi.mood import FOOD_ESTIMATE
+        life = Life()
+        now = 1_800_000_000
+        self.assertEqual(life.eat("Stop", {"harness": "copilot"}, now), FOOD_ESTIMATE["Stop"])
+        self.assertEqual(life.eat("Stop", {"harness": "claude"}, now), 0)    # Claude has real counts
+        s = life.stomach(now)
+        self.assertEqual(s["estimated_today"], FOOD_ESTIMATE["Stop"])
+
+    def test_usual_day_from_history(self):
+        from datetime import datetime, timedelta
+        from claudegotchi.mood import FOOD_DEFAULT_DAY
+        life = Life()
+        now = datetime(2026, 10, 6, 12).timestamp()
+        self.assertEqual(life.usual_day(now), FOOD_DEFAULT_DAY)
+        for back in (1, 2, 3):
+            day = (datetime(2026, 10, 6) - timedelta(days=back)).date().isoformat()
+            life.state["days"][day] = {"food": 600_000}
+        self.assertEqual(life.usual_day(now), 600_000)
