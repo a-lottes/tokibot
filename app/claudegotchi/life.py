@@ -1,4 +1,8 @@
-"""The critter's life: experience, levels, streaks and per-day stats.
+"""The critter's life: experience, levels, streaks, per-day stats and its stomach.
+
+XP make the overall level. Tokens are the food: every harness that reports token
+counts feeds the stomach, which empties again over time (mood.STOMACH_HALF_LIFE).
+How full it is compares with the critter's own usual day, not with any rate limit.
 
 Survives restarts: the state is a small JSON file on the data partition
 (/data on the device). Written at most once a minute and on shutdown, so the
@@ -6,12 +10,15 @@ SD card is not hammered.
 """
 import json
 import logging
+import math
 import os
 import threading
 import time
 from datetime import date, datetime, timedelta
 
-from .mood import BADGES, XP_FOR, XP_FOR_SIGNAL
+from .mood import (BADGES, ESTIMATED_HARNESSES, FOOD_ACTIVE_HOURS, FOOD_DEFAULT_DAY,
+                   FOOD_ESTIMATE, FOOD_HISTORY_DAYS, FOOD_HISTORY_MIN, FOOD_WEIGHTS,
+                   STOMACH_HALF_LIFE, XP_FOR, XP_FOR_SIGNAL)
 
 log = logging.getLogger("claudegotchi")
 
@@ -32,7 +39,19 @@ def level_for(xp):
 
 
 def _empty_day():
-    return {"turns": 0, "tools": 0, "errors": 0, "sessions": 0, "xp": 0, "commits": 0}
+    return {"turns": 0, "tools": 0, "errors": 0, "sessions": 0, "xp": 0, "commits": 0,
+            "food": 0, "food_est": 0}
+
+
+def food_points(tokens):
+    """Food points for token counts {"input", "output", "cache_write", "cache_read"}."""
+    total = 0.0
+    for kind, weight in FOOD_WEIGHTS.items():
+        try:
+            total += weight * max(0, int(tokens.get(kind) or 0))
+        except (TypeError, ValueError):
+            pass
+    return int(total)
 
 
 class Life:
@@ -40,7 +59,7 @@ class Life:
         self.path = path
         self.lock = threading.Lock()
         self.state = {"xp": 0, "streak": 0, "best_streak": 0, "last_day": "", "days": {},
-                      "badges": {}}
+                      "badges": {}, "food_total": 0, "stomach": {"level": 0.0, "at": 0.0}}
         self.dirty, self.saved_at, self.save_failed = False, 0.0, False
         self.level_up_at = 0.0
         self.badge_at, self.last_badge = 0.0, ""
@@ -90,6 +109,65 @@ class Life:
                 self._bonus_carry -= extra
                 gain += extra
             return self._gain(gain, day, now)
+
+    def eat(self, name, ev, now=None):
+        """Feed the stomach from one event: the token counts it carries, or an estimate
+        for harnesses that report none (mood.ESTIMATED_HARNESSES). Returns the food points."""
+        estimated = False
+        if isinstance(ev.get("tokens"), dict):
+            points = food_points(ev["tokens"])
+        elif ev.get("harness") in ESTIMATED_HARNESSES:
+            points, estimated = FOOD_ESTIMATE.get(name, 0), True
+        else:
+            points = 0
+        if points <= 0:
+            return 0
+        now = now or time.time()
+        today = datetime.fromtimestamp(now).date().isoformat()
+        with self.lock:
+            st = self.state
+            day = st["days"].setdefault(today, _empty_day())
+            day["food"] = day.get("food", 0) + points
+            if estimated:
+                day["food_est"] = day.get("food_est", 0) + points
+            st["food_total"] = st.get("food_total", 0) + points
+            stomach = st.setdefault("stomach", {"level": 0.0, "at": 0.0})
+            stomach["level"] = self._digest(stomach, now) + points
+            stomach["at"] = now
+            self.dirty = True
+        return points
+
+    @staticmethod
+    def _digest(stomach, now):
+        age = max(0.0, now - (stomach.get("at") or now))
+        return (stomach.get("level") or 0.0) * 0.5 ** (age / STOMACH_HALF_LIFE)
+
+    def usual_day(self, now=None):
+        """Food on a usual day: the average of the recent days that had food (not today)."""
+        today = datetime.fromtimestamp(now or time.time()).date()
+        since = (today - timedelta(days=FOOD_HISTORY_DAYS)).isoformat()
+        with self.lock:
+            days = [d.get("food", 0) for k, d in self.state["days"].items()
+                    if since <= k < today.isoformat() and d.get("food", 0) > 0]
+        if len(days) < FOOD_HISTORY_MIN:
+            return FOOD_DEFAULT_DAY
+        return sum(days) / len(days)
+
+    def stomach(self, now=None):
+        """How full the critter is: 1.0 = as full as while working on a usual day."""
+        now = now or time.time()
+        usual = self.usual_day(now)
+        # Eating a usual day's food evenly over FOOD_ACTIVE_HOURS keeps this much in the stomach
+        reference = usual / (FOOD_ACTIVE_HOURS * 3600) * STOMACH_HALF_LIFE / math.log(2)
+        today = datetime.fromtimestamp(now).date().isoformat()
+        with self.lock:
+            st = self.state
+            level = self._digest(st.get("stomach") or {}, now)
+            day = st["days"].get(today, {})
+            total = st.get("food_total", 0)
+            food, est = day.get("food", 0), day.get("food_est", 0)
+        return {"fullness": round(level / reference, 3) if reference else 0.0,
+                "today": food, "estimated_today": est, "total": total, "usual_day": int(usual)}
 
     def award(self, gain, now=None):
         """Extra XP from outside the hook events (encounters, friendships).

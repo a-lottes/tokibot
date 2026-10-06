@@ -14,7 +14,7 @@ ANIM_PERIOD = {"working": 3, "tired": 6, "waiting": 4, "permission": 2,
                "levelup": 2, "summary": 10, "hungry": 7,
                "encounter": 2, "friend": 3, "newfriend": 2, "invite": 3, "badge": 2, "lowbattery": 5,
                "flow": 4, "struggling": 5, "stuck": 3, "oops": 3, "juggling": 2, "proud": 2,
-               "relieved": 5}
+               "relieved": 5, "stuffed": 6, "peckish": 7}
 
 MESSAGES = {
     "working": ["Busy building …", "Tap tap tap …", "On it!", "Hmm, interesting …",
@@ -32,13 +32,18 @@ MESSAGES = {
     "limit": ["Limit reached. zZz until {reset}", "Out of juice … back at {reset}",
               "Break until {reset}. Coffee?"],
     "idle": ["zZz …", "Wake me with work.", "Bored …", "Dreaming of tokens …"],
+    "stuffed": ["So many tokens … *burp*", "I'm stuffed! {food} tokens today.",
+                "Full belly, slow paws …", "No more tokens, please!"],
+    "peckish": ["My tummy is empty … feed me tokens?", "Snack time? Let's build something!",
+                "*stomach growls* Got a task for me?"],
     "address": ["Hi! I'm {address}. Plug me in to pair."],
     "offline": ["Offline. See you!"],
     "levelup": ["Level up! I'm level {level} now!", "Woohoo, level {level}!",
                 "I grew! Level {level}."],
     "summary": ["Today: {turns} tasks, {tools} tools, {errors} errors. Streak: {streak} days.",
                 "Good day! {turns} tasks done, {xp} XP earned.",
-                "Day's tally: {turns} tasks, {tools} tools. Level {level}."],
+                "Day's tally: {turns} tasks, {tools} tools. Level {level}.",
+                "Today I ate {food} tokens and earned {xp} XP. Yum!"],
     "hungry": ["I'm hungry … feed me some code?", "{idle_days} days without code. *stomach growls*",
                "Did you forget me? Let's build something!"],
     # social (see social.py)
@@ -68,7 +73,7 @@ MESSAGES = {
 }
 
 # Fallbacks for the {placeholders} above
-FILL_DEFAULTS = {"tool": "something", "error": "?", "pct": "?", "reset": "the reset"}
+FILL_DEFAULTS = {"tool": "something", "error": "?", "pct": "?", "reset": "the reset", "food": "0"}
 
 ERROR_LABELS = {
     "overloaded": "overloaded", "server_error": "server error",
@@ -83,7 +88,11 @@ ERROR_LABELS = {
 LABELS = {"session": "session", "sessions": "sessions", "tools_today": "{n} tools today",
           "tools_streak": "{n} tools · {streak}d streak",
           "tools_streak_short": "{streak}-day streak", "level": "Lv{level}",
-          "stranger": "a gotchi"}
+          "stranger": "a gotchi", "food": "fed"}
+
+# Names of the coding harnesses, shown next to the project when it is not Claude Code
+HARNESS_LABELS = {"claude": "Claude Code", "codex": "Codex", "copilot": "Copilot",
+                  "gemini": "Gemini", "cursor": "Cursor", "devin": "Devin"}
 
 # Experience per hook event (the critter's life, see life.py)
 XP_FOR = {"Stop": 10, "SessionStart": 3, "PreToolUse": 1, "TaskCompleted": 5}
@@ -112,6 +121,23 @@ JUGGLING_FROM = 3            # working sessions at once
 CONTEXT_FULL_PCT = 85        # context this full → the critter carries a wrench
 FOCUS_WEIGHT = 0.7           # the shown session's share of the feeling; the rest share 0.3
 XP_FOR_SIGNAL = {"commit": 5, "push": 8, "pr": 15}
+
+# --- food: tokens are the critter's food (life.py) ----------------------------
+# Every coding harness that reports tokens feeds the critter. XP stay the overall level;
+# the stomach is how it feels right now. Nothing here depends on a rate limit.
+# Food points per token: cache reads are cheap and would drown everything else.
+FOOD_WEIGHTS = {"input": 1.0, "output": 1.0, "cache_write": 1.0, "cache_read": 0.1}
+STOMACH_HALF_LIFE = 90 * 60  # the stomach empties by half in this time
+FOOD_ACTIVE_HOURS = 6        # a usual day's food is eaten over this many hours
+FOOD_HISTORY_DAYS = 14       # "usual" = the average of the days with food in this window
+FOOD_HISTORY_MIN = 3         # fewer days with food than this: assume FOOD_DEFAULT_DAY
+FOOD_DEFAULT_DAY = 1_500_000
+STUFFED_FROM = 1.5           # stomach this full (1 = a usual working hour) → stuffed
+PECKISH_BELOW = 0.1          # this empty and idle during the day → peckish
+PECKISH_HOURS = (9, 18)
+# Harnesses that report no token counts: food is estimated per event
+FOOD_ESTIMATE = {"Stop": 15_000, "PreToolUse": 8_000}
+ESTIMATED_HARNESSES = {"copilot", "cursor", "devin"}
 
 # --- social: encounters, friends, badges (social.py) ---------------------------
 XP_SOCIAL = {

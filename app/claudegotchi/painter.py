@@ -6,7 +6,7 @@ from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 
 from . import critter
-from .mood import LABELS
+from .mood import HARNESS_LABELS, LABELS
 
 W, H = 250, 122
 log = logging.getLogger("claudegotchi")
@@ -126,8 +126,13 @@ class Painter:
         d.line([(x0, ty - 6), (x0 - 9, ty + 4), (x0, ty + 4)], fill=0, width=2)
         x, y, width = x0 + 7, y0 + 5, x1 - x0 - 13
         lines_left = 5
-        if view["project"]:
-            d.text((x, y), self.ellipsize(view["project"], self.f_proj, width),
+        project = view["project"]
+        harness = view.get("harness") or "claude"
+        if harness != "claude":
+            name = HARNESS_LABELS.get(harness, harness)
+            project = f"{project} · {name}" if project else name
+        if project:
+            d.text((x, y), self.ellipsize(project, self.f_proj, width),
                    font=self.f_proj, fill=0)
             y += 15
             lines_left = 4
@@ -138,12 +143,20 @@ class Painter:
     def footer(self, d, view):
         d.line((0, FOOTER_Y, W, FOOTER_Y), fill=0)
         x = W - 3
-        for key, label in (("seven_day", "7d"), ("five_hour", "5h")):
+        # Bars from the right: how full the critter is (any harness), then Claude Code's
+        # 5h and 7d budgets. With the food bar, 7d only shows when it gets tight.
+        bars = []
+        food = view.get("food") or {}
+        if food.get("total"):
+            bars.append((LABELS["food"], food["fullness"] * 100, min(100, food["fullness"] * 100)))
+        for key, label in (("five_hour", "5h"), ("seven_day", "7d")):
             w = view["limits"].get(key)
-            if not w:
+            if not w or (key == "seven_day" and food.get("total") and w["pct"] < 80):
                 continue
             pct = max(0, min(100, w["pct"]))
-            txt = f"{int(round(pct))}%"
+            bars.append((label, pct, pct))
+        for label, value, pct in bars:
+            txt = f"{int(round(value))}%"
             x -= self.f_small.getlength(txt)
             d.text((x, FOOTER_Y + 3), txt, font=self.f_small, fill=0)
             x -= 32

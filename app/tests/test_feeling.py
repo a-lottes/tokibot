@@ -161,7 +161,7 @@ class ClientSignalTest(unittest.TestCase):
 
     def sent(self, data):
         out = []
-        with mock.patch.object(self.client, "post_detached", lambda cfg, path, ev: out.append(ev)), \
+        with mock.patch.object(self.client, "post_detached", lambda cfg, path, ev, prepare=None: out.append(ev)), \
                 mock.patch("sys.stdin", io.StringIO(__import__("json").dumps(data))):
             self.client.cmd_hook({})
         return out[0]

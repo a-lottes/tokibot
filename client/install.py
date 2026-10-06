@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Sets up the Claudegotchi client in Claude Code (or removes it again).
+"""Sets up the Claudegotchi client in Claude Code and other coding harnesses (or removes it).
 macOS, Linux, and Windows with Git for Windows (run it from Git Bash).
 
   python3 install.py                         # default: automatic (USB cable, then Wi-Fi)
+  python3 install.py --harness claude,codex  # also report Codex sessions (see HARNESSES)
+  python3 install.py --harness auto          # every harness found on this computer
   python3 install.py --gotchi claudegotchi-3f2a   # pair over Wi-Fi by the name on its screen
   python3 install.py --url http://192.168.1.50:8765 --token secret
   python3 install.py --new-relay             # also send through a new ntfy relay topic
@@ -14,6 +16,7 @@ What happens:
   * claudegotchi_client.py is copied to ~/.claude/claudegotchi/
   * ~/.claude/settings.json gets the hooks and the status line
     (a backup settings.json.claudegotchi-backup is made first)
+  * other harnesses get the hooks in their own settings file (with a backup as well)
   * an existing status line is kept and still shown
   * the client pairs with your gotchi (USB cable, or --gotchi NAME): it remembers the
     gotchi's name and, if the gotchi has no token yet, gets one from it
@@ -42,6 +45,131 @@ RELAY_SERVER = "https://ntfy.sh"
 EVENTS = ["SessionStart", "SessionEnd", "UserPromptSubmit", "PreToolUse", "PostToolUse",
           "PostToolUseFailure", "PermissionRequest", "Notification", "Stop", "StopFailure",
           "SubagentStart", "SubagentStop", "PreCompact"]
+
+
+# Other coding harnesses: settings file, how hooks are written there, and their events.
+#   nested: Claude Code's layout, {"hooks": {Event: [{"hooks": [entry]}]}}
+#   flat:   {"hooks": {Event: [entry]}}
+HARNESSES = {
+    "codex": {"path": "~/.codex/hooks.json", "style": "nested", "found": "~/.codex",
+              "events": ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse",
+                         "PermissionRequest", "Stop", "PreCompact", "SubagentStart",
+                         "SubagentStop"],
+              "note": "Codex asks before it runs new hooks: open Codex and approve them with /hooks."},
+    "gemini": {"path": "~/.gemini/settings.json", "style": "nested", "found": "~/.gemini",
+               "events": ["SessionStart", "SessionEnd", "BeforeAgent", "AfterAgent", "BeforeTool",
+                          "AfterTool", "Notification", "PreCompress"]},
+    "copilot": {"path": "~/.copilot/hooks/claudegotchi.json", "style": "flat", "found": "~/.copilot",
+                "version": 1,
+                # PascalCase events get Claude Code's payloads; the rest only exist in camelCase
+                "events": ["SessionStart", "SessionEnd", "UserPromptSubmit", "PreToolUse",
+                           "PostToolUse", "PostToolUseFailure", "agentStop", "errorOccurred",
+                           "permissionRequest", "preCompact", "subagentStart", "subagentStop"]},
+    "cursor": {"path": "~/.cursor/hooks.json", "style": "flat", "found": "~/.cursor", "version": 1,
+               "events": ["sessionStart", "sessionEnd", "beforeSubmitPrompt", "preToolUse",
+                          "postToolUse", "postToolUseFailure", "subagentStart", "subagentStop",
+                          "preCompact", "stop"]},
+    "devin": {"path": "~/.codeium/windsurf/hooks.json", "style": "flat", "found": "~/.codeium/windsurf",
+              "events": ["pre_user_prompt", "pre_run_command", "post_run_command", "pre_write_code",
+                         "post_write_code", "pre_mcp_tool_use", "post_mcp_tool_use",
+                         "post_cascade_response"]},
+}
+
+
+def harness_entry(name, cmd, event):
+    command = f"{cmd} hook --harness {name} --event {event}"
+    if name in ("codex", "gemini"):
+        entry = {"type": "command", "command": command}
+        entry["timeout"] = 10_000 if name == "gemini" else 10      # Gemini counts milliseconds
+        if name == "gemini":
+            entry["name"] = "claudegotchi"
+        return entry
+    if name == "copilot":
+        return {"type": "command", "bash": command, "command": command, "timeoutSec": 10}
+    if name == "cursor":
+        return {"command": command, "timeout": 10}
+    return {"command": command, "show_output": False}                # devin
+
+
+def load_json(path):
+    if not os.path.exists(path):
+        return {}
+    with open(path) as f:
+        return json.load(f)
+
+
+def save_json(path, data, backup=True):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    if backup and os.path.exists(path) and not os.path.exists(path + ".claudegotchi-backup"):
+        shutil.copy2(path, path + ".claudegotchi-backup")
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    os.replace(tmp, path)
+
+
+def strip_flat(hooks):
+    for ev in list(hooks):
+        kept = [h for h in hooks[ev] if not ours(h.get("command", "") + h.get("bash", ""))]
+        if kept:
+            hooks[ev] = kept
+        else:
+            del hooks[ev]
+
+
+def install_harness(name, cmd):
+    h = HARNESSES[name]
+    path = os.path.expanduser(h["path"])
+    data = load_json(path)
+    if h["style"] == "nested":
+        strip_ours(data)
+        hooks = data.setdefault("hooks", {})
+        for ev in h["events"]:
+            hooks.setdefault(ev, []).append({"hooks": [harness_entry(name, cmd, ev)]})
+    else:
+        hooks = data.setdefault("hooks", {})
+        strip_flat(hooks)
+        for ev in h["events"]:
+            hooks.setdefault(ev, []).append(harness_entry(name, cmd, ev))
+        if h.get("version"):
+            data.setdefault("version", h["version"])
+    save_json(path, data)
+    return path
+
+
+def uninstall_harness(name):
+    h = HARNESSES[name]
+    path = os.path.expanduser(h["path"])
+    if not os.path.exists(path):
+        return False
+    data = load_json(path)
+    before = json.dumps(data, sort_keys=True)
+    if h["style"] == "nested":
+        strip_ours(data)
+    else:
+        strip_flat(data.get("hooks", {}))
+        if not data.get("hooks"):
+            data.pop("hooks", None)
+    if json.dumps(data, sort_keys=True) == before:
+        return False
+    if name == "copilot" and not data.get("hooks"):
+        os.remove(path)                           # our own file
+    else:
+        save_json(path, data, backup=False)
+    return True
+
+
+def resolve_harnesses(value):
+    """"claude,codex" → ["claude", "codex"]; "auto" → Claude Code plus what is installed."""
+    names = [n.strip().lower() for n in (value or "claude").split(",") if n.strip()]
+    if "auto" in names or "all" in names:
+        names = ["claude"] + [n for n, h in HARNESSES.items()
+                              if os.path.isdir(os.path.expanduser(h["found"]))]
+    unknown = [n for n in names if n != "claude" and n not in HARNESSES]
+    if unknown:
+        sys.exit(f"Unknown harness: {', '.join(unknown)} (known: claude, {', '.join(HARNESSES)}, auto)")
+    return list(dict.fromkeys(names))
 
 
 def load_settings():
@@ -127,14 +255,16 @@ def install(args):
         chain = sl["command"]
 
     url, token, relay = resolve(args, old_cfg)
+    harnesses = (["claude"] if args.statusline_only and args.harness is None
+                 else resolve_harnesses(args.harness or ",".join(old_cfg.get("harnesses") or ["claude"])))
     with open(cfg_path, "w") as f:
         json.dump({"url": url, "token": token, "relay": relay, "gotchi": resolve_gotchi(args, old_cfg),
-                   "statusline_chain": chain}, f, indent=2)
+                   "statusline_chain": chain, "harnesses": harnesses}, f, indent=2)
 
     # Forward slashes: on Windows the command runs in Git Bash, which eats backslashes
     cmd = 'sh "{}"'.format(LAUNCHER.replace(os.sep, "/"))
     strip_ours(settings)
-    if not args.statusline_only:
+    if not args.statusline_only and "claude" in harnesses:
         hooks = settings.setdefault("hooks", {})
         for ev in EVENTS:
             hooks.setdefault(ev, []).append({"hooks": [
@@ -148,8 +278,15 @@ def install(args):
     save_settings(settings)
 
     print(f"✓ Client installed: {CLIENT}")
-    what = "Status line" if args.statusline_only else "Hooks and status line"
+    what = "Status line" if args.statusline_only or "claude" not in harnesses else "Hooks and status line"
     print(f"✓ {what} added to {SETTINGS} (backup: settings.json.claudegotchi-backup)")
+    for name in HARNESSES:
+        if name in harnesses:
+            print(f"✓ Hooks for {name} added to {install_harness(name, cmd)}")
+            if HARNESSES[name].get("note"):
+                print(f"  {HARNESSES[name]['note']}")
+        elif uninstall_harness(name):
+            print(f"✓ Hooks for {name} removed")
     if chain:
         print(f"✓ Your existing status line is still shown: {chain}")
     print(f"→ Gotchi address: {url}")
@@ -207,6 +344,9 @@ def uninstall():
         else:
             settings.pop("statusLine", None)
     save_settings(settings)
+    for name in HARNESSES:
+        if uninstall_harness(name):
+            print(f"✓ Claudegotchi removed from {name}")
     shutil.rmtree(TARGET_DIR, ignore_errors=True)
     print("✓ Claudegotchi removed from Claude Code" + (f"; status line restored to: {chain}" if chain else ""))
 
@@ -224,6 +364,10 @@ def main():
                     help="print a setup script for a cloud environment instead of installing")
     ap.add_argument("--statusline-only", action="store_true",
                     help="only the status line (for the budget bars), when the hooks come from the plugin")
+    ap.add_argument("--harness", default=None,
+                    help="which coding harnesses report to the gotchi, comma-separated: claude, "
+                         + ", ".join(HARNESSES) + ", or auto for all found (default: claude, "
+                         "or what was installed before)")
     ap.add_argument("--uninstall", action="store_true")
     args = ap.parse_args()
     if args.uninstall:

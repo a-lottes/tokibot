@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Claudegotchi client for Claude Code (Mac/Linux).
+"""Claudegotchi client for Claude Code and other coding harnesses (Mac/Linux/Windows).
 
   claudegotchi_client.py hook        as a Claude Code hook: report the event to the gotchi
+  claudegotchi_client.py hook --harness codex [--event NAME]
+                                     the same for another harness: codex, copilot, gemini,
+                                     cursor or devin (see ADAPTERS; install.py sets this up)
   claudegotchi_client.py statusline  as the status line: report limits and print a status line
   claudegotchi_client.py test        send a test sequence to the gotchi
   claudegotchi_client.py pair [NAME]  pair with your gotchi: over the USB cable, or by the
@@ -16,11 +19,14 @@ along, so a gotchi that is not yours (a friend's on the same Wi-Fi) refuses the 
 With url "auto" the client tries the USB cable first, then <name>.local over Wi-Fi. It
 learns the name the first time it reaches a gotchi over USB, or from "pair".
 
-Sends metadata only (event name, session ID, project folder name, tool name,
-notification/error type, limit and context percentages, and a few categories such as
-"a test run failed" or "a commit succeeded"), never prompts, code, commands or replies.
+Sends metadata only (event name, harness, session ID, project folder name, tool name,
+notification/error type, limit and context percentages, token counts, and a few
+categories such as "a test run failed" or "a commit succeeded"), never prompts, code,
+commands or replies. Token counts are the critter's food; they are read from the
+harness's own session log on this computer (numbers only).
 Never blocks Claude Code: sending happens in a detached background process.
 """
+import hashlib
 import json
 import os
 import re
@@ -70,7 +76,8 @@ INSTALLED_CFG = os.path.expanduser("~/.claude/claudegotchi/claudegotchi.json")
 
 
 def load_config():
-    cfg = {"url": "auto", "token": "", "relay": "", "gotchi": "", "statusline_chain": ""}
+    cfg = {"url": "auto", "token": "", "relay": "", "gotchi": "", "statusline_chain": "",
+           "harnesses": []}
     for path in dict.fromkeys((INSTALLED_CFG, os.path.join(HERE, "claudegotchi.json"))):
         try:
             with open(path) as f:
@@ -181,8 +188,9 @@ def send(cfg, path, payload, timeout=3):
     return ", ".join(done)
 
 
-def post_detached(cfg, path, payload):
-    """Detach and send in the background; the caller returns immediately."""
+def post_detached(cfg, path, payload, prepare=None):
+    """Detach and send in the background; the caller returns immediately.
+    `prepare` runs first in the background too (e.g. reading token counts)."""
     sys.stdout.flush()
     sys.stderr.flush()
     try:
@@ -190,6 +198,8 @@ def post_detached(cfg, path, payload):
             return
     except (OSError, AttributeError):          # no fork (e.g. Windows): send with a short timeout
         try:
+            if prepare:
+                prepare()
             send(cfg, path, payload, timeout=0.5)
         except Exception:
             pass
@@ -199,6 +209,11 @@ def post_detached(cfg, path, payload):
         devnull = os.open(os.devnull, os.O_RDWR)
         for fd in (0, 1, 2):
             os.dup2(devnull, fd)
+        if prepare:
+            try:
+                prepare()
+            except Exception:
+                pass
         send(cfg, path, payload)
     except Exception:
         pass
@@ -206,24 +221,307 @@ def post_detached(cfg, path, payload):
         os._exit(0)
 
 
-def cmd_hook(cfg):
-    try:
-        data = json.load(sys.stdin)
-    except ValueError:
-        return
+# --- harnesses -------------------------------------------------------------------
+# The gotchi speaks Claude Code's hook vocabulary. Each adapter translates one harness:
+#   events  its event name → Claude Code's (None: ignore the event)
+#   tools   its tool names → Claude Code's, so shell commands are recognised everywhere
+#   json    the harness wants JSON on stdout (an empty object is fine)
+ADAPTERS = {
+    "claude": {"events": {}, "tools": {}},
+    # Codex uses Claude Code's names and payloads already
+    "codex": {"events": {}, "tools": {"shell": "Bash", "exec_command": "Bash", "local_shell": "Bash"}},
+    # Copilot CLI: PascalCase events get Claude-style payloads; the camelCase-only ones do not
+    "copilot": {"events": {"agentStop": "Stop", "errorOccurred": "StopFailure",
+                           "permissionRequest": "PermissionRequest", "preCompact": "PreCompact",
+                           "subagentStart": "SubagentStart", "subagentStop": "SubagentStop",
+                           "notification": None},
+                "tools": {"bash": "Bash", "shell": "Bash", "powershell": "PowerShell"}},
+    "gemini": {"events": {"BeforeAgent": "UserPromptSubmit", "AfterAgent": "Stop",
+                          "BeforeTool": "PreToolUse", "AfterTool": "PostToolUse",
+                          "Notification": "PermissionRequest", "PreCompress": "PreCompact",
+                          "BeforeModel": None, "AfterModel": None, "BeforeToolSelection": None},
+               "tools": {"run_shell_command": "Bash"}, "json": True},
+    "cursor": {"events": {"sessionStart": "SessionStart", "sessionEnd": "SessionEnd",
+                          "beforeSubmitPrompt": "UserPromptSubmit", "preToolUse": "PreToolUse",
+                          "postToolUse": "PostToolUse", "postToolUseFailure": "PostToolUseFailure",
+                          "subagentStart": "SubagentStart", "subagentStop": "SubagentStop",
+                          "preCompact": "PreCompact", "stop": "Stop"},
+               "tools": {"Shell": "Bash"}, "json": True},
+    # Devin Desktop (formerly Windsurf) Cascade hooks
+    "devin": {"events": {"pre_user_prompt": "UserPromptSubmit", "pre_run_command": "PreToolUse",
+                         "post_run_command": "PostToolUse", "pre_write_code": "PreToolUse",
+                         "post_write_code": "PostToolUse", "pre_mcp_tool_use": "PreToolUse",
+                         "post_mcp_tool_use": "PostToolUse", "post_cascade_response": "Stop"},
+              "tools": {}},
+}
+# Events after which the session log is read for new token counts
+FEED_EVENTS = {"Stop", "SubagentStop", "StopFailure", "SessionEnd", "PreCompact"}
+
+
+def adapt(harness, data, event="", cfg=None):
+    """One harness payload → (event for the gotchi, shell command or "") or None to drop it."""
+    cfg = cfg or {}
+    if harness == "claude" and data.get("cursor_version"):
+        # Cursor also runs the Claude Code hooks from ~/.claude/settings.json
+        if "cursor" in (cfg.get("harnesses") or ()):
+            return None                       # Cursor's own hooks report it already
+        harness = "cursor"
+    ad = ADAPTERS.get(harness) or ADAPTERS["claude"]
+    raw = data.get("hook_event_name") or data.get("agent_action_name") or event or ""
+    name = ad["events"].get(raw, raw)
+    if not name:
+        return None
+    info = data.get("tool_info") if isinstance(data.get("tool_info"), dict) else {}
+    tool_input = data.get("tool_input") or data.get("toolArgs") or {}
+    if isinstance(tool_input, str):
+        try:
+            tool_input = json.loads(tool_input)
+        except ValueError:
+            tool_input = {"command": tool_input}
+    tool = data.get("tool_name") or data.get("toolName") or ""
+    command = (tool_input.get("command") or tool_input.get("cmd") or "") if isinstance(tool_input, dict) else ""
+    if isinstance(command, list):                 # e.g. ["bash", "-lc", "git push"]
+        args = [str(c) for c in command]
+        command = args[-1] if len(args) >= 3 and args[-2] in ("-c", "-lc") else " ".join(args)
+    if not isinstance(command, str):
+        command = ""
+    error = ""
+
+    if harness == "gemini":
+        resp = data.get("tool_response") if isinstance(data.get("tool_response"), dict) else {}
+        if raw == "AfterTool" and resp.get("error"):
+            name = "PostToolUseFailure"
+        if raw == "Notification" and data.get("notification_type") != "ToolPermission":
+            return None
+        if raw == "Notification":
+            tool = (data.get("details") or {}).get("tool_name", "") if isinstance(data.get("details"), dict) else ""
+    elif harness == "cursor":
+        if raw == "stop":
+            status = data.get("status", "completed")
+            if status == "error":
+                name, error = "StopFailure", "unknown"
+    elif harness == "copilot":
+        if raw == "errorOccurred":
+            error = "unknown"
+    elif harness == "devin":
+        if raw.endswith("_run_command"):
+            tool, command = "Bash", info.get("command_line", "")
+        elif raw.endswith("_write_code"):
+            tool = "Edit"
+        elif raw.endswith("_mcp_tool_use"):
+            tool = "mcp__{}__{}".format(info.get("mcp_server_name", "mcp"), info.get("mcp_tool_name", "tool"))
+
     ev = {k: data[k] for k in KEEP if data.get(k) not in (None, "")}
-    name = data.get("hook_event_name")
-    if name == "StopFailure" and data.get("error"):
+    ev["hook_event_name"] = name
+    if harness != "claude":
+        ev["harness"] = harness
+    sid = (data.get("session_id") or data.get("sessionId") or data.get("conversation_id")
+           or data.get("trajectory_id") or "")
+    if sid:
+        ev["session_id"] = f"{harness}-{sid}" if harness != "claude" else sid
+    elif harness != "claude":
+        ev["session_id"] = harness                # one session per harness, better than none
+    if tool:
+        ev["tool_name"] = ad["tools"].get(tool, tool)
+    else:
+        ev.pop("tool_name", None)
+    if data.get("notificationType") and "notification_type" not in ev:
+        ev["notification_type"] = data["notificationType"]
+    if name == "StopFailure" and data.get("error") and harness == "claude":
         ev["error_type"] = data["error"]          # StopFailure names its error type "error"
+    elif error:
+        ev["error_type"] = error
     if name == "PostToolUseFailure" and data.get("is_interrupt"):
         ev["interrupt"] = True
-    if name in ("PostToolUse", "PostToolUseFailure") and data.get("tool_name") in SHELL_TOOLS:
-        signals = classify((data.get("tool_input") or {}).get("command"))
+    cwd = data.get("cwd") or info.get("cwd")
+    if not cwd and isinstance(data.get("workspace_roots"), list) and data["workspace_roots"]:
+        cwd = data["workspace_roots"][0]
+    if not cwd and harness != "claude":
+        cwd = os.getcwd()                         # hooks run in the workspace
+    ev["project"] = os.path.basename(str(cwd or "").rstrip("/\\"))
+    return ev, command
+
+
+def cmd_hook(cfg, harness="claude", event=""):
+    raw = sys.stdin.read()
+    if ADAPTERS.get(harness, {}).get("json"):
+        print("{}")                               # these harnesses expect JSON back
+    try:
+        data = json.loads(raw)
+    except ValueError:
+        return
+    if not isinstance(data, dict):
+        return
+    out = adapt(harness, data, event, cfg)
+    if not out:
+        return
+    ev, command = out
+    name = ev["hook_event_name"]
+    if name in ("PostToolUse", "PostToolUseFailure") and ev.get("tool_name") in SHELL_TOOLS:
+        signals = classify(command)
         if signals:
             ev["signals"] = signals
-    ev["project"] = os.path.basename((data.get("cwd") or "").rstrip("/"))
     ev["ts"] = time.time()
-    post_detached(cfg, "/hook", ev)
+    feed = None
+    if name in FEED_EVENTS and ev.get("harness", "claude") in TOKEN_READERS:
+        paths = [p for p in (data.get("transcript_path"), data.get("agent_transcript_path"))
+                 if isinstance(p, str) and p]
+        if paths:
+            kind = ev.get("harness", "claude")
+            feed = lambda: add_tokens(ev, kind, paths)
+    post_detached(cfg, "/hook", ev, prepare=feed)
+
+
+# --- food: token counts from the harness's own session log ---------------------------
+# Every reader returns the running total of a log as {"input", "output", "cache_write",
+# "cache_read"} plus whatever it needs to continue next time ("state"). Only numbers are
+# read; nothing else from the log leaves this computer.
+TOKEN_KINDS = ("input", "output", "cache_write", "cache_read")
+FOOD_STATE = os.path.join(STATE_DIR, "food.json")
+FOOD_FORGET = 30 * 86400
+
+
+def _jsonl_from(path, offset):
+    """Complete lines of a JSONL file from a byte offset; returns (objects, new offset)."""
+    out = []
+    with open(path, "rb") as f:
+        size = os.fstat(f.fileno()).st_size
+        if offset > size:
+            offset = 0                            # the file was replaced
+        f.seek(offset)
+        data = f.read()
+    end = data.rfind(b"\n") + 1                  # a last line still being written waits
+    for line in data[:end].splitlines():
+        try:
+            obj = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(obj, dict):
+            out.append(obj)
+    return out, offset + end
+
+
+def read_claude(path, st):
+    """Claude Code transcript: "usage" on assistant messages; one message can span several
+    lines with the same usage, so each message ID counts once."""
+    objs, st["offset"] = _jsonl_from(path, st.get("offset", 0))
+    recent = st.setdefault("ids", [])
+    total = st.setdefault("total", dict.fromkeys(TOKEN_KINDS, 0))
+    for obj in objs:
+        msg = obj.get("message") if isinstance(obj.get("message"), dict) else {}
+        usage, mid = msg.get("usage"), msg.get("id") or obj.get("requestId")
+        if not isinstance(usage, dict) or not mid or mid in recent:
+            continue
+        recent.append(mid)
+        total["input"] += int(usage.get("input_tokens") or 0)
+        total["output"] += int(usage.get("output_tokens") or 0)
+        total["cache_write"] += int(usage.get("cache_creation_input_tokens") or 0)
+        total["cache_read"] += int(usage.get("cache_read_input_tokens") or 0)
+    del recent[:-200]
+    return total
+
+
+def read_codex(path, st):
+    """Codex rollout: "token_count" events carry the session's running total. OpenAI counts
+    cached input inside input_tokens."""
+    objs, st["offset"] = _jsonl_from(path, st.get("offset", 0))
+    for obj in objs:
+        payload = obj.get("payload") if isinstance(obj.get("payload"), dict) else obj
+        info = payload.get("info") if payload.get("type") == "token_count" else None
+        usage = info.get("total_token_usage") if isinstance(info, dict) else None
+        if isinstance(usage, dict):
+            cached = int(usage.get("cached_input_tokens") or 0)
+            st["total"] = {"input": max(0, int(usage.get("input_tokens") or 0) - cached),
+                           "output": int(usage.get("output_tokens") or 0),
+                           "cache_write": 0, "cache_read": cached}
+    return st.get("total") or dict.fromkeys(TOKEN_KINDS, 0)
+
+
+def read_gemini(path, st):
+    """Gemini CLI session file: "tokens" on each model message. Gemini counts cached input
+    inside "input"; thoughts are output too."""
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    try:
+        doc = json.loads(text)
+        messages = doc.get("messages", []) if isinstance(doc, dict) else doc
+    except ValueError:                            # newer versions may write JSONL
+        messages = []
+        for line in text.splitlines():
+            try:
+                messages.append(json.loads(line))
+            except ValueError:
+                pass
+    total = dict.fromkeys(TOKEN_KINDS, 0)
+    seen = set()
+    for m in messages if isinstance(messages, list) else []:
+        t = m.get("tokens") if isinstance(m, dict) else None
+        if not isinstance(t, dict) or m.get("id") in seen:
+            continue
+        seen.add(m.get("id"))
+        cached = int(t.get("cached") or 0)
+        total["input"] += max(0, int(t.get("input") or 0) - cached) + int(t.get("tool") or 0)
+        total["output"] += int(t.get("output") or 0) + int(t.get("thoughts") or 0)
+        total["cache_read"] += cached
+    return total
+
+
+TOKEN_READERS = {"claude": read_claude, "codex": read_codex, "gemini": read_gemini}
+
+
+def _locked(path):
+    """An exclusive lock next to `path`, so parallel hooks do not count tokens twice."""
+    f = open(path + ".lock", "a")
+    try:
+        import fcntl
+        fcntl.flock(f, fcntl.LOCK_EX)
+    except (ImportError, OSError):
+        pass                                      # Windows: best effort
+    return f
+
+
+def new_tokens(kind, paths, state_path=FOOD_STATE, now=None):
+    """Tokens added to these session logs since the last call (per log)."""
+    reader = TOKEN_READERS[kind]
+    now = now or time.time()
+    os.makedirs(os.path.dirname(state_path) or ".", exist_ok=True)
+    lock = _locked(state_path)
+    try:
+        try:
+            with open(state_path) as f:
+                state = json.load(f)
+        except (OSError, ValueError):
+            state = {}
+        delta = dict.fromkeys(TOKEN_KINDS, 0)
+        for path in paths:
+            key = hashlib.sha1(path.encode()).hexdigest()[:16]
+            st = state.get(key) or {}
+            before = dict(st.get("total") or dict.fromkeys(TOKEN_KINDS, 0))
+            try:
+                total = reader(path, st)
+            except (OSError, ValueError, TypeError, AttributeError):
+                continue
+            st["total"], st["seen"] = dict(total), now
+            state[key] = st
+            fresh = {k: total.get(k, 0) - before.get(k, 0) for k in TOKEN_KINDS}
+            if any(v < 0 for v in fresh.values()):    # a new log under the same name
+                fresh = dict(total)
+            for k in TOKEN_KINDS:
+                delta[k] += max(0, fresh[k])
+        state = {k: v for k, v in state.items() if now - v.get("seen", 0) < FOOD_FORGET}
+        tmp = state_path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(state, f)
+        os.replace(tmp, state_path)
+    finally:
+        lock.close()
+    return delta
+
+
+def add_tokens(ev, kind, paths):
+    tokens = new_tokens(kind, paths)
+    if any(tokens.values()):
+        ev["tokens"] = tokens
 
 
 def cmd_statusline(cfg):
@@ -369,7 +667,8 @@ def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "hook"
     cfg = load_config()
     if cmd == "hook":
-        cmd_hook(cfg)
+        opts = dict(zip(sys.argv[2::2], sys.argv[3::2]))
+        cmd_hook(cfg, opts.get("--harness", "claude"), opts.get("--event", ""))
     elif cmd == "statusline":
         cmd_statusline(cfg)
     elif cmd == "test":

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+* Not only Claude Code: the client also reports OpenAI Codex CLI, Gemini CLI,
+  GitHub Copilot CLI, Cursor and Devin Desktop (Windsurf) sessions. Pick them with
+  `install.py --harness claude,codex,…` or `--harness auto`. The bubble names the
+  harness next to the project.
+* Tokens are food: after every reply the client reads the token counts from the
+  harness's session log (numbers only). They fill a stomach that empties over time;
+  the new `fed` bar compares it with your usual day, not with a rate limit. New moods
+  stuffed and peckish. XP stay the overall level.
 * More displays, the ones common in Pwnagotchi builds: Waveshare 2.13" V1, V2, V3
   and V4, the 2.13" B V4 (black/white/red) and the 2.7" V1 and V2. Pick yours on the
   settings page or with `display` in `claudegotchi.toml`; Pwnagotchi's names for them
