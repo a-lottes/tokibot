@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-TOKIBOT_VERSION = 0.4.0
+TOKIBOT_VERSION = 0.5.0
 TOKIBOT_SITE = $(BR2_EXTERNAL_TOKIBOT_PATH)/../app
 TOKIBOT_SITE_METHOD = local
 TOKIBOT_LICENSE = MIT
