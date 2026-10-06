@@ -4,7 +4,15 @@
 # your Mac (drive "GOTCHI"), then put the card back into the Pi.
 
 [device]
-# Display driver: "waveshare_2in13_v4"
+# Display driver. The revision is printed on the back of the display board.
+#   "waveshare_2in13_v4"   Waveshare 2.13" V4 (default)
+#   "waveshare_2in13_v3"   Waveshare 2.13" V3
+#   "waveshare_2in13_v2"   Waveshare 2.13" V2
+#   "waveshare_2in13_v1"   Waveshare 2.13" V1
+#   "waveshare_2in13b_v4"  Waveshare 2.13" B V4, black/white/red (full refresh only, slow)
+#   "waveshare_2in7_v2"    Waveshare 2.7" V2
+#   "waveshare_2in7_v1"    Waveshare 2.7" V1 (full refresh only, slow)
+# Pwnagotchi's names work too, e.g. "waveshare_3" or "waveshare_4".
 display = "waveshare_2in13_v4"
 # 180 if the picture is upside down
 rotate = 0

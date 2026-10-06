@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+* More displays, the ones common in Pwnagotchi builds: Waveshare 2.13" V1, V2, V3
+  and V4, the 2.13" B V4 (black/white/red) and the 2.7" V1 and V2. Pick yours on the
+  settings page or with `display` in `claudegotchi.toml`; Pwnagotchi's names for them
+  (`waveshare_3`, `waveshare_4`, …) work too. Panels without partial refresh redraw
+  at most once a minute and skip the animations.
+* An unknown display name no longer stops the gotchi: it keeps running without a
+  picture, so the settings page can fix it.
+
 ## 0.4.0 (first release)
 
 The first release you can download: ready-made images for the Raspberry Pi Zero 2 W

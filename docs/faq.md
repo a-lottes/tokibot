@@ -18,11 +18,15 @@ macOS, Linux and Windows. All of them need Python 3.9 or newer for the small cli
 
 ### Which hardware do I need? {#hardware}
 
-A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT **V4**, a microSD card with 8 GB or more and a micro-USB **data** cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at https://claudegotchi.lottes.dev/parts.html.
+A Raspberry Pi Zero 2 WH (or Zero W/WH), a Waveshare 2.13 inch e-Paper HAT (**V4** by default, V1 to V3 work too), a microSD card with 8 GB or more and a micro-USB **data** cable. That is about 50 to 60 euros and needs no soldering if the Pi already has its header. A PiSugar 3 battery is optional. The full list is at https://claudegotchi.lottes.dev/parts.html.
 
 ### Does it work with a Raspberry Pi 3, 4 or 5, or another display? {#other-hardware}
 
-No. The image targets the Pi Zero 2 W and the Pi Zero W only, and it ships a driver only for the V4 revision of the Waveshare 2.13 inch e-Paper HAT. Older revisions (V1, V2, V3) and other sizes need drivers that are not in the image yet. The revision is printed on the back of the display board.
+The image targets the Pi Zero 2 W and the Pi Zero W only, so no Pi 3, 4 or 5. For displays, the gotchi supports the Waveshare HATs that Pwnagotchi builds use: the 2.13 inch V1, V2, V3 and V4, the 2.13 inch B V4 (black, white and red) and the 2.7 inch V1 and V2. Pick yours under *Display* on the settings page; the revision is printed on the back of the display board. Smaller displays such as the Inky pHAT, PaPiRus or OLED HATs do not work, because the picture is drawn for 250 × 122 pixels.
+
+### I have a Pwnagotchi. Can I reuse its hardware? {#pwnagotchi}
+
+Yes, if it has one of the displays above: flash the Claudegotchi image onto a second microSD card and keep the Pwnagotchi card as it is. Set the display on the settings page, or copy the name from Pwnagotchi's `ui.display.type` into `display` in `claudegotchi.toml`; names like `waveshare_3` or `waveshare_4` are understood. A PiSugar 3 works as well.
 
 ### What data does the gotchi get? Does it see my code? {#privacy}
 

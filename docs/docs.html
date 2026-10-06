@@ -107,10 +107,10 @@
       <pre><code><span class="p">$ </span>sh ~/.claude/claudegotchi/claudegotchi.sh test</code></pre>
 
       <h2 id="settings" data-n="05">Settings</h2>
-      <p>Open <code>http://claudegotchi-xxxx.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. The page changes Wi-Fi, time zone, rotation, token and relay. It writes <code>claudegotchi.toml</code> on the boot partition, keeps the comments in it, and restarts the gotchi. Once a token is set, the page asks for it.</p>
+      <p>Open <code>http://claudegotchi-xxxx.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. The page changes Wi-Fi, time zone, display, rotation, token and relay. It writes <code>claudegotchi.toml</code> on the boot partition, keeps the comments in it, and restarts the gotchi. Once a token is set, the page asks for it.</p>
       <p>You can also edit the file directly: put the card into your computer and open <code>claudegotchi.toml</code> on the <code>GOTCHI</code> drive.</p>
       <pre data-title="claudegotchi.toml"><code>[device]
-display = "waveshare_2in13_v4"
+display = "waveshare_2in13_v4"<span class="c">  # see Displays below</span>
 rotate = 0<span class="c">                    # 180 if the picture is upside down</span>
 timezone = "Europe/Berlin"
 
@@ -131,6 +131,23 @@ country = "DE"
 url = ""<span class="c">                      # ntfy topic for Claude Code in the cloud</span>
 auth = ""<span class="c">                     # access token for a protected ntfy server</span></code></pre>
       <p>Without Wi-Fi the gotchi takes the time from your computer. With Wi-Fi it uses NTP.</p>
+      <h3 id="displays">Displays</h3>
+      <p>The gotchi drives the Waveshare e-Paper HATs that Pwnagotchi builds use. Pick yours under <em>Display</em> on the settings page, or set <code>display</code> in <code>claudegotchi.toml</code>. Pwnagotchi's names from <code>ui.display.type</code> work as well. The revision is printed on the back of the board.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Display</th><th><code>display =</code></th><th>Pwnagotchi name</th></tr></thead>
+          <tbody>
+            <tr><td>2.13″ V4, 250 × 122 (default)</td><td><code>waveshare_2in13_v4</code></td><td><code>waveshare_4</code></td></tr>
+            <tr><td>2.13″ V3</td><td><code>waveshare_2in13_v3</code></td><td><code>waveshare_3</code></td></tr>
+            <tr><td>2.13″ V2</td><td><code>waveshare_2in13_v2</code></td><td><code>waveshare_2</code></td></tr>
+            <tr><td>2.13″ V1</td><td><code>waveshare_2in13_v1</code></td><td><code>waveshare_1</code></td></tr>
+            <tr><td>2.13″ B V4, black/white/red, full refresh only</td><td><code>waveshare_2in13b_v4</code></td><td><code>waveshare2in13b_v4</code></td></tr>
+            <tr><td>2.7″ V2, 264 × 176</td><td><code>waveshare_2in7_v2</code></td><td><code>waveshare27inchv2</code></td></tr>
+            <tr><td>2.7″ V1, full refresh only</td><td><code>waveshare_2in7_v1</code></td><td><code>waveshare27inch</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Panels without partial refresh redraw the whole screen each time, which flashes and takes several seconds, so the gotchi updates them at most once a minute and leaves out the animations. On the 2.7″ the picture sits in the middle with a white margin. Smaller displays (Inky pHAT, PaPiRus, 1.54″, OLED or LCD HATs) are not supported. With an unknown name the gotchi keeps running without a picture, so you can still fix it on the settings page.</p>
 
       <h2 id="security" data-n="06">Security</h2>
       <p id="pairing">Every gotchi has its own network name, <code>claudegotchi-xxxx</code>; the four characters come from the Pi's serial number. It shows the name on screen until a client talks to it. So two gotchis on one Wi-Fi never answer to the same name, and the client sends the name along with every event: a gotchi with another name refuses it.</p>
@@ -209,7 +226,7 @@ auth = ""<span class="c">                     # access token for a protected ntf
       <h3>The display stays blank</h3>
       <ul>
         <li>Check that the HAT sits flush on all 40 pins.</li>
-        <li>Check that it is the V4 revision of the 2.13" display.</li>
+        <li>Check that <code>display</code> matches your board. The revision (V1 to V4) is printed on its back; see <a href="#displays">Displays</a>.</li>
         <li>Give it a moment: an e-paper refresh is slow and the first boot takes a little while.</li>
       </ul>
       <h3>The computer does not see the gotchi</h3>

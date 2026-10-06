@@ -120,7 +120,22 @@ other.
 ## Hardware
 
 * Raspberry Pi Zero 2 W (default) or Pi Zero W
-* Waveshare 2.13" e-Paper HAT V4 (250 × 122)
+* A Waveshare e-Paper HAT, set in `claudegotchi.toml` (`[device] display`) or on the
+  settings page:
+
+  | Display | `display =` | Pwnagotchi name |
+  | --- | --- | --- |
+  | 2.13" V4 (250 × 122), default | `waveshare_2in13_v4` | `waveshare_4` |
+  | 2.13" V3 | `waveshare_2in13_v3` | `waveshare_3` |
+  | 2.13" V2 | `waveshare_2in13_v2` | `waveshare_2` |
+  | 2.13" V1 | `waveshare_2in13_v1` | `waveshare_1` |
+  | 2.13" B V4, black/white/red (full refresh only) | `waveshare_2in13b_v4` | `waveshare2in13b_v4` |
+  | 2.7" V2 (264 × 176) | `waveshare_2in7_v2` | `waveshare27inchv2` |
+  | 2.7" V1 (full refresh only) | `waveshare_2in7_v1` | `waveshare27inch` |
+
+  The revision is printed on the back of the board. On the 2.7" the picture is centred
+  with a white margin. Smaller panels (Inky pHAT, PaPiRus, 1.54", OLED HATs) are not
+  supported: the layout is drawn for 250 × 122.
 * A USB data cable to your computer (micro-USB on the port labelled **USB**, not **PWR**)
 * Optional: a [PiSugar 3](https://github.com/PiSugar/PiSugar/wiki/PiSugar-3-Series) battery
   (1200 mAh for the Zero), see [Battery](#battery)
@@ -134,7 +149,7 @@ app/       the service on the device (Python, Pillow)
   claudegotchi/critter.py    the pixel critter and its expressions
   claudegotchi/painter.py    header, critter, speech bubble, status bar
   claudegotchi/mood.py       all display texts (one place, ready for i18n)
-  claudegotchi/displays/     display drivers (simulator, Waveshare 2.13" V4)
+  claudegotchi/displays/     display drivers (simulator, Waveshare 2.13" V1–V4, 2.13" B, 2.7")
   claudegotchi/config.py     reads claudegotchi.toml
   claudegotchi/relay.py      listens to an ntfy topic for cloud sessions
   claudegotchi/life.py       experience, levels, streaks and daily stats
