@@ -43,7 +43,7 @@ sim:
 	cd app && python3 -m tokibot --sim --port $(PORT) --config $(SIM_CONFIG) $(if $(FAKE),--fake-peer $(FAKE)) $(if $(BATTERY),--battery $(BATTERY))
 
 mockups:
-	cd app && PYTHONPATH=. python3 tools/mockups.py ../docs/mockups.png
+	cd app && PYTHONPATH=. python3 tools/mockups.py ../docs/mockups.png ../docs/img/moods
 
 figures:
 	cd app && python3 tools/blueprints.py ../docs
