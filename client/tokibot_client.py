@@ -299,7 +299,22 @@ ADAPTERS = {
                          "post_write_code": "PostToolUse", "pre_mcp_tool_use": "PreToolUse",
                          "post_mcp_tool_use": "PostToolUse", "post_cascade_response": "Stop"},
               "tools": {}},
+    # Kiro CLI: 3.0 triggers are Claude Code's names; older agent-config hooks are camelCase
+    "kiro": {"events": {"agentSpawn": "SessionStart", "promptSubmit": "UserPromptSubmit",
+                        "userPromptSubmit": "UserPromptSubmit", "preToolUse": "PreToolUse",
+                        "postToolUse": "PostToolUse", "agentStop": "Stop", "stop": "Stop"},
+             "tools": {"execute_bash": "Bash", "executeBash": "Bash", "shell": "Bash"}},
+    # Cline: one hook per script; the payload names the hook and nests the details
+    "cline": {"events": {"TaskStart": "SessionStart", "TaskResume": "SessionStart",
+                         "TaskCancel": "Stop", "TaskComplete": "Stop"},
+              "tools": {"execute_command": "Bash"}, "reply": '{"cancel": false}'},
+    # OpenCode and Amp: our plugins (written by install.py) send Claude Code's names already
+    "opencode": {"events": {}, "tools": {"bash": "Bash", "edit": "Edit", "write": "Write",
+                                         "read": "Read"}},
+    "amp": {"events": {}, "tools": {"Bash": "Bash", "shell_command": "Bash"}},
 }
+# Harnesses whose own plugin sends token counts along (see install.py PLUGINS)
+TOKENS_IN_PAYLOAD = {"opencode"}
 # Events after which the session log is read for new token counts
 FEED_EVENTS = {"Stop", "SubagentStop", "StopFailure", "SessionEnd", "PreCompact"}
 
@@ -313,7 +328,8 @@ def adapt(harness, data, event="", cfg=None):
             return None                       # Cursor's own hooks report it already
         harness = "cursor"
     ad = ADAPTERS.get(harness) or ADAPTERS["claude"]
-    raw = data.get("hook_event_name") or data.get("agent_action_name") or event or ""
+    raw = (data.get("hook_event_name") or data.get("agent_action_name") or data.get("hookName")
+           or event or "")
     name = ad["events"].get(raw, raw)
     if not name:
         return None
@@ -349,6 +365,14 @@ def adapt(harness, data, event="", cfg=None):
     elif harness == "copilot":
         if raw == "errorOccurred":
             error = "unknown"
+    elif harness == "cline":
+        detail = data.get("preToolUse") or data.get("postToolUse") or {}
+        if isinstance(detail, dict) and detail:
+            tool = detail.get("toolName") or detail.get("tool") or ""
+            params = detail.get("parameters") if isinstance(detail.get("parameters"), dict) else {}
+            command = params.get("command") or ""
+            if raw == "PostToolUse" and detail.get("success") is False:
+                name = "PostToolUseFailure"
     elif harness == "devin":
         if raw.endswith("_run_command"):
             tool, command = "Bash", info.get("command_line", "")
@@ -362,7 +386,7 @@ def adapt(harness, data, event="", cfg=None):
     if harness != "claude":
         ev["harness"] = harness
     sid = (data.get("session_id") or data.get("sessionId") or data.get("conversation_id")
-           or data.get("trajectory_id") or "")
+           or data.get("trajectory_id") or data.get("taskId") or "")
     if sid:
         ev["session_id"] = f"{harness}-{sid}" if harness != "claude" else sid
     elif harness != "claude":
@@ -379,9 +403,19 @@ def adapt(harness, data, event="", cfg=None):
         ev["error_type"] = error
     if name == "PostToolUseFailure" and data.get("is_interrupt"):
         ev["interrupt"] = True
+    if harness in TOKENS_IN_PAYLOAD and isinstance(data.get("tokens"), dict):
+        tokens = {}
+        for kind in TOKEN_KINDS:
+            try:
+                tokens[kind] = max(0, int(data["tokens"].get(kind) or 0))
+            except (TypeError, ValueError):
+                tokens[kind] = 0
+        if any(tokens.values()):
+            ev["tokens"] = tokens
     cwd = data.get("cwd") or info.get("cwd")
-    if not cwd and isinstance(data.get("workspace_roots"), list) and data["workspace_roots"]:
-        cwd = data["workspace_roots"][0]
+    roots = data.get("workspace_roots") or data.get("workspaceRoots")     # Cursor, Cline
+    if not cwd and isinstance(roots, list) and roots:
+        cwd = roots[0].get("path", "") if isinstance(roots[0], dict) else roots[0]
     if not cwd and harness != "claude":
         cwd = os.getcwd()                         # hooks run in the workspace
     ev["project"] = os.path.basename(str(cwd or "").rstrip("/\\"))
@@ -390,8 +424,9 @@ def adapt(harness, data, event="", cfg=None):
 
 def cmd_hook(cfg, harness="claude", event=""):
     raw = sys.stdin.read()
-    if ADAPTERS.get(harness, {}).get("json"):
-        print("{}")                               # these harnesses expect JSON back
+    ad = ADAPTERS.get(harness, {})
+    if ad.get("reply") or ad.get("json"):
+        print(ad.get("reply") or "{}")            # these harnesses expect JSON back
     try:
         data = json.loads(raw)
     except ValueError:

@@ -92,7 +92,8 @@ LABELS = {"session": "session", "sessions": "sessions", "tools_today": "{n} tool
 
 # Names of the coding harnesses, shown next to the project when it is not Claude Code
 HARNESS_LABELS = {"claude": "Claude Code", "codex": "Codex", "copilot": "Copilot",
-                  "gemini": "Gemini", "cursor": "Cursor", "devin": "Devin"}
+                  "gemini": "Gemini", "cursor": "Cursor", "devin": "Devin",
+                  "kiro": "Kiro", "cline": "Cline", "opencode": "OpenCode", "amp": "Amp"}
 
 # Experience per hook event (the critter's life, see life.py)
 XP_FOR = {"Stop": 10, "SessionStart": 3, "PreToolUse": 1, "TaskCompleted": 5}
@@ -137,7 +138,7 @@ PECKISH_BELOW = 0.1          # this empty and idle during the day → peckish
 PECKISH_HOURS = (9, 18)
 # Harnesses that report no token counts: food is estimated per event
 FOOD_ESTIMATE = {"Stop": 15_000, "PreToolUse": 8_000}
-ESTIMATED_HARNESSES = {"copilot", "cursor", "devin"}
+ESTIMATED_HARNESSES = {"copilot", "cursor", "devin", "kiro", "cline", "amp"}
 
 # --- social: encounters, friends, badges (social.py) ---------------------------
 XP_SOCIAL = {

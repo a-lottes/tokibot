@@ -81,6 +81,40 @@ class AdapterTest(unittest.TestCase):
         self.assertEqual(client.classify(command), ["push"])
 
 
+    def test_kiro_old_and_new_names(self):
+        ev, command = client.adapt("kiro", {"hook_event_name": "postToolUse", "session_id": "k1",
+                                            "cwd": "/w/shop", "tool_name": "execute_bash",
+                                            "tool_input": {"command": "pytest -q"}})
+        self.assertEqual((ev["hook_event_name"], ev["tool_name"], ev["session_id"], ev["project"]),
+                         ("PostToolUse", "Bash", "kiro-k1", "shop"))
+        self.assertEqual(client.classify(command), ["test"])
+        self.assertEqual(adapt("kiro", {"hook_event_name": "Stop"})["hook_event_name"], "Stop")
+        self.assertEqual(adapt("kiro", {"hook_event_name": "agentSpawn"})["hook_event_name"], "SessionStart")
+
+    def test_cline_nested_payload(self):
+        ev, command = client.adapt("cline", {
+            "hookName": "PostToolUse", "taskId": "t9", "workspaceRoots": ["/w/api"],
+            "postToolUse": {"toolName": "execute_command", "parameters": {"command": "git push"},
+                            "success": False}})
+        self.assertEqual((ev["hook_event_name"], ev["tool_name"], ev["session_id"], ev["project"]),
+                         ("PostToolUseFailure", "Bash", "cline-t9", "api"))
+        self.assertEqual(client.classify(command), ["push"])
+        self.assertEqual(adapt("cline", {"hookName": "TaskComplete", "taskId": "t9"})["hook_event_name"], "Stop")
+
+    def test_opencode_plugin_brings_tokens(self):
+        ev = adapt("opencode", {"hook_event_name": "Stop", "session_id": "ses_1", "cwd": "/w/x",
+                                "tokens": {"input": 1200, "output": 300, "cache_read": "9000",
+                                           "cache_write": None, "evil": 5}})
+        self.assertEqual(ev["tokens"], {"input": 1200, "output": 300, "cache_write": 0, "cache_read": 9000})
+        self.assertNotIn("tokens", adapt("codex", {"hook_event_name": "Stop", "tokens": {"input": 5}}))
+
+    def test_amp_plugin_events(self):
+        ev = adapt("amp", {"hook_event_name": "PostToolUseFailure", "session_id": "T-1", "cwd": "/w/y",
+                           "tool_name": "Bash", "is_interrupt": True})
+        self.assertEqual((ev["hook_event_name"], ev["session_id"], ev.get("interrupt")),
+                         ("PostToolUseFailure", "amp-T-1", True))
+
+
 class TokenTest(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()
@@ -139,6 +173,72 @@ class TokenTest(unittest.TestCase):
     def test_missing_log_is_ignored(self):
         self.assertEqual(client.new_tokens("claude", [os.path.join(self.dir, "nope")], self.state),
                          dict.fromkeys(client.TOKEN_KINDS, 0))
+
+
+
+class InstallerTest(unittest.TestCase):
+    """install.py writes and removes the hooks of every harness without touching others'."""
+    def setUp(self):
+        self.home = tempfile.mkdtemp()
+        self.old_home = os.environ.get("HOME")
+        os.environ["HOME"] = self.home
+        self.addCleanup(self.restore)
+        spec = importlib.util.spec_from_file_location(
+            "install", os.path.join(HERE, "..", "..", "client", "install.py"))
+        self.inst = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.inst)
+        self.cmd = 'sh "{}"'.format(self.inst.LAUNCHER)
+
+    def restore(self):
+        if self.old_home is None:
+            os.environ.pop("HOME", None)
+        else:
+            os.environ["HOME"] = self.old_home
+
+    def path(self, rel):
+        return os.path.join(self.home, rel)
+
+    def test_kiro_hook_file(self):
+        path = self.inst.install_harness("kiro", self.cmd)
+        with open(path) as f:
+            data = json.load(f)
+        self.assertEqual(data["version"], "v1")
+        triggers = {h["trigger"]: h for h in data["hooks"]}
+        self.assertIn("Stop", triggers)
+        self.assertEqual(triggers["PreToolUse"]["matcher"], "*")
+        self.assertIn("--harness kiro --event Stop", triggers["Stop"]["action"]["command"])
+        self.assertTrue(self.inst.uninstall_harness("kiro"))
+        self.assertFalse(os.path.exists(path))
+
+    def test_cline_scripts_leave_foreign_hooks_alone(self):
+        hooks = self.path("Documents/Cline/Hooks")
+        os.makedirs(hooks)
+        with open(os.path.join(hooks, "TaskStart"), "w") as f:
+            f.write("#!/bin/sh\necho mine\n")
+        self.inst.install_harness("cline", self.cmd)
+        with open(os.path.join(hooks, "TaskComplete")) as f:
+            self.assertIn("--harness cline --event TaskComplete", f.read())
+        self.assertTrue(os.access(os.path.join(hooks, "TaskComplete"), os.X_OK))
+        self.assertTrue(self.inst.uninstall_harness("cline"))
+        self.assertEqual(os.listdir(hooks), ["TaskStart"])           # the user's own hook stays
+
+    def test_plugins(self):
+        for name, rel in (("opencode", ".config/opencode/plugins/tokibot.ts"),
+                          ("amp", ".config/amp/plugins/tokibot.ts")):
+            path = self.inst.install_harness(name, self.cmd)
+            self.assertEqual(path, self.path(rel))
+            with open(path) as f:
+                text = f.read()
+            self.assertIn(json.dumps(self.inst.LAUNCHER.replace(os.sep, "/")), text)
+            self.assertIn(f'"--harness", "{name}"', text)
+            self.assertNotIn("__LAUNCHER__", text)
+            self.assertTrue(self.inst.uninstall_harness(name))
+            self.assertFalse(os.path.exists(path))
+
+    def test_auto_finds_the_new_harnesses(self):
+        os.makedirs(self.path(".kiro"))
+        os.makedirs(self.path(".config/amp"))
+        self.assertEqual(self.inst.resolve_harnesses("auto"), ["claude", "kiro", "amp"])
 
 
 if __name__ == "__main__":

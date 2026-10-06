@@ -6,11 +6,11 @@ Answers to common questions and problems when setting up a Tokibot, an e-ink com
 
 ### What is a Tokibot? {#what-is-it}
 
-A Tokibot is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your coding agent sessions (Claude Code, Codex, Gemini CLI, Copilot CLI, Cursor, Devin) are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. They report to it through hooks, and the tokens they use are its food. It was called Claudegotchi until version 0.4. The gotchi runs its own small operating system image, built with Buildroot.
+A Tokibot is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your coding agent sessions (Claude Code, Codex, Gemini CLI, Copilot CLI, Cursor, Devin, Kiro, Cline, OpenCode, Amp) are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. They report to it through hooks, and the tokens they use are its food. It was called Claudegotchi until version 0.4. The gotchi runs its own small operating system image, built with Buildroot.
 
 ### Do I need Claude Code? {#need-claude-code}
 
-Yes. The gotchi only shows what Claude Code is doing, so without Claude Code there is nothing to show. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see [How do cloud sessions reach the gotchi?](#cloud-relay).
+No, but you need at least one coding agent: Claude Code, OpenAI Codex CLI, Gemini CLI, GitHub Copilot CLI, Cursor, Devin Desktop (Windsurf), Kiro CLI, Cline, OpenCode or Amp. Pick them with `install.py --harness`, or `--harness auto` for all that are installed. Only Claude Code reports its rate limits and context, so the budget bars need it. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see [How do cloud sessions reach the gotchi?](#cloud-relay).
 
 ### Which computers are supported? {#supported-systems}
 

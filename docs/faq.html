@@ -25,7 +25,7 @@
    "url": "https://tokibot.lottes.dev/faq.html#what-is-it",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>A Tokibot is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your coding agent sessions (Claude Code, Codex, Gemini CLI, Copilot CLI, Cursor, Devin) are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. They report to it through hooks, and the tokens they use are its food. It was called Claudegotchi until version 0.4. The gotchi runs its own small operating system image, built with Buildroot.<\/p>"
+    "text": "<p>A Tokibot is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your coding agent sessions (Claude Code, Codex, Gemini CLI, Copilot CLI, Cursor, Devin, Kiro, Cline, OpenCode, Amp) are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. They report to it through hooks, and the tokens they use are its food. It was called Claudegotchi until version 0.4. The gotchi runs its own small operating system image, built with Buildroot.<\/p>"
    }
   },
   {
@@ -34,7 +34,7 @@
    "url": "https://tokibot.lottes.dev/faq.html#need-claude-code",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Yes. The gotchi only shows what Claude Code is doing, so without Claude Code there is nothing to show. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see <a href=\"https://tokibot.lottes.dev/faq.html#cloud-relay\">How do cloud sessions reach the gotchi?<\/a>.<\/p>"
+    "text": "<p>No, but you need at least one coding agent: Claude Code, OpenAI Codex CLI, Gemini CLI, GitHub Copilot CLI, Cursor, Devin Desktop (Windsurf), Kiro CLI, Cline, OpenCode or Amp. Pick them with <code>install.py --harness<\/code>, or <code>--harness auto<\/code> for all that are installed. Only Claude Code reports its rate limits and context, so the budget bars need it. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see <a href=\"https://tokibot.lottes.dev/faq.html#cloud-relay\">How do cloud sessions reach the gotchi?<\/a>.<\/p>"
    }
   },
   {
@@ -553,11 +553,11 @@
       <h2 id="basics" data-n="01">Basics</h2>
       <section class="faq-q" id="what-is-it">
         <h3><a class="anchor" href="#what-is-it">What is a Tokibot?</a></h3>
-        <p>A Tokibot is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your coding agent sessions (Claude Code, Codex, Gemini CLI, Copilot CLI, Cursor, Devin) are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. They report to it through hooks, and the tokens they use are its food. It was called Claudegotchi until version 0.4. The gotchi runs its own small operating system image, built with Buildroot.</p>
+        <p>A Tokibot is a small gadget for your desk: a Raspberry Pi Zero with a 2.13 inch e-paper display. A pixel critter on the display shows what your coding agent sessions (Claude Code, Codex, Gemini CLI, Copilot CLI, Cursor, Devin, Kiro, Cline, OpenCode, Amp) are doing: working, waiting for you, asking for permission, done, or stuck at a rate limit. They report to it through hooks, and the tokens they use are its food. It was called Claudegotchi until version 0.4. The gotchi runs its own small operating system image, built with Buildroot.</p>
       </section>
       <section class="faq-q" id="need-claude-code">
         <h3><a class="anchor" href="#need-claude-code">Do I need Claude Code?</a></h3>
-        <p>Yes. The gotchi only shows what Claude Code is doing, so without Claude Code there is nothing to show. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see <a href="#cloud-relay">How do cloud sessions reach the gotchi?</a>.</p>
+        <p>No, but you need at least one coding agent: Claude Code, OpenAI Codex CLI, Gemini CLI, GitHub Copilot CLI, Cursor, Devin Desktop (Windsurf), Kiro CLI, Cline, OpenCode or Amp. Pick them with <code>install.py --harness</code>, or <code>--harness auto</code> for all that are installed. Only Claude Code reports its rate limits and context, so the budget bars need it. Claude Code needs a Claude subscription or an Anthropic API account. It can run on your computer (terminal or IDE extension) or in the cloud, for example in a Claude Project. For cloud sessions see <a href="#cloud-relay">How do cloud sessions reach the gotchi?</a>.</p>
       </section>
       <section class="faq-q" id="supported-systems">
         <h3><a class="anchor" href="#supported-systems">Which computers are supported?</a></h3>

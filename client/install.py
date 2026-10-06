@@ -76,7 +76,121 @@ HARNESSES = {
               "events": ["pre_user_prompt", "pre_run_command", "post_run_command", "pre_write_code",
                          "post_write_code", "pre_mcp_tool_use", "post_mcp_tool_use",
                          "post_cascade_response"]},
+    # Kiro CLI 3: standalone hook files; this one is ours alone
+    "kiro": {"path": "~/.kiro/hooks/tokibot.json", "style": "kiro", "found": "~/.kiro",
+             "events": ["SessionStart", "SessionEnd", "UserPromptSubmit", "PreToolUse",
+                        "PostToolUse", "Stop"]},
+    # Cline: one executable script per hook, named after it
+    "cline": {"path": "~/Documents/Cline/Hooks", "style": "scripts", "found": "~/Documents/Cline",
+              "events": ["TaskStart", "TaskResume", "TaskCancel", "TaskComplete", "UserPromptSubmit",
+                         "PreToolUse", "PostToolUse", "PreCompact"]},
+    # OpenCode and Amp have no command hooks, only plugins run by Bun: ours hands the
+    # events to the client
+    "opencode": {"path": "~/.config/opencode/plugins/tokibot.ts", "style": "plugin",
+                 "found": "~/.config/opencode"},
+    "amp": {"path": "~/.config/amp/plugins/tokibot.ts", "style": "plugin", "found": "~/.config/amp"},
 }
+
+# The plugins send Claude-Code-style payloads to `tokibot.sh hook`, fire and forget.
+PLUGIN_SEND = """const LAUNCHER = __LAUNCHER__
+function send(event: string, data: Record<string, unknown>) {
+  try {
+    const p = Bun.spawn(["sh", LAUNCHER, "hook", "--harness", __HARNESS__, "--event", event],
+                        { stdin: "pipe", stdout: "ignore", stderr: "ignore" })
+    p.stdin.write(JSON.stringify({ hook_event_name: event, ...data }))
+    p.stdin.end()
+    p.unref()
+  } catch {}
+}
+"""
+
+PLUGINS = {
+    "opencode": """// Tokibot: reports OpenCode sessions to the gotchi, with the token counts of
+// every finished reply. Written by the Tokibot installer; it removes it again.
+""" + PLUGIN_SEND + """
+const fed = new Set<string>()
+const food: Record<string, { input: number; output: number; cache_read: number; cache_write: number }> = {}
+const prompted = new Set<string>()
+const calls: Record<string, unknown> = {}          // callID → args, for the shell command afterwards
+
+export const Tokibot = async ({ directory }: { directory: string }) => {
+  const base = (sid: string) => ({ session_id: sid, cwd: directory })
+  return {
+    event: async ({ event }: { event: any }) => {
+      const p = event.properties || {}
+      if (event.type === "session.created") send("SessionStart", base(p.info?.id ?? ""))
+      else if (event.type === "session.deleted") send("SessionEnd", base(p.info?.id ?? ""))
+      else if (event.type === "session.error") send("StopFailure", { ...base(p.sessionID ?? ""), error: "unknown" })
+      else if (event.type === "permission.asked" || event.type === "permission.updated")
+        send("PermissionRequest", { ...base(p.sessionID ?? ""), tool_name: p.type ?? "" })
+      else if (event.type === "session.compacted") send("PreCompact", base(p.sessionID ?? ""))
+      else if (event.type === "message.updated") {
+        const m = p.info || {}
+        if (m.role === "user" && !prompted.has(m.id)) {
+          prompted.add(m.id)
+          send("UserPromptSubmit", base(m.sessionID ?? ""))
+        } else if (m.role === "assistant" && m.time?.completed && m.tokens && !fed.has(m.id)) {
+          fed.add(m.id)
+          const f = (food[m.sessionID] ??= { input: 0, output: 0, cache_read: 0, cache_write: 0 })
+          f.input += m.tokens.input ?? 0
+          f.output += (m.tokens.output ?? 0) + (m.tokens.reasoning ?? 0)
+          f.cache_read += m.tokens.cache?.read ?? 0
+          f.cache_write += m.tokens.cache?.write ?? 0
+        }
+      } else if (event.type === "session.idle") {
+        const sid = p.sessionID ?? ""
+        const tokens = food[sid]
+        delete food[sid]
+        send("Stop", tokens ? { ...base(sid), tokens } : base(sid))
+      }
+    },
+    "tool.execute.before": async (input: any, output: any) => {
+      calls[input.callID] = output.args ?? {}
+      send("PreToolUse", { ...base(input.sessionID ?? ""), tool_name: input.tool, tool_input: output.args ?? {} })
+    },
+    "tool.execute.after": async (input: any, output: any) => {
+      const args = calls[input.callID] ?? input.args ?? {}
+      delete calls[input.callID]
+      const failed = output?.metadata?.error || output?.metadata?.exit > 0
+      send(failed ? "PostToolUseFailure" : "PostToolUse",
+           { ...base(input.sessionID ?? ""), tool_name: input.tool, tool_input: args })
+    },
+  }
+}
+""",
+    "amp": """// Tokibot: reports Amp threads to the gotchi. Written by the Tokibot installer;
+// it removes it again.
+import type { PluginAPI } from "@ampcode/plugin"
+
+""" + PLUGIN_SEND + """
+export const description = "Reports Amp threads to your Tokibot, the e-ink companion."
+
+export default function (amp: PluginAPI) {
+  let cwd = ""
+  try { cwd = amp.system.workspaceRoot ? amp.helpers.filePathFromURI(amp.system.workspaceRoot) : "" } catch {}
+  const base = (e: any) => ({ session_id: e.thread?.id ?? "", cwd })
+  amp.on("session.start", async (e: any) => { send("SessionStart", base(e)) })
+  amp.on("agent.start", async (e: any) => { send("UserPromptSubmit", base(e)) })
+  amp.on("tool.call", async (e: any) => {
+    send("PreToolUse", { ...base(e), tool_name: e.tool, tool_input: e.input ?? {} })
+    return { action: "allow" }
+  })
+  amp.on("tool.result", async (e: any) => {
+    send(e.status === "error" ? "PostToolUseFailure" : "PostToolUse",
+         { ...base(e), tool_name: e.tool, tool_input: e.input ?? {}, is_interrupt: e.status === "cancelled" })
+  })
+  amp.on("agent.end", async (e: any) => {
+    if (e.status === "error") send("StopFailure", { ...base(e), error: "unknown" })
+    else send("Stop", base(e))
+  })
+}
+""",
+}
+
+CLINE_SCRIPT = """#!/bin/sh
+# Tokibot: reports Cline tasks to the gotchi. Written by the Tokibot installer.
+exec {cmd} hook --harness cline --event {event}
+"""
 
 
 def harness_entry(name, cmd, event):
@@ -137,6 +251,33 @@ def strip_flat(hooks):
 def install_harness(name, cmd):
     h = HARNESSES[name]
     path = os.path.expanduser(h["path"])
+    if h["style"] == "plugin":
+        launcher = LAUNCHER.replace(os.sep, "/")
+        text = PLUGINS[name].replace("__LAUNCHER__", json.dumps(launcher)).replace("__HARNESS__", json.dumps(name))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            f.write(text)
+        return path
+    if h["style"] == "kiro":
+        hooks = [{"name": f"tokibot-{ev}", "trigger": ev,
+                  "action": {"type": "command", "command": f"{cmd} hook --harness kiro --event {ev}"},
+                  "timeout": 10, "enabled": True} for ev in h["events"]]
+        for hook in hooks:
+            if hook["trigger"].endswith("ToolUse"):
+                hook["matcher"] = "*"
+        save_json(path, {"version": "v1", "hooks": hooks}, backup=False)
+        return path
+    if h["style"] == "scripts":
+        os.makedirs(path, exist_ok=True)
+        for ev in h["events"]:
+            script = os.path.join(path, ev)
+            if os.path.exists(script) and not _ours_file(script):
+                print(f"  Cline already has a {ev} hook of its own; left it alone")
+                continue
+            with open(script, "w") as f:
+                f.write(CLINE_SCRIPT.format(cmd=cmd, event=ev))
+            os.chmod(script, 0o755)
+        return path
     data = load_json(path)
     if h["style"] == "nested":
         strip_ours(data)
@@ -154,11 +295,29 @@ def install_harness(name, cmd):
     return path
 
 
+def _ours_file(path):
+    try:
+        with open(path, errors="replace") as f:
+            return ours(f.read())
+    except OSError:
+        return False
+
+
 def uninstall_harness(name):
     h = HARNESSES[name]
     path = os.path.expanduser(h["path"])
     if not os.path.exists(path):
         return False
+    if h["style"] in ("plugin", "kiro"):              # our own file
+        if not _ours_file(path):
+            return False
+        os.remove(path)
+        return True
+    if h["style"] == "scripts":
+        mine = [os.path.join(path, ev) for ev in h["events"] if _ours_file(os.path.join(path, ev))]
+        for script in mine:
+            os.remove(script)
+        return bool(mine)
     data = load_json(path)
     before = json.dumps(data, sort_keys=True)
     if h["style"] == "nested":
@@ -319,7 +478,7 @@ def install(args):
         if subprocess.run([sys.executable, CLIENT, "pair", resolve_gotchi(args, old_cfg)]).returncode:
             print(f"→ Pair later:  {cmd} pair [tokibot-xxxx]")
     print(f"→ Test:  {cmd} test")
-    print("→ Restart running Claude Code sessions once so the hooks take effect.")
+    print("→ Restart running sessions once (Claude Code and the other harnesses) so the hooks take effect.")
 
 
 def cloud_setup(args):

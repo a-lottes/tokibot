@@ -2,7 +2,7 @@
 
 A small e-ink companion for your coding agents with its own slim operating system
 image (formerly Claudegotchi). A pixel critter shows what your Claude Code, Codex,
-Gemini, Copilot, Cursor or Devin sessions are up to: working, waiting for you,
+Gemini, Copilot, Cursor, Devin, Kiro, Cline, OpenCode or Amp sessions are up to: working, waiting for you,
 asking for permission, done, or running into a rate limit. The tokens they burn
 are its food.
 
@@ -87,7 +87,7 @@ The food fills a stomach that empties by half every 90 minutes. How full it is (
 food, so it works the same for a light and a heavy user and has nothing to do with
 any rate limit. 100 % is as full as while working on a usual day; from 150 % it is
 stuffed, below 10 % and idle during the day it is peckish. Harnesses that report no
-token counts (Copilot, Cursor, Devin) feed it an estimate per reply and tool call.
+token counts (Copilot, Cursor, Devin, Kiro, Cline, Amp) feed it an estimate per reply and tool call.
 
 The progress lives in `life.json` on the image's small writable `data` partition
 (`~/.tokibot/` in the simulator), so it survives reboots and updates of the
@@ -268,11 +268,19 @@ python3 client/install.py --harness auto                  # all found on this co
 | GitHub Copilot CLI | `~/.copilot/hooks/tokibot.json` | estimated |
 | Cursor | `~/.cursor/hooks.json` | estimated |
 | Devin Desktop (Windsurf) | `~/.codeium/windsurf/hooks.json` | estimated |
+| Kiro CLI 3 | `~/.kiro/hooks/tokibot.json` | estimated |
+| Cline | scripts in `~/Documents/Cline/Hooks/` (macOS, Linux) | estimated |
+| OpenCode | plugin `~/.config/opencode/plugins/tokibot.ts` | from the plugin, per reply |
+| Amp | plugin `~/.config/amp/plugins/tokibot.ts` | estimated |
 
 The client translates every harness into Claude Code's hook events, so the gotchi
 only knows one vocabulary. Cursor also runs the hooks from `~/.claude/settings.json`;
 the client recognises that and reports those sessions as Cursor (or drops them, when
-Cursor's own hooks are installed). Without Claude Code there is no 5-hour budget bar,
+Cursor's own hooks are installed). OpenCode and Amp have no command hooks, only
+plugins that Bun runs; the installer writes a small one that hands every event to
+the client. Cline keeps an existing hook script of the same name and skips that
+event. Kiro, Cline, OpenCode and Amp are built from their documentation and not yet
+tried against the real tools. Without Claude Code there is no 5-hour budget bar,
 and the limit mood only shows when a harness reports a rate-limit error.
 
 ### Which gotchi?
