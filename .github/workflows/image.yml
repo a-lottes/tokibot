@@ -5,6 +5,11 @@ on:
     tags: ["v*"]
   workflow_dispatch:
 
+# Creating the release and attaching files needs write access to the repository
+# contents; the default token is read-only.
+permissions:
+  contents: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
