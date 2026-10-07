@@ -148,7 +148,8 @@ class Painter:
         bars = []
         food = view.get("food") or {}
         if food.get("total"):
-            bars.append((LABELS["food"], food["fullness"] * 100, min(100, food["fullness"] * 100)))
+            full = min(100, food["fullness"] * 100)     # fuller than full shows as stuffed
+            bars.append((LABELS["food"], full, full))
         for key, label in (("five_hour", "5h"), ("seven_day", "7d")):
             w = view["limits"].get(key)
             if not w or (key == "seven_day" and food.get("total") and w["pct"] < 80):

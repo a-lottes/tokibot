@@ -36,6 +36,7 @@ import time
 import urllib.error
 import urllib.request
 import uuid
+from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 KEEP = ("hook_event_name", "session_id", "notification_type", "error_type",
@@ -460,6 +461,25 @@ def cmd_hook(cfg, harness="claude", event=""):
 TOKEN_KINDS = ("input", "output", "cache_write", "cache_read")
 FOOD_STATE = os.path.join(STATE_DIR, "food.json")
 FOOD_FORGET = 30 * 86400
+# A log seen for the first time (a session that ran before the client, or a resumed one)
+# only counts what happened this recently, not its whole history.
+FOOD_FIRST_SIGHT = 30 * 60
+
+
+def _older(obj, since):
+    """True if a log entry carries a timestamp from before `since` (epoch seconds)."""
+    ts = obj.get("timestamp") if since and isinstance(obj, dict) else None
+    if isinstance(ts, (int, float)):
+        return ts / (1000 if ts > 1e11 else 1) < since
+    if not isinstance(ts, str):
+        return False
+    try:
+        when = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if when.tzinfo is None:
+        when = when.astimezone()
+    return when.timestamp() < since
 
 
 def _jsonl_from(path, offset):
@@ -488,12 +508,15 @@ def read_claude(path, st):
     objs, st["offset"] = _jsonl_from(path, st.get("offset", 0))
     recent = st.setdefault("ids", [])
     total = st.setdefault("total", dict.fromkeys(TOKEN_KINDS, 0))
+    since = st.pop("since", 0)
     for obj in objs:
         msg = obj.get("message") if isinstance(obj.get("message"), dict) else {}
         usage, mid = msg.get("usage"), msg.get("id") or obj.get("requestId")
         if not isinstance(usage, dict) or not mid or mid in recent:
             continue
         recent.append(mid)
+        if _older(obj, since):
+            continue
         total["input"] += int(usage.get("input_tokens") or 0)
         total["output"] += int(usage.get("output_tokens") or 0)
         total["cache_write"] += int(usage.get("cache_creation_input_tokens") or 0)
@@ -506,6 +529,7 @@ def read_codex(path, st):
     """Codex rollout: "token_count" events carry the session's running total. OpenAI counts
     cached input inside input_tokens."""
     objs, st["offset"] = _jsonl_from(path, st.get("offset", 0))
+    since = st.pop("since", 0)
     for obj in objs:
         payload = obj.get("payload") if isinstance(obj.get("payload"), dict) else obj
         info = payload.get("info") if payload.get("type") == "token_count" else None
@@ -515,6 +539,8 @@ def read_codex(path, st):
             st["total"] = {"input": max(0, int(usage.get("input_tokens") or 0) - cached),
                            "output": int(usage.get("output_tokens") or 0),
                            "cache_write": 0, "cache_read": cached}
+            if _older(obj, since):
+                st["base"] = dict(st["total"])   # the running total before we first looked
     return st.get("total") or dict.fromkeys(TOKEN_KINDS, 0)
 
 
@@ -535,11 +561,19 @@ def read_gemini(path, st):
                 pass
     total = dict.fromkeys(TOKEN_KINDS, 0)
     seen = set()
+    since = st.pop("since", 0)
     for m in messages if isinstance(messages, list) else []:
         t = m.get("tokens") if isinstance(m, dict) else None
         if not isinstance(t, dict) or m.get("id") in seen:
             continue
         seen.add(m.get("id"))
+        if _older(m, since):
+            st.setdefault("base", dict.fromkeys(TOKEN_KINDS, 0))
+            for kind, n in (("input", max(0, int(t.get("input") or 0) - int(t.get("cached") or 0))
+                             + int(t.get("tool") or 0)),
+                            ("output", int(t.get("output") or 0) + int(t.get("thoughts") or 0)),
+                            ("cache_read", int(t.get("cached") or 0))):
+                st["base"][kind] += n
         cached = int(t.get("cached") or 0)
         total["input"] += max(0, int(t.get("input") or 0) - cached) + int(t.get("tool") or 0)
         total["output"] += int(t.get("output") or 0) + int(t.get("thoughts") or 0)
@@ -576,12 +610,16 @@ def new_tokens(kind, paths, state_path=FOOD_STATE, now=None):
         delta = dict.fromkeys(TOKEN_KINDS, 0)
         for path in paths:
             key = hashlib.sha1(path.encode()).hexdigest()[:16]
-            st = state.get(key) or {}
+            st = state.get(key)
+            if st is None:
+                st = {"since": now - FOOD_FIRST_SIGHT}
             before = dict(st.get("total") or dict.fromkeys(TOKEN_KINDS, 0))
             try:
                 total = reader(path, st)
             except (OSError, ValueError, TypeError, AttributeError):
                 continue
+            base = st.pop("base", {})     # eaten before the first look (see FOOD_FIRST_SIGHT)
+            before = {k: before.get(k, 0) + base.get(k, 0) for k in TOKEN_KINDS}
             st["total"], st["seen"] = dict(total), now
             state[key] = st
             fresh = {k: total.get(k, 0) - before.get(k, 0) for k in TOKEN_KINDS}

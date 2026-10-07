@@ -3,7 +3,9 @@ import importlib.util
 import json
 import os
 import tempfile
+import time
 import unittest
+from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location(
@@ -169,6 +171,32 @@ class TokenTest(unittest.TestCase):
             json.dump(doc, f)
         self.assertEqual(client.new_tokens("gemini", [path], self.state),
                          {"input": 205, "output": 50, "cache_write": 0, "cache_read": 300})
+
+    def test_first_look_at_an_old_log_skips_its_history(self):
+        def iso(ts):
+            return datetime.fromtimestamp(ts, timezone.utc).isoformat().replace("+00:00", "Z")
+        now = time.time()
+        old, new = iso(now - 3 * 3600), iso(now - 60)
+        path = self.write("t.jsonl", [
+            {"timestamp": old, "message": {"id": "m1", "usage": {"output_tokens": 1000}}},
+            {"timestamp": new, "message": {"id": "m2", "usage": {"output_tokens": 7}}}])
+        self.assertEqual(client.new_tokens("claude", [path], self.state, now)["output"], 7)
+        self.write("t.jsonl", [{"timestamp": old, "message": {"id": "m3", "usage": {
+            "output_tokens": 5}}}], "a")                     # later lines all count
+        self.assertEqual(client.new_tokens("claude", [path], self.state, now)["output"], 5)
+
+        def tc(ts, out):
+            return {"timestamp": ts, "type": "event_msg", "payload": {"type": "token_count",
+                    "info": {"total_token_usage": {"input_tokens": 0, "output_tokens": out}}}}
+        path = self.write("rollout.jsonl", [tc(old, 900), tc(new, 950)])
+        self.assertEqual(client.new_tokens("codex", [path], self.state, now)["output"], 50)
+
+        path = os.path.join(self.dir, "session.json")
+        with open(path, "w") as f:
+            json.dump({"messages": [{"id": "1", "timestamp": old, "tokens": {"output": 800}},
+                                    {"id": "2", "timestamp": new, "tokens": {"output": 3}}]}, f)
+        self.assertEqual(client.new_tokens("gemini", [path], self.state, now)["output"], 3)
+        self.assertEqual(client.new_tokens("gemini", [path], self.state, now)["output"], 0)
 
     def test_missing_log_is_ignored(self):
         self.assertEqual(client.new_tokens("claude", [os.path.join(self.dir, "nope")], self.state),

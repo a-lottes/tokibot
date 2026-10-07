@@ -16,14 +16,24 @@ def at(day, hour=12):
 
 class LevelTest(unittest.TestCase):
     def test_curve(self):
-        self.assertEqual([xp_for_level(n) for n in (1, 2, 3, 4)], [0, 50, 150, 300])
-        self.assertEqual([level_for(x) for x in (0, 49, 50, 149, 150)], [1, 1, 2, 2, 3])
+        self.assertEqual([xp_for_level(n) for n in (1, 2, 3, 4)], [0, 120, 480, 1080])
+        self.assertEqual([level_for(x) for x in (0, 119, 120, 479, 480)], [1, 1, 2, 2, 3])
 
     def test_level_up_is_reported(self):
         life = Life()
-        ups = [life.record("Stop", {}, at(5)) for _ in range(5)]
-        self.assertEqual(ups, [False, False, False, False, True])
+        ups = [life.record("Stop", {}, at(5)) for _ in range(24)]
+        self.assertEqual(ups, [False] * 23 + [True])
         self.assertEqual(life.summary(at(5))["level"], 2)
+
+    def test_tool_xp_is_capped_per_day(self):
+        from tokibot.mood import TOOL_XP_PER_DAY
+        life = Life()
+        for _ in range(TOOL_XP_PER_DAY + 50):
+            life.record("PreToolUse", {}, at(5))
+        s = life.summary(at(5))
+        self.assertEqual((s["xp"], s["today"]["tools"]), (TOOL_XP_PER_DAY, TOOL_XP_PER_DAY + 50))
+        life.record("PreToolUse", {}, at(6))                     # a new day counts again
+        self.assertEqual(life.summary(at(6))["xp"], TOOL_XP_PER_DAY + 1)
 
     def test_rate_limit_gives_no_xp_but_counts_nothing_else(self):
         life = Life()
@@ -57,7 +67,7 @@ class PersistTest(unittest.TestCase):
             life.record("PreToolUse", {}, at(5))
             life.maybe_save(force=True)
             again = Life(path).summary(at(5))
-            self.assertEqual((again["xp"], again["today"]["turns"], again["today"]["tools"]), (11, 1, 1))
+            self.assertEqual((again["xp"], again["today"]["turns"], again["today"]["tools"]), (6, 1, 1))
 
     def test_unwritable_path_does_not_crash(self):
         life = Life("/proc/nope/life.json")
@@ -73,7 +83,7 @@ class MoodTest(unittest.TestCase):
     def test_level_up_celebration(self):
         b = Brain()
         now = time.time()
-        for i in range(5):
+        for i in range(24):
             b.handle_hook({"hook_event_name": "Stop", "session_id": "s", "ts": now + i})
         v = b.view()
         self.assertEqual((v["mood"], v["level"]), ("levelup", 2))

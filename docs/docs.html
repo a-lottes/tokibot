@@ -79,12 +79,13 @@
       <h2 id="growing" data-n="03">Growing up</h2>
       <p>The critter earns experience from your work:</p>
       <ul>
-        <li>10 XP per finished reply</li>
-        <li>5 XP per completed task</li>
-        <li>3 XP per new session</li>
-        <li>1 XP per tool call</li>
+        <li>5 XP per finished reply</li>
+        <li>3 XP per completed task</li>
+        <li>2 XP per new session</li>
+        <li>1 XP per tool call, for the first 40 tool calls of a day</li>
+        <li>5 XP per commit, 8 per push and 15 per pull request</li>
       </ul>
-      <p>Levels get further apart as it grows: level 2 at 50 XP, level 3 at 150, level 4 at 300, and so on. Every day with at least one finished reply extends the streak; skip a day and it starts over. In the evening it shows what you did today, and when you leave it alone for two days it gets hungry.</p>
+      <p>Levels get further apart as it grows: level 2 at 120 XP, level 3 at 480, level 4 at 1,080, level 5 at 1,920, and so on. A normal working day is worth a level early on; level 10 takes a month or two. Every day with at least one finished reply extends the streak; skip a day and it starts over. In the evening it shows what you did today, and when you leave it alone for two days it gets hungry.</p>
       <p>The progress lives in <code>life.json</code> on the image's small writable <code>data</code> partition, so it survives reboots and updates. In the simulator it is in <code>~/.tokibot/</code>.</p>
 
       <h2 id="client" data-n="04">The client</h2>
