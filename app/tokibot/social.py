@@ -166,7 +166,7 @@ class Social:
         self.accept_all = accept_all          # the simulator's fake gotchi says yes to everyone
         self.lock = threading.RLock()
         self.state = {"v": 1, "name": default_name(identity.pub), "accessory": "none",
-                      "open": False, "auto": False, "friends": {}, "known": {}}
+                      "open": True, "auto": False, "friends": {}, "known": {}}
         if path:
             try:
                 with open(path) as f:

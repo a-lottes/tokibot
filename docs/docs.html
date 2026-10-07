@@ -132,7 +132,7 @@
       <pre><code><span class="p">$ </span>sh ~/.tokibot/tokibot.sh test</code></pre>
 
       <h2 id="settings" data-n="05">Settings</h2>
-      <p>Open <code>http://tokibot-xxxx.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. The page changes Wi-Fi, time zone, display, rotation, token and relay. It writes <code>tokibot.toml</code> on the boot partition, keeps the comments in it, and restarts the gotchi. Once a token is set, the page asks for it.</p>
+      <p>Open <code>http://tokibot-xxxx.local:8765/settings</code>, or <code>http://192.168.77.1:8765/settings</code> over USB. The page changes Wi-Fi, time zone, display, rotation, token and relay. It writes <code>tokibot.toml</code> on the boot partition, keeps the comments in it, and applies the change right away: the app restarts, or the gotchi reboots for Wi-Fi, USB, time zone and Bluetooth, and the page reloads by itself when it is back. Once a token is set, the page asks for it; <em>Where do I find the token?</em> on the page says where it comes from.</p>
       <p>You can also edit the file directly: put the card into your computer and open <code>tokibot.toml</code> on the <code>TOKIBOT</code> drive.</p>
       <pre data-title="tokibot.toml"><code>[device]
 display = "waveshare_2in13_v4"<span class="c">  # see Displays below</span>

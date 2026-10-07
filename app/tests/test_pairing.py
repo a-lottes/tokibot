@@ -53,8 +53,23 @@ class ServerTest(unittest.TestCase):
 
     def test_whoami_and_name_header(self):
         with urllib.request.urlopen(self.g.url + "/whoami", timeout=3) as resp:
-            self.assertEqual(json.load(resp), {"gotchi": "tokibot-aaaa", "token": False})
+            who = json.load(resp)
+            self.assertEqual((who["gotchi"], who["token"]), ("tokibot-aaaa", False))
+            self.assertTrue(who["started"])
             self.assertEqual(resp.headers["X-Tokibot-Gotchi"], "tokibot-aaaa")
+
+    def test_saving_settings_applies_them(self):
+        form = "wifi.country=DE&device.timezone=UTC&device.rotate=180&usb.enabled=on&social.enabled=on"
+        with mock.patch.object(Control, "restart") as restart:
+            status, _, body = post(self.g.url + "/settings", form.encode())
+        self.assertEqual(status, 200)
+        self.assertIn(b"Restarting to apply", body)
+        self.assertIn(b"/whoami", body)                   # the page waits for the restart
+        restart.assert_called_once_with(reboot=False)      # not on a device: no reboot
+        with open(self.g.cfg_path) as f:
+            self.assertIn("rotate = 180", f.read())
+        with urllib.request.urlopen(self.g.url + "/settings?applied=1", timeout=3) as resp:
+            self.assertIn(b"runs with the new settings", resp.read())
 
     def test_event_for_another_gotchi_is_refused(self):
         ev = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": "s"}).encode()

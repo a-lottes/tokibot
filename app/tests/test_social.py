@@ -113,7 +113,12 @@ class SocialTest(unittest.TestCase):
     def tearDown(self):
         self.w.close()
 
+    def test_new_gotchis_are_open_for_friends(self):
+        self.assertTrue(self.a.state["open"])
+
     def test_strangers_only_see_an_anonymous_beacon(self):
+        self.a.set_profile(open_=False)
+        self.b.set_profile(open_=False)
         self.w.run(5)
         packets = b"".join(self.a.radio.packets)
         self.assertNotIn(self.a.me.pub[:8], packets)
@@ -122,6 +127,8 @@ class SocialTest(unittest.TestCase):
         self.assertIsNone(next(iter(self.b.peers.values()))["card"])
 
     def test_anonymous_encounter_after_thirty_seconds(self):
+        self.a.set_profile(open_=False)
+        self.b.set_profile(open_=False)
         self.w.run(20)
         self.assertEqual(self.b.life.summary(self.w.now)["xp"], 0)
         self.w.run(15)

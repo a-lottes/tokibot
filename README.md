@@ -95,8 +95,8 @@ root filesystem. All numbers and texts are in `app/tokibot/mood.py`.
 
 ### Highscores
 
-Opt in with *Join the highscores* on the settings page (`[leaderboard] enabled`) and
-the gotchi shows up on [tokibot.lottes.dev/highscores.html](https://tokibot.lottes.dev/highscores.html):
+*Join the highscores* on the settings page (`[leaderboard] enabled`) is on from the
+start, so the gotchi shows up on [tokibot.lottes.dev/highscores.html](https://tokibot.lottes.dev/highscores.html):
 
 | List | Ranks by | Periods |
 |---|---|---|
@@ -122,12 +122,12 @@ the design leaves room for a community site with chat later
 
 * **Identity.** On first start the gotchi creates an Ed25519 key pair. The key *is*
   the profile: no sign-up, no password. Name and accessory are set on the social page.
-* **Anonymous by default.** A gotchi sends a small beacon with a random id that
-  changes every 15 minutes, its level, mood and accessory. Strangers cannot follow it
-  around. Friends recognise it by a tag only they can compute.
-* **Open for new friends.** Only when you switch this on (social page) does the
-  gotchi also send its signed card with name and level, so others nearby can ask
-  to be friends.
+* **Random ids.** A gotchi sends a small beacon with a random id that changes every
+  15 minutes, its level, mood and accessory. Strangers cannot follow it around.
+  Friends recognise it by a tag only they can compute.
+* **Open for new friends.** On from the start: the gotchi also sends its signed card
+  with name and level, so others nearby can ask to be friends. Switch it off on the
+  friends page (`/social`) and the gotchi stays anonymous.
 * **Friendship needs both.** One side asks, the other says yes on its social page
   (or automatically, for gotchis met on three different days, if both allow it).
   Both gotchis sign the friendship; the two signatures are a proof that a community
@@ -329,9 +329,12 @@ run `make faq` to rebuild the page.
 
 Open `http://tokibot-xxxx.local:8765/settings` (or `http://192.168.77.1:8765/settings`
 over USB) to change Wi-Fi, time zone, rotation, token and relay. The page writes
-`tokibot.toml` on the boot partition, keeps its comments, and restarts the
-gotchi. Once a token is set, the page asks for it. Editing the file on the SD
-card still works too.
+`tokibot.toml` on the boot partition, keeps its comments, and applies the change
+right away: the app restarts (Wi-Fi, USB, time zone and Bluetooth reboot the
+gotchi), and the page reloads by itself once the gotchi is back. The simulator
+restarts itself the same way. Once a token is set, the page asks for it and can
+remember it in the browser; *Where do I find the token?* on the page explains
+where it comes from. Editing the file on the SD card still works too.
 
 ## Updates without flashing
 

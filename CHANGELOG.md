@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+* The settings page applies changes by itself: saving restarts the app (or reboots
+  the gotchi for Wi-Fi, USB, time zone and Bluetooth) and the page reloads once the
+  gotchi is back. The simulator restarts itself too, no more manual restart.
+* The settings page explains where the token comes from (pairing, kept in
+  `~/.tokibot/tokibot.json` on your computer and in `tokibot.toml` on the gotchi) and
+  can remember it in the browser for the settings and friends pages.
+* New look for the gotchi's own pages: one header with Live, Settings and Friends,
+  settings grouped into Device, Network, Connection and Community, dark mode.
+* New gotchis join the highscores and are open for new friends from the start. Both
+  can be turned off; existing settings are kept.
+
 ## 0.5.0
 
 * Claudegotchi is now **Tokibot**, at https://tokibot.lottes.dev. Gotchis are called

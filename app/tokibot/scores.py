@@ -1,6 +1,6 @@
 """Highscores: the gotchi's signed score card for the list on the website.
 
-Opt-in ([leaderboard] enabled). The card holds the level and, per day, the food
+On by default, off with [leaderboard] enabled = false. The card holds the level and, per day, the food
 and XP of the last weeks, nothing about the work itself. It is signed with the
 gotchi's Ed25519 key, so nobody else can post scores under its name. The website
 merges the days and ranks:
