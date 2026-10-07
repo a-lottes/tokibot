@@ -93,7 +93,8 @@ class SettingsTest(unittest.TestCase):
 
     def form(self, display):
         return {"device.display": display, "device.rotate": "0", "device.timezone": "Europe/Berlin",
-                "wifi.country": "DE", "usb.enabled": "on", "social.enabled": "on"}
+                "wifi.country": "DE", "usb.enabled": "on", "social.enabled": "on",
+                "leaderboard.enabled": "on"}
 
     def test_choose_display(self):
         cfg = self.cfg("waveshare_2in13_v4")

@@ -1,7 +1,7 @@
 # Tokibot settings
 #
 # This file lives on the SD card's boot partition. You can edit it directly on
-# your Mac (drive "GOTCHI"), then put the card back into the Pi.
+# your computer (drive "TOKIBOT"), then put the card back into the Pi.
 
 [device]
 # Display driver. The revision is printed on the back of the display board.
@@ -46,7 +46,8 @@ auth = ""
 
 [social]
 # Meet other gotchis over Bluetooth LE and make friends (see docs/social-concept.md).
-# Your gotchi stays anonymous until you open it on the social page (/social).
+# New gotchis are open for new friends: others nearby see the name and level. Turn
+# that off on the friends page (/social) to stay anonymous.
 enabled = true
 # "auto" (Bluetooth on the device, a simulated radio in the simulator), "ble", "udp" or "off"
 radio = "auto"
@@ -62,6 +63,6 @@ shutdown_at = 5
 [leaderboard]
 # Join the highscores on tokibot.lottes.dev: name, level, and food and XP per day,
 # signed with the gotchi's key. Nothing about your work. Turning it off removes the entry.
-enabled = false
+enabled = true
 # Where to post; empty = https://tokibot.lottes.dev/api/scores
 url = ""

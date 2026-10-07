@@ -45,8 +45,12 @@ jobs:
           path: |
             .buildroot/dl
             ~/.buildroot-ccache
-          key: br-${{ matrix.target }}-${{ hashFiles('os/configs/*') }}
-          restore-keys: br-${{ matrix.target }}-
+          # A new key every run, so the compiler cache grows with each build;
+          # restore the newest one for the same configuration, else any for the board.
+          key: br-${{ matrix.target }}-${{ hashFiles('os/configs/*') }}-${{ github.run_id }}
+          restore-keys: |
+            br-${{ matrix.target }}-${{ hashFiles('os/configs/*') }}-
+            br-${{ matrix.target }}-
       - run: make ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:

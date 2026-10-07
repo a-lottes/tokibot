@@ -10,6 +10,16 @@
   minutes of a session log it sees for the first time instead of its whole history,
   the assumed usual day before there is history is 6 million food points instead of
   1.5 million, and the bar stops at 100 % (the critter is stuffed beyond that).
+* The settings page applies changes by itself: saving restarts the app (or reboots
+  the gotchi for Wi-Fi, USB, time zone and Bluetooth) and the page reloads once the
+  gotchi is back. The simulator restarts itself too, no more manual restart.
+* The settings page explains where the token comes from (pairing, kept in
+  `~/.tokibot/tokibot.json` on your computer and in `tokibot.toml` on the gotchi) and
+  can remember it in the browser for the settings and friends pages.
+* New look for the gotchi's own pages: one header with Live, Settings and Friends,
+  settings grouped into Device, Network, Connection and Community, dark mode.
+* New gotchis join the highscores and are open for new friends from the start. Both
+  can be turned off; existing settings are kept.
 
 ## 0.5.0
 

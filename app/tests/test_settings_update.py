@@ -31,7 +31,8 @@ class TomlTest(unittest.TestCase):
         cfg["wifi"]["psk"] = "old"
         form = {"wifi.ssid": "Home", "wifi.psk": "", "wifi.country": "DE",
                 "device.timezone": "Europe/Berlin", "device.rotate": "0", "usb.enabled": "on",
-                "server.token": "", "relay.url": "", "relay.auth": "", "social.enabled": "on"}
+                "server.token": "", "relay.url": "", "relay.auth": "", "social.enabled": "on",
+                "leaderboard.enabled": "on"}
         self.assertEqual(settings.changes_from_form(form, cfg), {("wifi", "ssid"): "Home"})
         form["wifi.psk.clear"] = "on"
         self.assertEqual(settings.changes_from_form(form, cfg)[("wifi", "psk")], "")
@@ -40,6 +41,29 @@ class TomlTest(unittest.TestCase):
         html = settings.page(DEFAULTS, False, "hi")
         self.assertIn("Wi-Fi name", html)
         self.assertIn("No token is set", html)
+        self.assertIn('href="/social"', html)                 # the friends page is one click away
+        self.assertIn("Where do I find the token?", html)
+
+    def test_page_explains_where_the_token_is(self):
+        html = settings.page(DEFAULTS, True, cfg_path="/home/me/.tokibot/tokibot.toml")
+        self.assertIn("~/.tokibot/tokibot.json", html)
+        self.assertIn("/home/me/.tokibot/tokibot.toml", html)
+        self.assertIn("TOKIBOT", settings.page(DEFAULTS, True, on_device=True))
+
+    def test_highscores_and_friends_are_on_by_default(self):
+        self.assertTrue(DEFAULTS["leaderboard"]["enabled"])
+        self.assertTrue(DEFAULTS["social"]["enabled"])
+        with open(TEMPLATE) as f:
+            data = _parse_simple_toml(f.read())
+        self.assertTrue(data["leaderboard"]["enabled"])
+        self.assertTrue(data["social"]["enabled"])
+
+    def test_only_boot_settings_need_a_reboot(self):
+        self.assertTrue(settings.needs_reboot({("wifi", "ssid"): "x"}))
+        self.assertTrue(settings.needs_reboot({("device", "timezone"): "UTC", ("server", "token"): "t"}))
+        self.assertTrue(settings.needs_reboot({("social", "enabled"): False}))
+        self.assertFalse(settings.needs_reboot({("device", "display"): "x", ("device", "rotate"): 180,
+                                                ("server", "token"): "t", ("leaderboard", "enabled"): False}))
 
 
 def make_bundle(files):
