@@ -25,6 +25,8 @@ SIM_CONFIG ?= $(HOME)/.tokibot/tokibot.toml
 BR_VERSION ?= 2026.02.3
 BR_DIR     ?= $(CURDIR)/.buildroot
 OUT        ?= $(CURDIR)/output
+# Buildroot builds packages side by side (per-package directories in the defconfigs).
+BR_JOBS    ?= $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)
 BR_MAKE     = $(MAKE) -C $(BR_DIR) BR2_EXTERNAL=$(CURDIR)/os O=$(OUT)/$@
 
 .PHONY: test test-site sim mockups figures faq social-pics bundle update zero2w zerow clean
@@ -73,7 +75,7 @@ $(BR_DIR)/Makefile:
 
 zero2w zerow: | $(BR_DIR)/Makefile
 	$(BR_MAKE) tokibot_$@_defconfig
-	$(BR_MAKE)
+	$(BR_MAKE) -j$(BR_JOBS)
 
 clean:
 	rm -rf $(OUT)

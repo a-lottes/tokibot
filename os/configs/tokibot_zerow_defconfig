@@ -53,3 +53,8 @@ BR2_PACKAGE_HOST_DOSFSTOOLS=y
 BR2_PACKAGE_HOST_GENIMAGE=y
 BR2_PACKAGE_HOST_KMOD_XZ=y
 BR2_PACKAGE_HOST_MTOOLS=y
+# Faster rebuilds: ccache (kept between CI runs) and packages built in parallel
+BR2_CCACHE=y
+BR2_CCACHE_DIR="$(HOME)/.buildroot-ccache"
+BR2_CCACHE_INITIAL_SETUP="--max-size=1500M"
+BR2_PER_PACKAGE_DIRECTORIES=y
