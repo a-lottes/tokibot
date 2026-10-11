@@ -80,7 +80,7 @@
         return n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
       }
       function none() {
-        box.innerHTML = '<div class="note"><p><span class="tag">no release yet</span>The first images are still being built and tested. ' +
+        box.innerHTML = '<div class="note"><p><span class="tag">no release yet</span>The first images are still being built. ' +
           'Until then you can <a href="build.html">build the image yourself</a>.</p></div>';
       }
       fetch("downloads/latest.json", { cache: "no-store" })

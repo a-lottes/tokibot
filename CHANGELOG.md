@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Tested on real hardware: the images boot on a Pi Zero with the 2.13" e-paper,
+  so the website and README no longer warn that a hardware test is open.
 * Slower progression. Levels need more XP (level 2 at 120, 3 at 480, 4 at 1,080, 5 at
   1,920: 120 × (level − 1)²), a reply is worth 5 XP instead of 10, and tool calls earn
   XP only for the first 40 a day. Before, a few agentic prompts reached level 7.
