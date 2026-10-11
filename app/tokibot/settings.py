@@ -121,7 +121,9 @@ def changes_from_form(form, cfg):
     return out
 
 
-def write_config(path, changes):
+def write_config(path, changes, remove=()):
+    """Write changes into the file. remove: files next to it to delete in the same go
+    (the boot partition is writable only for a moment)."""
     with open(path, encoding="utf-8") as f:
         text = f.read()
     new = update_toml(text, changes)
@@ -129,12 +131,18 @@ def write_config(path, changes):
     if on_boot:
         subprocess.run(["mount", "-o", "remount,rw", "/boot"], check=True)
     try:
-        tmp = path + ".new"
-        with open(tmp, "w", encoding="utf-8") as f:
-            f.write(new)
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(tmp, path)
+        if changes:
+            tmp = path + ".new"
+            with open(tmp, "w", encoding="utf-8") as f:
+                f.write(new)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, path)
+        for name in remove:
+            try:
+                os.remove(name)
+            except FileNotFoundError:
+                pass
     finally:
         if on_boot:
             subprocess.run(["sync"])

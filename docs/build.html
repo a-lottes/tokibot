@@ -59,7 +59,8 @@
       </div></li>
       <li><div>
         <h3>Flash the card</h3>
-        <p>In Raspberry Pi Imager, pick <em>Choose OS</em> → <em>Use custom</em> and select the <code>.img.xz</code> file. Choose the microSD card and write. Skip Imager's OS customisation: the gotchi has its own settings file.</p>
+        <p>Open the Tokibot list in Raspberry Pi Imager: double-click <a href="downloads/tokibot.rpi-imager-manifest" download><code>tokibot.rpi-imager-manifest</code></a> from the download page, or see <a href="download.html#imager">other ways</a>. Pick your board, the Tokibot image and the microSD card. In the customisation step, fill in your Wi-Fi and time zone if you want them; the gotchi takes them over on first boot. Skip the rest (hostname, user, SSH): the gotchi does not use it. Then write.</p>
+        <p>With a downloaded <code>.img.xz</code> and <em>Choose OS</em> → <em>Use custom</em>, Imager writes the image without the customisation step. Then set Wi-Fi in <code>tokibot.toml</code>, see the next step.</p>
       </div></li>
       <li id="wifi"><div>
         <h3>Optional: Wi-Fi and settings</h3>

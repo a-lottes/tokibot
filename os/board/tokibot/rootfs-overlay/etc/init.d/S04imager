@@ -1,0 +1,11 @@
+#!/bin/sh
+# Takes over what was entered in Raspberry Pi Imager's OS customisation (Wi-Fi,
+# time zone) into /boot/tokibot.toml and deletes Imager's files, so it happens
+# once. Runs before S05config, so this boot already uses the new settings.
+
+[ "$1" = "start" ] || exit 0
+for f in rpi-preseed.toml network-config user-data meta-data; do
+	if [ -f "/boot/$f" ]; then
+		exec /usr/bin/python3 -m tokibot.imager /boot
+	fi
+done
