@@ -88,7 +88,25 @@
    "url": "https://tokibot.lottes.dev/faq.html#which-image",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p><code>tokibot-zero2w.img.xz<\/code> for the Raspberry Pi Zero 2 W and <code>tokibot-zerow.img.xz<\/code> for the first-generation Pi Zero W. Both are on <a href=\"https://tokibot.lottes.dev/download.html\">https://tokibot.lottes.dev/download.html<\/a> with SHA-256 checksums. Flash the <code>.img.xz<\/code> file as it is; Raspberry Pi Imager unpacks it.<\/p>"
+    "text": "<p><code>tokibot-zero2w.img.xz<\/code> for the Raspberry Pi Zero 2 W and <code>tokibot-zerow.img.xz<\/code> for the first-generation Pi Zero W. Both are on <a href=\"https://tokibot.lottes.dev/download.html\">https://tokibot.lottes.dev/download.html<\/a> with SHA-256 checksums. Flash the <code>.img.xz<\/code> file as it is; Raspberry Pi Imager unpacks it. Not sure which Pi you have? See <a href=\"https://tokibot.lottes.dev/faq.html#zero-w-or-zero-2-w\">Zero W or Zero 2 W<\/a>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Is my Pi a Zero W or a Zero 2 W?",
+   "url": "https://tokibot.lottes.dev/faq.html#zero-w-or-zero-2-w",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Look at the main chip. The Zero 2 W has a square chip with a <strong>metal lid<\/strong>, marked <strong>RP3A0<\/strong>. The Zero W has a black <strong>BCM2835<\/strong> with a memory chip stacked on top of it (marked Samsung, Micron or Elpida). The name is also printed on the board: \"Raspberry Pi Zero W V1.1\" is the first generation. Both boards look alike from a distance, and Pwnagotchis were mostly built on the Zero W.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "The display stays blank and HDMI shows only a rainbow square.",
+   "url": "https://tokibot.lottes.dev/faq.html#rainbow",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Most likely the image does not fit the Pi: the Zero 2 W image on a Zero W stops right there, without a word. Check <a href=\"https://tokibot.lottes.dev/faq.html#zero-w-or-zero-2-w\">which Pi you have<\/a> and flash the other image. A green LED that blinks 7 times, pauses and repeats means the same with other systems: the Pi found no kernel it can run.<\/p>"
    }
   },
   {
@@ -394,7 +412,7 @@
    "url": "https://tokibot.lottes.dev/faq.html#upside-down",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Set <em>Rotate display<\/em> to 180 on the settings page, or <code>rotate = 180<\/code> under <code>[device]<\/code> in <code>tokibot.toml<\/code>.<\/p>"
+    "text": "<p>The default (<code>rotate = 180<\/code>) shows the picture the right way up with the Pi's USB ports at the top. If you mount it the other way round, set <em>Rotate display<\/em> to 0 on the settings page, or <code>rotate = 0<\/code> under <code>[device]<\/code> in <code>tokibot.toml<\/code>.<\/p>"
    }
   },
   {
@@ -475,7 +493,7 @@
    "url": "https://tokibot.lottes.dev/faq.html#blank-display",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Check that the HAT sits flush on all 40 pins, and that it is the <strong>V4<\/strong> revision of the 2.13 inch display (printed on the back). Give it a moment: e-paper refreshes slowly and the first boot takes a little while. Faint traces of the previous picture are normal for e-paper.<\/p>"
+    "text": "<p>Check that the HAT sits flush on all 40 pins, and that it is the <strong>V4<\/strong> revision of the 2.13 inch display (printed on the back). Give it a moment: e-paper refreshes slowly and the first boot takes a little while. Faint traces of the previous picture are normal for e-paper. If the Pi does not start at all (no gotchi over USB or Wi-Fi), check that the image fits your Pi: <a href=\"https://tokibot.lottes.dev/faq.html#rainbow\">rainbow square<\/a>.<\/p>"
    }
   },
   {
@@ -600,7 +618,15 @@
       <h2 id="image-and-flashing" data-n="02">Image and flashing</h2>
       <section class="faq-q" id="which-image">
         <h3><a class="anchor" href="#which-image">Which image do I download?</a></h3>
-        <p><code>tokibot-zero2w.img.xz</code> for the Raspberry Pi Zero 2 W and <code>tokibot-zerow.img.xz</code> for the first-generation Pi Zero W. Both are on <a href="https://tokibot.lottes.dev/download.html">https://tokibot.lottes.dev/download.html</a> with SHA-256 checksums. Flash the <code>.img.xz</code> file as it is; Raspberry Pi Imager unpacks it.</p>
+        <p><code>tokibot-zero2w.img.xz</code> for the Raspberry Pi Zero 2 W and <code>tokibot-zerow.img.xz</code> for the first-generation Pi Zero W. Both are on <a href="https://tokibot.lottes.dev/download.html">https://tokibot.lottes.dev/download.html</a> with SHA-256 checksums. Flash the <code>.img.xz</code> file as it is; Raspberry Pi Imager unpacks it. Not sure which Pi you have? See <a href="#zero-w-or-zero-2-w">Zero W or Zero 2 W</a>.</p>
+      </section>
+      <section class="faq-q" id="zero-w-or-zero-2-w">
+        <h3><a class="anchor" href="#zero-w-or-zero-2-w">Is my Pi a Zero W or a Zero 2 W?</a></h3>
+        <p>Look at the main chip. The Zero 2 W has a square chip with a <strong>metal lid</strong>, marked <strong>RP3A0</strong>. The Zero W has a black <strong>BCM2835</strong> with a memory chip stacked on top of it (marked Samsung, Micron or Elpida). The name is also printed on the board: "Raspberry Pi Zero W V1.1" is the first generation. Both boards look alike from a distance, and Pwnagotchis were mostly built on the Zero W.</p>
+      </section>
+      <section class="faq-q" id="rainbow">
+        <h3><a class="anchor" href="#rainbow">The display stays blank and HDMI shows only a rainbow square.</a></h3>
+        <p>Most likely the image does not fit the Pi: the Zero 2 W image on a Zero W stops right there, without a word. Check <a href="#zero-w-or-zero-2-w">which Pi you have</a> and flash the other image. A green LED that blinks 7 times, pauses and repeats means the same with other systems: the Pi found no kernel it can run.</p>
       </section>
       <section class="faq-q" id="flash">
         <h3><a class="anchor" href="#flash">How do I flash the card?</a></h3>
@@ -741,7 +767,7 @@
       </section>
       <section class="faq-q" id="upside-down">
         <h3><a class="anchor" href="#upside-down">The picture is upside down.</a></h3>
-        <p>Set <em>Rotate display</em> to 180 on the settings page, or <code>rotate = 180</code> under <code>[device]</code> in <code>tokibot.toml</code>.</p>
+        <p>The default (<code>rotate = 180</code>) shows the picture the right way up with the Pi's USB ports at the top. If you mount it the other way round, set <em>Rotate display</em> to 0 on the settings page, or <code>rotate = 0</code> under <code>[device]</code> in <code>tokibot.toml</code>.</p>
       </section>
       <section class="faq-q" id="clock">
         <h3><a class="anchor" href="#clock">The clock is wrong.</a></h3>
@@ -780,7 +806,7 @@
       </section>
       <section class="faq-q" id="blank-display">
         <h3><a class="anchor" href="#blank-display">The display stays blank.</a></h3>
-        <p>Check that the HAT sits flush on all 40 pins, and that it is the <strong>V4</strong> revision of the 2.13 inch display (printed on the back). Give it a moment: e-paper refreshes slowly and the first boot takes a little while. Faint traces of the previous picture are normal for e-paper.</p>
+        <p>Check that the HAT sits flush on all 40 pins, and that it is the <strong>V4</strong> revision of the 2.13 inch display (printed on the back). Give it a moment: e-paper refreshes slowly and the first boot takes a little while. Faint traces of the previous picture are normal for e-paper. If the Pi does not start at all (no gotchi over USB or Wi-Fi), check that the image fits your Pi: <a href="#rainbow">rainbow square</a>.</p>
       </section>
       <h2 id="friends-over-bluetooth" data-n="08">Friends over Bluetooth</h2>
       <section class="faq-q" id="friends">

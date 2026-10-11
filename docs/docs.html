@@ -138,7 +138,7 @@
       <p>You can also edit the file directly: put the card into your computer and open <code>tokibot.toml</code> on the <code>TOKIBOT</code> drive.</p>
       <pre data-title="tokibot.toml"><code>[device]
 display = "waveshare_2in13_v4"<span class="c">  # see Displays below</span>
-rotate = 0<span class="c">                    # 180 if the picture is upside down</span>
+rotate = 180<span class="c">                  # USB ports at the top; 0 if upside down</span>
 timezone = "Europe/Berlin"
 
 [server]
@@ -272,7 +272,7 @@ auth = ""<span class="c">                     # access token for a protected ntf
         <li>Start a new Claude Code session after installing; running sessions keep their old settings.</li>
       </ul>
       <h3>The picture is upside down</h3>
-      <p>Set <code>rotate = 180</code> on the settings page.</p>
+      <p>Set <code>rotate = 0</code> on the settings page (the default, 180, has the USB ports at the top).</p>
 
       <h2 id="repository" data-n="13">Repository</h2>
       <pre data-title="tree"><code>app/       the service on the device (Python, Pillow)

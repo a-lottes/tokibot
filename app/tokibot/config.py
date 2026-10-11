@@ -29,7 +29,7 @@ def default_path():
     return DEFAULT_PATH
 
 DEFAULTS = {
-    "device": {"display": "waveshare_2in13_v4", "rotate": 0, "timezone": "Europe/Berlin",
+    "device": {"display": "waveshare_2in13_v4", "rotate": 180, "timezone": "Europe/Berlin",
                "data_dir": "/data"},
     "server": {"host": "0.0.0.0", "port": 8765, "token": ""},
     "wifi": {"ssid": "", "psk": "", "country": "DE"},

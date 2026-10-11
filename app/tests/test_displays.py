@@ -92,7 +92,7 @@ class SettingsTest(unittest.TestCase):
         return cfg
 
     def form(self, display):
-        return {"device.display": display, "device.rotate": "0", "device.timezone": "Europe/Berlin",
+        return {"device.display": display, "device.rotate": "180", "device.timezone": "Europe/Berlin",
                 "wifi.country": "DE", "usb.enabled": "on", "social.enabled": "on",
                 "leaderboard.enabled": "on"}
 

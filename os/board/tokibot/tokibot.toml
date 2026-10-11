@@ -14,8 +14,8 @@
 #   "waveshare_2in7_v1"    Waveshare 2.7" V1 (full refresh only, slow)
 # Pwnagotchi's names work too, e.g. "waveshare_3" or "waveshare_4".
 display = "waveshare_2in13_v4"
-# 180 if the picture is upside down
-rotate = 0
+# 180: right way up with the USB ports at the top. 0 if the picture is upside down.
+rotate = 180
 timezone = "Europe/Berlin"
 
 [server]

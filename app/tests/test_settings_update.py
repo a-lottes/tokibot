@@ -30,7 +30,7 @@ class TomlTest(unittest.TestCase):
         cfg = {k: dict(v) for k, v in DEFAULTS.items()}
         cfg["wifi"]["psk"] = "old"
         form = {"wifi.ssid": "Home", "wifi.psk": "", "wifi.country": "DE",
-                "device.timezone": "Europe/Berlin", "device.rotate": "0", "usb.enabled": "on",
+                "device.timezone": "Europe/Berlin", "device.rotate": "180", "usb.enabled": "on",
                 "server.token": "", "relay.url": "", "relay.auth": "", "social.enabled": "on",
                 "leaderboard.enabled": "on"}
         self.assertEqual(settings.changes_from_form(form, cfg), {("wifi", "ssid"): "Home"})
