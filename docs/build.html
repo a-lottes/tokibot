@@ -67,7 +67,11 @@
         <pre data-title="TOKIBOT/tokibot.toml"><code>[wifi]
 ssid = "MyNetwork"
 psk = "my-wifi-password"
-country = "DE"</code></pre>
+country = "DE"
+
+[server]
+token = ""   <span class="c"># optional: pick your own, or leave empty and pairing makes one</span></code></pre>
+        <div class="note"><p><span class="tag">save your token</span>The token protects the gotchi's settings page, and that page asks for it. If you put one into <code>tokibot.toml</code> here, write it down in your password manager right away. If you leave it empty, pairing in step <a href="#connect">Connect your agents</a> makes one; save it then with <code>grep token ~/.tokibot/tokibot.json</code>. Lost it anyway? It stays readable in <code>tokibot.toml</code> on the <code>TOKIBOT</code> drive.</p></div>
         <p>You can change all of this later in the browser, see <a href="docs.html#settings">settings</a>.</p>
       </div></li>
       <li><div>
@@ -90,6 +94,7 @@ country = "DE"</code></pre>
         <p>On Windows, run the terminal commands in Git Bash. Then check that the gotchi answers. The test walks the critter through its moods over about a minute:</p>
         <pre data-title="your computer · terminal"><code><span class="p">$ </span>sh ~/.tokibot/tokibot.sh test</code></pre>
         <p>By default the client tries the USB cable first and then your gotchi's own name, <code>tokibot-xxxx.local</code>, on your Wi-Fi. The gotchi shows that name on screen until a client talks to it. You can also watch the display live in a browser at <a href="http://192.168.77.1:8765/"><code>http://192.168.77.1:8765/</code></a>.</p>
+        <div class="note"><p><span class="tag">settings and token</span>The gotchi's own pages: settings at <a href="http://192.168.77.1:8765/settings"><code>http://192.168.77.1:8765/settings</code></a> over the USB cable, or <code>http://tokibot-xxxx.local:8765/settings</code> on your Wi-Fi (the name is on the gotchi's screen); friends at <code>/social</code>. They ask for the token pairing just made. Save it now, for example in your password manager: <code>grep token ~/.tokibot/tokibot.json</code> prints it.</p></div>
       </div></li>
       <li><div>
         <h3>Start your agent</h3>

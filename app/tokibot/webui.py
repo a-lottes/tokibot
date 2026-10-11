@@ -59,6 +59,11 @@ try {
 } catch (e) {}
 if (WRONG_TOKEN) store.set('tokibot-token', null);
 if (tok && !tok.value) tok.value = store.get('tokibot-token') || '';
+// No token at hand yet: show where to find it right away
+if (tok && tok.type === 'password' && !tok.value) {
+  const help = tok.closest('.card') && tok.closest('.card').querySelector('details');
+  if (help) help.open = true;
+}
 function remember() {
   if (keep) store.set('tokibot-token', keep.checked && tok.value ? tok.value : null);
 }
@@ -116,6 +121,7 @@ def token_box(token_set, where, wrong=False):
                 'Connection</a>.</p><input type=hidden id=tok></div>')
     return f"""<div class=card><label for=tok>Token</label>
 <input type=password id=tok autocomplete=current-password{' autofocus' if wrong else ''}>
+<small>On the computer you paired, <code>grep token ~/.tokibot/tokibot.json</code> shows it.</small>
 <label class=check style="font-weight:400"><input type=checkbox id=keep checked> Remember it in this browser</label>
 {token_help(where)}</div>"""
 
