@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* Wi-Fi and time zone can be entered in Raspberry Pi Imager. The website has a list
+  for Imager (double-click `tokibot.rpi-imager-manifest`, or the URL
+  `https://tokibot.lottes.dev/downloads/imager.json` under *Content Repository*) whose
+  images offer Imager's OS customisation. On first boot the gotchi moves what was
+  entered into `tokibot.toml` and deletes Imager's files.
+* Wi-Fi names with quotes or other special characters work, as do hidden networks and
+  passwords given as a 64-digit hex key.
 * Slower progression. Levels need more XP (level 2 at 120, 3 at 480, 4 at 1,080, 5 at
   1,920: 120 × (level − 1)²), a reply is worth 5 XP instead of 10, and tool calls earn
   XP only for the first 40 a day. Before, a few agentic prompts reached level 7.

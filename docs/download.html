@@ -46,7 +46,7 @@
             <li><a href="install.sh"><code>install.sh</code></a>: adds the status line, or installs the client without the plugin.</li>
             <li><code>tokibot-app.tar.gz</code>: only the app. Upload it on the gotchi's <a href="docs.html#updates">settings page</a> to update without reflashing.</li>
           </ul>
-          <p>Flash an image with Raspberry Pi Imager (<em>Choose OS</em> → <em>Use custom</em>). There is no need to unpack the <code>.xz</code> file first. The <a href="build.html">assembly guide</a> walks through the rest.</p>
+          <p>Flash an image with Raspberry Pi Imager, best through the Tokibot list (see <a href="#imager">below</a>): then Imager asks for your Wi-Fi. <em>Choose OS</em> → <em>Use custom</em> works too, without that step. There is no need to unpack the <code>.xz</code> file first. The <a href="build.html">assembly guide</a> walks through the rest.</p>
         </div>
         <div>
           <span class="kicker"><b>§ 02</b> / verify</span>
@@ -56,6 +56,17 @@
 <span class="p">$ </span>sha256sum tokibot-zero2w.img.xz       <span class="c"># Linux</span></code></pre>
         </div>
       </div>
+    </section>
+
+    <section class="block" id="imager">
+      <span class="kicker"><b>§ 03</b> / raspberry pi imager</span>
+      <h2>Wi-Fi straight from Imager.</h2>
+      <p>Raspberry Pi Imager only offers its OS customisation for images from a list that says how to customise them. Tokibot has such a list. Open it in Imager in one of two ways:</p>
+      <ul>
+        <li>Download <a href="downloads/tokibot.rpi-imager-manifest" download><code>tokibot.rpi-imager-manifest</code></a> and double-click it. Imager opens with the Tokibot images.</li>
+        <li>Or in Imager: <em>App Options</em> → <em>Content Repository</em> → <em>Edit</em> → <em>Use custom URL</em>, enter <code>https://tokibot.lottes.dev/downloads/imager.json</code> and <em>Apply &amp; Restart</em>.</li>
+      </ul>
+      <p>Pick your board and the Tokibot image, then fill in Wi-Fi (name, password, country) and the time zone in the customisation step. On first boot the gotchi moves them into <code>tokibot.toml</code> and deletes Imager's files. Skip the other steps: the hostname, user account, SSH and Raspberry Pi Connect are not used, and the gotchi keeps its own name <code>tokibot-xxxx</code>. To get Imager's usual list back, choose <em>Use default</em> under <em>Content Repository</em>.</p>
     </section>
   </main>
 
