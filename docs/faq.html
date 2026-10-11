@@ -372,6 +372,15 @@
   },
   {
    "@type": "Question",
+   "name": "Can the gotchi use my phone's hotspot on the go and my Wi-Fi at home?",
+   "url": "https://tokibot.lottes.dev/faq.html#several-wifis",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Yes. Besides <code>[wifi]<\/code> there are <code>[wifi2]<\/code> and <code>[wifi3]<\/code> in <code>tokibot.toml<\/code>, and the same fields on the settings page. Put your home Wi-Fi in the first and your phone's hotspot in the second. The gotchi joins whichever is in reach; with both in reach it takes the first. Both Pi Zeros only speak 2.4 GHz: on an iPhone, turn on <em>Maximise Compatibility<\/em> in the hotspot settings, and keep the hotspot page open while the gotchi joins for the first time. On the hotspot your computer cannot reach the gotchi directly unless it is on the same hotspot; for sessions elsewhere, use the <a href=\"https://tokibot.lottes.dev/faq.html#cloud-relay\">relay<\/a>.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
    "name": "Where are the settings?",
    "url": "https://tokibot.lottes.dev/faq.html#settings",
    "acceptedAnswer": {
@@ -748,6 +757,10 @@
       <section class="faq-q" id="wifi">
         <h3><a class="anchor" href="#wifi">How do I put the gotchi on Wi-Fi?</a></h3>
         <p>Either before the first start: put the card into your computer, open <code>tokibot.toml</code> on the <code>TOKIBOT</code> drive and fill in <code>ssid</code>, <code>psk</code> and <code>country</code> under <code>[wifi]</code>. Or later in the browser: open <code>http://192.168.77.1:8765/settings</code> over the USB cable. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk.</p>
+      </section>
+      <section class="faq-q" id="several-wifis">
+        <h3><a class="anchor" href="#several-wifis">Can the gotchi use my phone's hotspot on the go and my Wi-Fi at home?</a></h3>
+        <p>Yes. Besides <code>[wifi]</code> there are <code>[wifi2]</code> and <code>[wifi3]</code> in <code>tokibot.toml</code>, and the same fields on the settings page. Put your home Wi-Fi in the first and your phone's hotspot in the second. The gotchi joins whichever is in reach; with both in reach it takes the first. Both Pi Zeros only speak 2.4 GHz: on an iPhone, turn on <em>Maximise Compatibility</em> in the hotspot settings, and keep the hotspot page open while the gotchi joins for the first time. On the hotspot your computer cannot reach the gotchi directly unless it is on the same hotspot; for sessions elsewhere, use the <a href="#cloud-relay">relay</a>.</p>
       </section>
       <section class="faq-q" id="settings">
         <h3><a class="anchor" href="#settings">Where are the settings?</a></h3>

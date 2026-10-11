@@ -35,6 +35,18 @@ ssid = ""
 psk = ""
 country = "DE"
 
+# More networks, for example your phone's hotspot for on the go. The gotchi joins
+# whichever is in reach; with several in reach, [wifi] comes first, then [wifi2].
+# Both Pi Zeros only speak 2.4 GHz: on an iPhone, turn on "Maximise Compatibility"
+# in the hotspot settings.
+[wifi2]
+ssid = ""
+psk = ""
+
+[wifi3]
+ssid = ""
+psk = ""
+
 [relay]
 # For Claude Code running in the cloud (e.g. Claude Projects), which cannot reach the
 # gotchi directly. Cloud hooks publish to this ntfy topic and the gotchi listens to it

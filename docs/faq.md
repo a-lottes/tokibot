@@ -179,6 +179,10 @@ Remove the plugin in `/plugin`, and the status line or full install with `curl -
 
 Either before the first start: put the card into your computer, open `tokibot.toml` on the `TOKIBOT` drive and fill in `ssid`, `psk` and `country` under `[wifi]`. Or later in the browser: open `http://192.168.77.1:8765/settings` over the USB cable. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk.
 
+### Can the gotchi use my phone's hotspot on the go and my Wi-Fi at home? {#several-wifis}
+
+Yes. Besides `[wifi]` there are `[wifi2]` and `[wifi3]` in `tokibot.toml`, and the same fields on the settings page. Put your home Wi-Fi in the first and your phone's hotspot in the second. The gotchi joins whichever is in reach; with both in reach it takes the first. Both Pi Zeros only speak 2.4 GHz: on an iPhone, turn on *Maximise Compatibility* in the hotspot settings, and keep the hotspot page open while the gotchi joins for the first time. On the hotspot your computer cannot reach the gotchi directly unless it is on the same hotspot; for sessions elsewhere, use the [relay](#cloud-relay).
+
 ### Where are the settings? {#settings}
 
 On the settings page at `http://tokibot-xxxx.local:8765/settings`, or `http://192.168.77.1:8765/settings` over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes `tokibot.toml` on the card. You can also edit that file directly on the `TOKIBOT` drive.
