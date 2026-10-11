@@ -493,6 +493,7 @@ def main(argv=None):
     name = socket.gethostname().split(".")[0]
     if not args.sim:
         brain.address = f"{name}.local"
+        brain.name = name
     data_dir = os.path.dirname(path) if path else None
     me = Identity.load_or_create(data_dir) if data_dir else None
     social = start_social(cfg, brain, data_dir, args, me)

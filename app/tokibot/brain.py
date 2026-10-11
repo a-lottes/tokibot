@@ -40,6 +40,7 @@ class Brain:
         self.tools_today = 0
         self.day = datetime.now().date()
         self.address = ""         # e.g. tokibot-3f2a.local, shown until a client talks to us
+        self.name = ""            # device name (tokibot-3f2a), in the header when social is off
         self.heard = False
 
     def handle_hook(self, ev):
@@ -142,6 +143,11 @@ class Brain:
             if (reset and reset < now and reset > s["since"]) or age > LIMIT_FALLBACK:
                 return "idle"
         return st
+
+    def display_name(self):
+        """The name in the header: the one set on the social page, else the device name."""
+        name = self.social.state.get("name") if self.social else ""
+        return name or self.name or "tokibot"
 
     def view(self):
         now = time.time()
@@ -254,7 +260,7 @@ class Brain:
             "state": state, "mood": mood, "message": message,
             "project": s.get("project", ""), "harness": s.get("harness", ""), "counts": counts,
             "sessions": len(eff), "limits": limits, "tools_today": tools_today,
-            "level": life["level"], "streak": life["streak"], "life": life,
+            "name": self.display_name(), "level": life["level"], "streak": life["streak"], "life": life,
             "nearby": soc["nearby"], "friends_nearby": len(soc["friends_nearby"]),
             "accessory": self.social.accessory() if self.social else "none",
             "battery": dict(battery) if battery else None,

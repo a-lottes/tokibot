@@ -38,6 +38,17 @@ class BrainTest(unittest.TestCase):
         hook(b, "SessionEnd")
         self.assertEqual(b.view()["sessions"], 0)
 
+    def test_header_shows_own_name(self):
+        b = Brain()
+        self.assertEqual(b.view()["name"], "tokibot")
+        b.name = "tokibot-3f2a"
+        self.assertEqual(b.view()["name"], "tokibot-3f2a")
+
+        class FakeSocial:
+            state = {"name": "Pixel42"}
+        b.social = FakeSocial()
+        self.assertEqual(b.display_name(), "Pixel42")
+
 
 class ConfigTest(unittest.TestCase):
     def test_defaults_without_file(self):
