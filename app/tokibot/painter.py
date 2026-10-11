@@ -20,6 +20,7 @@ HEADER_H = 15
 FOOTER_Y = 106
 BUBBLE = (110, 20, W - 3, FOOTER_Y - 5)       # speech bubble box
 CRITTER_XY = (14, 44)
+NAME_W = 84                                   # widest name in the header (12 characters)
 
 
 def load_font(name, size):
@@ -69,8 +70,10 @@ class Painter:
 
     def header(self, d, view):
         d.rectangle((0, 0, W - 1, HEADER_H - 1), fill=0)
-        d.text((4, 1), "tokibot", font=self.f_brand, fill=255)
-        left = 4 + self.f_brand.getlength("tokibot")
+        # Its own name (social page, else the device name), short enough to leave room
+        name = self.ellipsize(view.get("name") or "tokibot", self.f_brand, NAME_W)
+        d.text((4, 1), name, font=self.f_brand, fill=255)
+        left = 4 + self.f_brand.getlength(name)
         if view.get("level"):
             x = left + 4
             lv = LABELS["level"].format(level=view["level"])

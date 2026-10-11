@@ -77,7 +77,7 @@ class Renderer(threading.Thread):
         last = self.brain.view()
         view = {"state": "offline", "mood": "offline", "message": MESSAGES[self.farewell][0],
                 "project": "", "counts": {}, "sessions": 0, "limits": {}, "tools_today": 0,
-                "level": last.get("level"), "streak": 0, "battery": last.get("battery")}
+                "name": last.get("name"), "level": last.get("level"), "streak": 0, "battery": last.get("battery")}
         try:
             with self.draw_lock:
                 if self.said_goodbye:
