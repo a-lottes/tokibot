@@ -280,6 +280,14 @@ class Life:
 
     # --- persistence -----------------------------------------------------------
 
+    def keep(self, key, value):
+        """Keep a small value from another module (e.g. the brain's rate limits) in the
+        progress file, so it survives a reboot."""
+        with self.lock:
+            if self.state.get(key) != value:
+                self.state[key] = value
+                self.dirty = True
+
     def maybe_save(self, force=False):
         if not self.path or not self.dirty:
             return

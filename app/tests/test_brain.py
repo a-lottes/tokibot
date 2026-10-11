@@ -1,7 +1,9 @@
+import tempfile
 import time
 import unittest
 
 from tokibot.brain import Brain
+from tokibot.life import Life
 import os
 
 from tokibot.config import _parse_simple_toml, load, shell
@@ -48,6 +50,40 @@ class BrainTest(unittest.TestCase):
             state = {"name": "Pixel42"}
         b.social = FakeSocial()
         self.assertEqual(b.display_name(), "Pixel42")
+
+
+class RebootTest(unittest.TestCase):
+    """A reboot must not forget the rate limits or that a client is paired."""
+
+    def reboot(self, brain, path):
+        brain.life.maybe_save(force=True)
+        b = Brain(Life(path))
+        b.address = "tokibot-3f2a.local"
+        return b
+
+    def test_full_limit_survives_reboot(self):
+        path = os.path.join(tempfile.mkdtemp(), "life.json")
+        b = Brain(Life(path))
+        reset = time.time() + 3600
+        b.handle_limits({"rate_limits": {"five_hour": {"used_percentage": 100, "resets_at": reset}}})
+        v = self.reboot(b, path).view()
+        self.assertEqual(v["state"], "limit")
+        self.assertEqual(v["limits"]["five_hour"]["pct"], 100)
+        self.assertNotIn("pair", v["message"])
+
+    def test_expired_window_is_dropped(self):
+        path = os.path.join(tempfile.mkdtemp(), "life.json")
+        b = Brain(Life(path))
+        b.handle_limits({"rate_limits": {"five_hour": {"used_percentage": 100,
+                                                       "resets_at": time.time() - 60}}})
+        self.assertEqual(self.reboot(b, path).view()["limits"], {})
+
+    def test_address_only_until_first_contact(self):
+        path = os.path.join(tempfile.mkdtemp(), "life.json")
+        b = self.reboot(Brain(Life(path)), path)
+        self.assertIn("pair", b.view()["message"])
+        b.handle_limits({"rate_limits": {}})
+        self.assertNotIn("pair", self.reboot(b, path).view()["message"])
 
 
 class ConfigTest(unittest.TestCase):
