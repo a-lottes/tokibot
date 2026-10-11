@@ -41,14 +41,24 @@ class Brain:
         self.day = datetime.now().date()
         self.address = ""         # e.g. tokibot-3f2a.local, shown until a client talks to us
         self.name = ""            # device name (tokibot-3f2a), in the header when social is off
-        self.heard = False
+        # What a reboot must not forget: the last rate limits (no new ones arrive while
+        # a limit blocks work) and whether a client has ever talked to us
+        now = time.time()
+        for key, w in (self.life.state.get("limits") or {}).items():
+            try:
+                pct, reset = float(w["pct"]), float(w["reset"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if reset > now:                       # a window that has reset says nothing anymore
+                self.limits[key] = {"pct": pct, "reset": reset}
+        self.heard = bool(self.life.state.get("heard") or self.life.state.get("xp"))
 
     def handle_hook(self, ev):
         name = ev.get("hook_event_name", "")
         sid = str(ev.get("session_id") or "unknown")
         ts = float(ev.get("ts") or time.time())
         now = time.time()
-        self.heard = True
+        self._hear()
         self.life.record(name, ev, now)
         self.life.eat(name, ev, now)
         with self.lock:
@@ -108,7 +118,7 @@ class Brain:
 
     def handle_limits(self, data):
         rl = data.get("rate_limits") or {}
-        self.heard = True
+        self._hear()
         with self.lock:
             if data.get("session_id") and data.get("context_pct") is not None:
                 self.context[str(data["session_id"])] = float(data["context_pct"])
@@ -117,6 +127,13 @@ class Brain:
                 if isinstance(w, dict) and w.get("used_percentage") is not None:
                     self.limits[key] = {"pct": float(w["used_percentage"]),
                                         "reset": float(w.get("resets_at") or 0)}
+            limits = {k: dict(v) for k, v in self.limits.items()}
+        self.life.keep("limits", limits)
+
+    def _hear(self):
+        if not self.heard:
+            self.heard = True
+            self.life.keep("heard", True)
 
     def _count_tool(self):
         today = datetime.now().date()
