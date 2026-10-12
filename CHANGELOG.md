@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+* Tested on real hardware: the images boot on a Pi Zero with the 2.13" e-paper,
+  so the website and README no longer warn that a hardware test is open.
+
 ## 0.5.1
 
 * Wi-Fi and time zone can be entered in Raspberry Pi Imager. The website has a list

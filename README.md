@@ -436,6 +436,6 @@ gotchi's name, level and daily food and XP go to tokibot.lottes.dev, nothing els
 
 Version 0.4.0, the first release ([changelog](CHANGELOG.md)). Ready-made images
 and the app bundle are on the [download page](https://tokibot.lottes.dev/download.html)
-and in the GitHub release. The images build cleanly on GitHub and the app runs in
-the simulator; a test on real hardware is still open, including the Bluetooth radio
-for friends.
+and in the GitHub release. The images build cleanly on GitHub and run on a Pi Zero
+with the 2.13" e-paper. Bluetooth friends between two real gotchis have only been
+tried in the simulator so far.
