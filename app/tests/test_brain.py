@@ -52,6 +52,37 @@ class BrainTest(unittest.TestCase):
         self.assertEqual(b.display_name(), "Pixel42")
 
 
+class StaleLimitsTest(unittest.TestCase):
+    """Every session's status line reports the limits of its own last API call."""
+
+    def limits(self, b, pct, reset):
+        b.handle_limits({"rate_limits": {"five_hour": {"used_percentage": pct, "resets_at": reset}}})
+        return b.view()["limits"]["five_hour"]["pct"]
+
+    def test_idle_session_does_not_lower_the_window(self):
+        b, reset = Brain(), time.time() + 3600
+        self.assertEqual(self.limits(b, 100, reset), 100)
+        self.assertEqual(self.limits(b, 17, reset + 1), 100)
+        self.assertEqual(b.view()["state"], "limit")
+
+    def test_older_window_is_ignored(self):
+        b, reset = Brain(), time.time() + 3600
+        self.limits(b, 40, reset)
+        self.assertEqual(self.limits(b, 90, reset - 5 * 3600), 40)
+
+    def test_new_window_starts_low(self):
+        b, reset = Brain(), time.time() + 3600
+        self.limits(b, 100, reset)
+        self.assertEqual(self.limits(b, 3, reset + 5 * 3600), 3)
+
+    def test_after_reset_anything_counts(self):
+        b = Brain()
+        self.limits(b, 100, time.time() + 3600)
+        b.limits["five_hour"]["reset"] = time.time() - 1      # the window has run out
+        self.assertNotIn("five_hour", b.view()["limits"])
+        self.assertEqual(self.limits(b, 5, time.time() + 5 * 3600), 5)
+
+
 class RebootTest(unittest.TestCase):
     """A reboot must not forget the rate limits or that a client is paired."""
 

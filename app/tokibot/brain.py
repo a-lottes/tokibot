@@ -24,6 +24,8 @@ TINTABLE = {"working", "done", "ready", "idle"}
 WORKING_MOODS = {"working", "flow", "struggling", "juggling", "tired", "stuffed"}
 # Every mood the feeling layer can produce
 TINTS = {"flow", "struggling", "stuck", "juggling", "oops", "proud", "relieved"}
+# Reports whose reset times differ by less than this belong to the same limit window.
+WINDOW_SLACK = 120
 
 
 class Brain:
@@ -125,10 +127,24 @@ class Brain:
             for key in ("five_hour", "seven_day"):
                 w = rl.get(key)
                 if isinstance(w, dict) and w.get("used_percentage") is not None:
-                    self.limits[key] = {"pct": float(w["used_percentage"]),
-                                        "reset": float(w.get("resets_at") or 0)}
+                    new = {"pct": float(w["used_percentage"]),
+                           "reset": float(w.get("resets_at") or 0)}
+                    if not self._stale(self.limits.get(key), new, time.time()):
+                        self.limits[key] = new
             limits = {k: dict(v) for k, v in self.limits.items()}
         self.life.keep("limits", limits)
+
+    @staticmethod
+    def _stale(old, new, now):
+        """Whether a reported window is older news than the one we have. Every session's
+        status line reports the limits of that session's last API call, so an idle session
+        (or a second computer) can send 17% long after the active one reported 100%.
+        Within one window usage only grows, and an earlier reset means an earlier window."""
+        if not old or not old["reset"] or not new["reset"] or old["reset"] <= now:
+            return False
+        if new["reset"] < old["reset"] - WINDOW_SLACK:
+            return True
+        return abs(new["reset"] - old["reset"]) <= WINDOW_SLACK and new["pct"] < old["pct"]
 
     def _hear(self):
         if not self.heard:
@@ -179,7 +195,9 @@ class Brain:
             for st, _, _ in eff:
                 counts[st] = counts.get(st, 0) + 1
             limit_reset = self._limit_reset(now)
-            limits = {k: dict(v) for k, v in self.limits.items()}
+            # A window that has reset says nothing about now (the next report brings the new one)
+            limits = {k: dict(v) for k, v in self.limits.items()
+                      if not v["reset"] or v["reset"] > now}
 
             if eff:
                 state, sid, s = min(eff, key=lambda e: (PRIORITY.index(e[0]), -e[2]["updated"]))
