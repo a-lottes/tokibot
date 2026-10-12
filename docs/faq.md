@@ -40,7 +40,11 @@ Only metadata: the event name, session ID, project folder name, tool name, error
 
 ### How do I flash the card? {#flash}
 
-Open Raspberry Pi Imager, choose *Choose OS* → *Use custom*, pick the `.img.xz` file, choose the microSD card and write. Skip Imager's OS customisation (user, Wi-Fi, SSH): the Tokibot image does not use it and has its own settings file, `tokibot.toml`.
+Open the Tokibot list in Raspberry Pi Imager: double-click `tokibot.rpi-imager-manifest` from https://tokibot.lottes.dev/download.html#imager, or enter `https://tokibot.lottes.dev/downloads/imager.json` under *App Options* → *Content Repository* → *Use custom URL*. Pick your board, the Tokibot image and the microSD card, and write. Without the list, *Choose OS* → *Use custom* with the downloaded `.img.xz` works too.
+
+### Can I enter the Wi-Fi in Raspberry Pi Imager? {#imager-wifi}
+
+Yes, with the Tokibot list in Imager (see above): its OS customisation asks for Wi-Fi and time zone, and the gotchi moves both into `tokibot.toml` on first boot and deletes Imager's files. Hostname, user account, SSH and Raspberry Pi Connect are not used; the gotchi keeps its own name `tokibot-xxxx`. With *Use custom* Imager does not offer the customisation, because it cannot tell how the image wants to be customised. Then put the Wi-Fi into `tokibot.toml` on the `TOKIBOT` drive.
 
 ### Windows says "You need to format the disk" after flashing. What do I do? {#windows-format-prompt}
 

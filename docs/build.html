@@ -17,7 +17,7 @@
       <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
       <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html" aria-current="page">Assembly</a><a href="friends.html">Friends</a><a href="highscores.html">Highscores</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
-      <span class="sys"><span class="dot">●</span> v0.5.0 · 192.168.77.1:8765</span>
+      <span class="sys"><span class="dot">●</span> v0.5.1 · 192.168.77.1:8765</span>
     </div>
   </header>
 
@@ -59,7 +59,8 @@
       </div></li>
       <li><div>
         <h3>Flash the card</h3>
-        <p>In Raspberry Pi Imager, pick <em>Choose OS</em> → <em>Use custom</em> and select the <code>.img.xz</code> file. Choose the microSD card and write. Skip Imager's OS customisation: the gotchi has its own settings file.</p>
+        <p>Open the Tokibot list in Raspberry Pi Imager: double-click <a href="downloads/tokibot.rpi-imager-manifest" download><code>tokibot.rpi-imager-manifest</code></a> from the download page, or see <a href="download.html#imager">other ways</a>. Pick your board, the Tokibot image and the microSD card. In the customisation step, fill in your Wi-Fi and time zone if you want them; the gotchi takes them over on first boot. Skip the rest (hostname, user, SSH): the gotchi does not use it. Then write.</p>
+        <p>With a downloaded <code>.img.xz</code> and <em>Choose OS</em> → <em>Use custom</em>, Imager writes the image without the customisation step. Then set Wi-Fi in <code>tokibot.toml</code>, see the next step.</p>
       </div></li>
       <li id="wifi"><div>
         <h3>Optional: Wi-Fi and settings</h3>

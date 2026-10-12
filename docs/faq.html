@@ -97,7 +97,16 @@
    "url": "https://tokibot.lottes.dev/faq.html#flash",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "<p>Open Raspberry Pi Imager, choose <em>Choose OS<\/em> → <em>Use custom<\/em>, pick the <code>.img.xz<\/code> file, choose the microSD card and write. Skip Imager's OS customisation (user, Wi-Fi, SSH): the Tokibot image does not use it and has its own settings file, <code>tokibot.toml<\/code>.<\/p>"
+    "text": "<p>Open the Tokibot list in Raspberry Pi Imager: double-click <code>tokibot.rpi-imager-manifest<\/code> from <a href=\"https://tokibot.lottes.dev/download.html#imager\">https://tokibot.lottes.dev/download.html#imager<\/a>, or enter <code>https://tokibot.lottes.dev/downloads/imager.json<\/code> under <em>App Options<\/em> → <em>Content Repository<\/em> → <em>Use custom URL<\/em>. Pick your board, the Tokibot image and the microSD card, and write. Without the list, <em>Choose OS<\/em> → <em>Use custom<\/em> with the downloaded <code>.img.xz<\/code> works too.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Can I enter the Wi-Fi in Raspberry Pi Imager?",
+   "url": "https://tokibot.lottes.dev/faq.html#imager-wifi",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>Yes, with the Tokibot list in Imager (see above): its OS customisation asks for Wi-Fi and time zone, and the gotchi moves both into <code>tokibot.toml<\/code> on first boot and deletes Imager's files. Hostname, user account, SSH and Raspberry Pi Connect are not used; the gotchi keeps its own name <code>tokibot-xxxx<\/code>. With <em>Use custom<\/em> Imager does not offer the customisation, because it cannot tell how the image wants to be customised. Then put the Wi-Fi into <code>tokibot.toml<\/code> on the <code>TOKIBOT<\/code> drive.<\/p>"
    }
   },
   {
@@ -525,7 +534,7 @@
       <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
       <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="highscores.html">Highscores</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html" aria-current="page">FAQ</a></nav>
-      <span class="sys"><span class="dot">●</span> v0.5.0 · 192.168.77.1:8765</span>
+      <span class="sys"><span class="dot">●</span> v0.5.1 · 192.168.77.1:8765</span>
     </div>
   </header>
 
@@ -586,7 +595,11 @@
       </section>
       <section class="faq-q" id="flash">
         <h3><a class="anchor" href="#flash">How do I flash the card?</a></h3>
-        <p>Open Raspberry Pi Imager, choose <em>Choose OS</em> → <em>Use custom</em>, pick the <code>.img.xz</code> file, choose the microSD card and write. Skip Imager's OS customisation (user, Wi-Fi, SSH): the Tokibot image does not use it and has its own settings file, <code>tokibot.toml</code>.</p>
+        <p>Open the Tokibot list in Raspberry Pi Imager: double-click <code>tokibot.rpi-imager-manifest</code> from <a href="https://tokibot.lottes.dev/download.html#imager">https://tokibot.lottes.dev/download.html#imager</a>, or enter <code>https://tokibot.lottes.dev/downloads/imager.json</code> under <em>App Options</em> → <em>Content Repository</em> → <em>Use custom URL</em>. Pick your board, the Tokibot image and the microSD card, and write. Without the list, <em>Choose OS</em> → <em>Use custom</em> with the downloaded <code>.img.xz</code> works too.</p>
+      </section>
+      <section class="faq-q" id="imager-wifi">
+        <h3><a class="anchor" href="#imager-wifi">Can I enter the Wi-Fi in Raspberry Pi Imager?</a></h3>
+        <p>Yes, with the Tokibot list in Imager (see above): its OS customisation asks for Wi-Fi and time zone, and the gotchi moves both into <code>tokibot.toml</code> on first boot and deletes Imager's files. Hostname, user account, SSH and Raspberry Pi Connect are not used; the gotchi keeps its own name <code>tokibot-xxxx</code>. With <em>Use custom</em> Imager does not offer the customisation, because it cannot tell how the image wants to be customised. Then put the Wi-Fi into <code>tokibot.toml</code> on the <code>TOKIBOT</code> drive.</p>
       </section>
       <section class="faq-q" id="windows-format-prompt">
         <h3><a class="anchor" href="#windows-format-prompt">Windows says "You need to format the disk" after flashing. What do I do?</a></h3>

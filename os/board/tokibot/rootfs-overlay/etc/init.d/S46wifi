@@ -10,8 +10,16 @@ start() {
 		echo "ctrl_interface=/run/wpa_supplicant"
 		echo "country=${WIFI_COUNTRY:-DE}"
 		echo "network={"
-		printf '\tssid="%s"\n' "$WIFI_SSID"
-		if [ -n "$WIFI_PSK" ]; then printf '\tpsk="%s"\n' "$WIFI_PSK"; else printf '\tkey_mgmt=NONE\n'; fi
+		# As hex, so quotes and other special characters in the name work
+		printf '\tssid=%s\n' "$(printf '%s' "$WIFI_SSID" | od -An -tx1 | tr -d ' \n')"
+		printf '\tscan_ssid=1\n'
+		if [ -z "$WIFI_PSK" ]; then
+			printf '\tkey_mgmt=NONE\n'
+		elif expr "$WIFI_PSK" : '[0-9a-fA-F]\{64\}$' >/dev/null; then
+			printf '\tpsk=%s\n' "$WIFI_PSK"        # already hashed: 64 hex digits
+		else
+			printf '\tpsk="%s"\n' "$WIFI_PSK"
+		fi
 		echo "}"
 	} > /run/wpa_supplicant.conf
 	chmod 600 /run/wpa_supplicant.conf

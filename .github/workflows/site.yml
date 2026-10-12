@@ -8,6 +8,7 @@ name: Deploy website
 # The download page serves the files of the latest GitHub release. The repository is
 # private, so release assets need a login; this workflow copies them into the site
 # instead. After "Build image" finishes it runs again, so a new release shows up there.
+# imager.json lists them for Raspberry Pi Imager (app/tools/imager_list.py).
 # The client files are copied too, for docs/install.sh, and the Claude Code plugin is
 # packed as a zip with a marketplace.json, so /plugin marketplace add works from the site.
 # The highscores API (/api/scores) is a Netlify Function in netlify/, its data in Netlify Blobs.
@@ -15,9 +16,9 @@ name: Deploy website
 on:
   push:
     branches: [main]
-    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", "netlify/**", ".github/workflows/site.yml"]
+    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", "netlify/**", ".github/workflows/site.yml", "app/tools/imager_list.py"]
   pull_request:
-    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", "netlify/**", ".github/workflows/site.yml"]
+    paths: ["docs/**", "client/**", "plugin/**", ".claude-plugin/**", "netlify/**", ".github/workflows/site.yml", "app/tools/imager_list.py"]
   workflow_run:
     workflows: ["Build image"]
     types: [completed]
@@ -62,6 +63,7 @@ jobs:
       - name: Add the latest release to the download page
         env:
           GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
         run: |
           mkdir -p docs/downloads
           if ! tag=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName 2>/dev/null); then
@@ -88,6 +90,9 @@ jobs:
               json.dump({"version": tag.lstrip("v"), "tag": tag, "published": published, "files": files}, f, indent=2)
           print(json.dumps(files, indent=2))
           PY
+          # The same images as a repository for Raspberry Pi Imager, with its OS customisation
+          if [ -n "$PR" ]; then site="https://pr-$PR--claude-gotchi.netlify.app"; else site="https://tokibot.lottes.dev"; fi
+          python3 app/tools/imager_list.py docs/downloads "$tag" "$published" "$site"
       - name: Deploy to Netlify
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

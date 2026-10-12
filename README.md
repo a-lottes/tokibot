@@ -237,7 +237,11 @@ Result: `output/zero2w/images/tokibot-zero2w.img.xz`. On GitHub, the workflow
 `.github/workflows/image.yml` builds both images for every `v*` tag and attaches
 them, with the app bundle, to the release.
 
-Flash it with Raspberry Pi Imager: *Use custom* and pick the `.img.xz`.
+Flash it with Raspberry Pi Imager: *Use custom* and pick the `.img.xz`. For the
+released images, the website has a list for Imager
+(`https://tokibot.lottes.dev/downloads/imager.json`, or double-click
+`tokibot.rpi-imager-manifest`) that also offers Imager's OS customisation: the Wi-Fi
+and time zone entered there end up in `tokibot.toml` on first boot (`S04imager`).
 
 ## Set up
 
