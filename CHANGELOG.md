@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.1
 
 * Wi-Fi and time zone can be entered in Raspberry Pi Imager. The website has a list
   for Imager (double-click `tokibot.rpi-imager-manifest`, or the URL
