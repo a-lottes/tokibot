@@ -1,7 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.5.2
 
+* The 5h and 7d budget no longer drops to an old value. Every Claude Code session's
+  status line reports the limits of its own last API call, so an idle session or a
+  second computer could replace a used-up 5h window (100%) with e.g. 17%. Within one
+  window the gotchi now keeps the highest value and ignores reports from an earlier
+  window; windows that have reset are no longer shown.
 * Tested on real hardware: the images boot on a Pi Zero with the 2.13" e-paper,
   so the website and README no longer warn that a hardware test is open.
 
