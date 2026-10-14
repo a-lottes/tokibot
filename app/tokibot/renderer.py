@@ -14,8 +14,11 @@ log = logging.getLogger("tokibot")
 
 class Renderer(threading.Thread):
     MIN_INTERVAL = 2.0          # touch the e-paper at most every 2 s
-    FULL_EVERY = 40             # full refresh after this many partial updates (against ghosting)
-    FULL_SECONDS = 30 * 60
+    # Full refresh against ghosting. It flashes the whole panel, so at most once an hour.
+    # Animation frames are partial updates every few seconds, so the count is only a
+    # cap for long busy stretches, not the usual trigger.
+    FULL_EVERY = 1200
+    FULL_SECONDS = 60 * 60
 
     def __init__(self, brain, display):
         super().__init__(daemon=True)
