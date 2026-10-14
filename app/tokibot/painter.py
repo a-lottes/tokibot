@@ -146,19 +146,18 @@ class Painter:
     def footer(self, d, view):
         d.line((0, FOOTER_Y, W, FOOTER_Y), fill=0)
         x = W - 3
-        # Bars from the right: how full the critter is (any harness), then Claude Code's
-        # 5h and 7d budgets. With the food bar, 7d only shows when it gets tight.
+        # Bars from the right: Claude Code's 5h and 7d budgets. Harnesses that report no
+        # limits get how full the critter is instead.
         bars = []
-        food = view.get("food") or {}
-        if food.get("total"):
-            full = min(100, food["fullness"] * 100)     # fuller than full shows as stuffed
-            bars.append((LABELS["food"], full, full))
         for key, label in (("five_hour", "5h"), ("seven_day", "7d")):
             w = view["limits"].get(key)
-            if not w or (key == "seven_day" and food.get("total") and w["pct"] < 80):
-                continue
-            pct = max(0, min(100, w["pct"]))
-            bars.append((label, pct, pct))
+            if w:
+                pct = max(0, min(100, w["pct"]))
+                bars.append((label, pct, pct))
+        food = view.get("food") or {}
+        if not bars and food.get("total"):
+            full = min(100, food["fullness"] * 100)     # fuller than full shows as stuffed
+            bars.append((LABELS["food"], full, full))
         for label, value, pct in bars:
             txt = f"{int(round(value))}%"
             x -= self.f_small.getlength(txt)

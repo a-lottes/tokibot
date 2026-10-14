@@ -61,8 +61,8 @@ sends the category, never the command.
 
 With several sessions (e.g. worktrees), the state that needs you most wins. The
 footer shows how many sessions are working (▶), waiting for you (?) or done (✓),
-plus a bar for how full the critter is (`fed`) and Claude Code's 5-hour budget. The
-7-day budget only shows when it is 80 % used or more.
+plus Claude Code's 5-hour and 7-day budgets. With harnesses that report no limits,
+a bar for how full the critter is (`fed`) shows instead.
 
 ## Growing up
 
@@ -86,7 +86,7 @@ already running when you installed it, or a resumed one) only counts its last 30
 minutes, not its whole history.
 
 The food fills a stomach that empties by half every 90 minutes. How full it is (the
-`fed` bar) compares with your own usual day, the average of the last 14 days with
+`fed` bar, shown when there are no limits to show) compares with your own usual day, the average of the last 14 days with
 food, so it works the same for a light and a heavy user and has nothing to do with
 any rate limit. Until there are three days of history, a usual day is assumed to be
 6 million food points, about 30 replies of an agentic coding tool. 100 % is as full
