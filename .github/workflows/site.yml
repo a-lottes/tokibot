@@ -5,9 +5,9 @@ name: Deploy website
 #   NETLIFY_SITE_ID     the site's ID (Site configuration → General → Site details)
 # Pushes to main go live; pull requests that touch docs/ get a preview deploy.
 #
-# The download page serves the files of the latest GitHub release. The repository is
-# private, so release assets need a login; this workflow copies them into the site
-# instead. After "Build image" finishes it runs again, so a new release shows up there.
+# The download page serves the files of the latest GitHub release from the site's own
+# domain (one place for downloads, checksums and the Imager list), so this workflow
+# copies them into the site. After "Build image" finishes it runs again, so a new release shows up there.
 # imager.json lists them for Raspberry Pi Imager (app/tools/imager_list.py).
 # The client files are copied too, for docs/install.sh, and the Claude Code plugin is
 # packed as a zip with a marketplace.json, so /plugin marketplace add works from the site.
