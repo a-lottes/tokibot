@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+* Open source: the repository is public as `a-lottes/tokibot` (formerly
+  `claudegotchi`). New: CONTRIBUTING.md, SECURITY.md and an issue form for bugs.
+* The website links to the source code, the legal notice and the privacy policy.
+* The highscore API accepts at most 30 requests a minute per address.
+
 ## 0.5.2
 
 * The 5h and 7d budget no longer drops to an old value. Every Claude Code session's

@@ -1,0 +1,47 @@
+name: Bug
+description: Something doesn't work as described
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Many setup questions are answered in the [FAQ](https://tokibot.lottes.dev/faq.html). Please report security problems privately as described in [SECURITY.md](https://github.com/a-lottes/tokibot/blob/main/SECURITY.md), not here.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: dropdown
+    id: pi
+    attributes:
+      label: Raspberry Pi
+      options: [Pi Zero 2 W, Pi Zero W, Simulator (make sim), Other]
+    validations:
+      required: true
+  - type: input
+    id: display
+    attributes:
+      label: Display
+      placeholder: 'e.g. Waveshare 2.13" e-Paper HAT V4'
+  - type: input
+    id: version
+    attributes:
+      label: Tokibot version
+      placeholder: e.g. 0.5.2 (settings page)
+    validations:
+      required: true
+  - type: dropdown
+    id: link
+    attributes:
+      label: Connection
+      options: [USB cable, Wi-Fi, Cloud relay (ntfy), Not connected yet]
+  - type: input
+    id: setup
+    attributes:
+      label: Operating system and coding agent(s)
+      placeholder: e.g. macOS 15, Claude Code + Codex CLI
+  - type: textarea
+    id: test
+    attributes:
+      label: Output of `sh ~/.tokibot/tokibot.sh test`
+      render: text

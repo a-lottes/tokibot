@@ -26,5 +26,7 @@ Key facts for helping someone set it up:
 
 ## Optional
 
+- [Source code](https://github.com/a-lottes/tokibot): the app, the Buildroot image, the client and this website; MIT licence
+
 - [Install script](https://tokibot.lottes.dev/install.sh): what the one-line installer does
 - [Plugin marketplace](https://tokibot.lottes.dev/marketplace.json): the Claude Code plugin marketplace file

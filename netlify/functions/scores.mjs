@@ -40,4 +40,9 @@ export async function handle(req, store, now) {
   }
 }
 
-export const config = { path: "/api/scores" };
+// Per address: a gotchi posts once an hour and the page reads once a minute at most, so
+// this only stops someone from flooding the board with freshly made keys.
+export const config = {
+  path: "/api/scores",
+  rateLimit: { windowLimit: 30, windowSize: 60, aggregateBy: ["ip", "domain"] },
+};
