@@ -6,6 +6,7 @@
   `claudegotchi`). New: CONTRIBUTING.md, SECURITY.md and an issue form for bugs.
 * The website links to the source code, the legal notice and the privacy policy.
 * The highscore API accepts at most 30 requests a minute per address.
+* The planning document for friends moved from the website to `design/social-concept.md`.
 
 ## 0.5.2
 

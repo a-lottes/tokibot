@@ -1,4 +1,4 @@
-"""Encounters and friendships between gotchis (see docs/social-concept.md).
+"""Encounters and friendships between gotchis (see design/social-concept.md).
 
 Everything travels in small Bluetooth LE advertisements, so no connection and no
 pairing are needed and it works on the Pi Zero's Bluetooth 4.2 chip. Every packet
