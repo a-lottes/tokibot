@@ -122,7 +122,7 @@ a gotchi really ate, so it is a game, not an audit.
 Gotchis that meet in real life notice each other over Bluetooth LE, can become
 friends, and earn XP, badges and accessories for it. Everything works offline;
 the design leaves room for a community site with chat later
-([docs/social-concept.md](docs/social-concept.md)).
+([design/social-concept.md](design/social-concept.md)).
 
 * **Identity.** On first start the gotchi creates an Ed25519 key pair. The key *is*
   the profile: no sign-up, no password. Name and accessory are set on the social page.
