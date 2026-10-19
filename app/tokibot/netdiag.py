@@ -47,6 +47,28 @@ def wpa(command, ctrl="/run/wpa_supplicant/wlan0"):
             os.unlink(local)
 
 
+def i2c_scan(bus=1):
+    """Addresses on the I2C bus that answer (like i2cdetect), to see which battery
+    board is there: PiSugar 3 at 0x57, PiSugar 2 at 0x75 (+ RTC at 0x32)."""
+    from .battery import SMBus
+    found = []
+    for addr in range(0x08, 0x78):
+        try:
+            dev = SMBus(bus, addr)
+        except OSError as e:
+            if addr == 0x08:
+                return f"(no I2C bus {bus}: {e})"
+            continue
+        try:
+            dev.read_byte(0)
+            found.append(f"0x{addr:02x}")
+        except OSError:
+            pass
+        finally:
+            dev.close()
+    return " ".join(found) or "(nothing answers)"
+
+
 def report(cfg):
     wifi = cfg.get("wifi", {})
     lines = [f"Configured Wi-Fi: {wifi.get('ssid') or '(none)'}, country {wifi.get('country') or '?'}",
@@ -59,5 +81,6 @@ def report(cfg):
         except (OSError, subprocess.TimeoutExpired) as e:
             lines.append(f"(not available: {e})")
         lines.append("")
+    lines += ["== I2C bus 1 (battery)", i2c_scan(), ""]
     lines += ["== wpa_supplicant", wpa("STATUS"), "", "== Networks in range", wpa("SCAN_RESULTS"), ""]
     return "\n".join(lines)

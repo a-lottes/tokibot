@@ -15,6 +15,7 @@ class NetDiagTest(unittest.TestCase):
         for title, _ in netdiag.COMMANDS:
             self.assertIn(f"== {title}", text)
         self.assertIn("== wpa_supplicant", text)
+        self.assertIn("== I2C bus 1", text)
 
 
     def test_wifi_up_reads_operstate(self):
