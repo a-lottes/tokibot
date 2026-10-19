@@ -41,7 +41,7 @@ from io import BytesIO
 from PIL import Image
 
 from . import battery as battery_mod
-from . import config, identity, settings, socialpage, update, webui
+from . import config, identity, netdiag, settings, socialpage, update, webui
 from .brain import Brain
 from .displays import open_display
 from .identity import Identity
@@ -371,6 +371,8 @@ def make_handler(brain, renderer, token, dispatch, control=None, name="", scores
                 self._social_page(message=applied)
             elif path == "/settings" and control:
                 self._settings_page(message=applied)
+            elif path == "/network" and control:
+                self._send(200, netdiag.report(control.cfg).encode(), "text/plain; charset=utf-8")
             elif path == "/whoami":
                 self._send(200, json.dumps({"gotchi": name, "token": bool(token),
                                             "started": webui.STARTED}).encode())
