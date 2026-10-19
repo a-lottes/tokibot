@@ -7,6 +7,10 @@
 * The website links to the source code, the legal notice and the privacy policy.
 * The highscore API accepts at most 30 requests a minute per address.
 * The planning document for friends moved from the website to `design/social-concept.md`.
+* Wi-Fi works. The image never loaded the Wi-Fi driver (nothing loads kernel modules
+  on its own), so `wlan0` did not exist on the Pi Zero W or Zero 2 W. The Wi-Fi start
+  script now loads it. The image also carries the regulatory database, so channels
+  12 and 13 are usable where they are allowed.
 
 ## 0.5.2
 
