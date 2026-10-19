@@ -18,7 +18,9 @@ COMMANDS = (
     ("wpa_supplicant start", ["sh", "-c", "cat /run/wpa_supplicant.log 2>/dev/null || echo '(no log)'"]),
     ("I2C kernel", ["sh", "-c", "ls /dev/i2c* /sys/bus/i2c/devices/ 2>&1; "
                     "cat /proc/device-tree/soc/i2c@7e804000/status 2>&1; echo; "
-                    "dmesg | grep -iE 'i2c|pisugar' | tail -n 20"]),
+                    "dmesg | grep -iE 'i2c|pisugar' | tail -n 20; "
+                    "mountpoint -q /sys/kernel/debug || mount -t debugfs none /sys/kernel/debug; "
+                    "grep -hE '^pin [23] ' /sys/kernel/debug/pinctrl/*/pinmux-pins 2>&1 | head"]),
     ("Processes", ["sh", "-c", "ps | grep -E 'wpa_supplicant|udhcpc|ntpd' | grep -v grep"]),
 )
 
@@ -78,6 +80,14 @@ ALT = {0: "input", 1: "output", 4: "alt0", 5: "alt1", 6: "alt2", 7: "alt3", 3: "
 
 
 def gpio_functions(pins=(2, 3), gpiomem="/dev/gpiomem"):
+    if not os.path.exists(gpiomem) and os.path.exists("/sys/class/misc/gpiomem/dev"):
+        # No udev: create the node from the kernel's major:minor
+        with open("/sys/class/misc/gpiomem/dev") as f:
+            major, minor = map(int, f.read().split(":"))
+        try:
+            os.mknod(gpiomem, 0o600 | 0o020000, os.makedev(major, minor))
+        except OSError:
+            pass
     """What GPIO 2/3 (I2C SDA/SCL, pins 3/5) are set to; I2C needs alt0."""
     try:
         with open(gpiomem, "r+b") as f:
