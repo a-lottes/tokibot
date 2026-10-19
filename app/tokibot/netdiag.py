@@ -3,8 +3,10 @@
 The image has no SSH, so this is the way to see why a gotchi is not on Wi-Fi.
 Never prints the Wi-Fi password.
 """
+import mmap
 import os
 import socket
+import struct
 import subprocess
 import tempfile
 
@@ -14,6 +16,9 @@ COMMANDS = (
     ("Routes", ["ip", "route"]),
     ("Kernel messages", ["sh", "-c", "dmesg | grep -iE 'brcm|wlan|cfg80211|ieee80211|firmware' | tail -n 60"]),
     ("wpa_supplicant start", ["sh", "-c", "cat /run/wpa_supplicant.log 2>/dev/null || echo '(no log)'"]),
+    ("I2C kernel", ["sh", "-c", "ls /dev/i2c* /sys/bus/i2c/devices/ 2>&1; "
+                    "cat /proc/device-tree/soc/i2c@7e804000/status 2>&1; echo; "
+                    "dmesg | grep -iE 'i2c|pisugar' | tail -n 20"]),
     ("Processes", ["sh", "-c", "ps | grep -E 'wpa_supplicant|udhcpc|ntpd' | grep -v grep"]),
 )
 
@@ -69,6 +74,26 @@ def i2c_scan(bus=1):
     return " ".join(found) or "(nothing answers)"
 
 
+ALT = {0: "input", 1: "output", 4: "alt0", 5: "alt1", 6: "alt2", 7: "alt3", 3: "alt4", 2: "alt5"}
+
+
+def gpio_functions(pins=(2, 3), gpiomem="/dev/gpiomem"):
+    """What GPIO 2/3 (I2C SDA/SCL, pins 3/5) are set to; I2C needs alt0."""
+    try:
+        with open(gpiomem, "r+b") as f:
+            m = mmap.mmap(f.fileno(), 4096)
+            regs = {}
+            for pin in pins:
+                reg = pin // 10
+                if reg not in regs:
+                    regs[reg] = struct.unpack_from("<I", m, reg * 4)[0]
+                regs_val = (regs[reg] >> ((pin % 10) * 3)) & 7
+                yield f"GPIO{pin}: {ALT.get(regs_val, regs_val)}"
+            m.close()
+    except OSError as e:
+        yield f"(cannot read {gpiomem}: {e})"
+
+
 def report(cfg):
     wifi = cfg.get("wifi", {})
     lines = [f"Configured Wi-Fi: {wifi.get('ssid') or '(none)'}, country {wifi.get('country') or '?'}",
@@ -81,6 +106,6 @@ def report(cfg):
         except (OSError, subprocess.TimeoutExpired) as e:
             lines.append(f"(not available: {e})")
         lines.append("")
-    lines += ["== I2C bus 1 (battery)", i2c_scan(), ""]
+    lines += ["== I2C bus 1 (battery)", i2c_scan(), *gpio_functions(), ""]
     lines += ["== wpa_supplicant", wpa("STATUS"), "", "== Networks in range", wpa("SCAN_RESULTS"), ""]
     return "\n".join(lines)
