@@ -222,6 +222,11 @@ pre .p { color: var(--term-accent); user-select: none; }
 .plate.tight .art { padding: 14px 12px 6px; }
 .plate figcaption { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--ink); padding: 6px 10px; }
 .plate figcaption span:last-child { color: var(--muted); text-align: right; }
+.photos { display: grid; grid-template-columns: 4fr 2.25fr; gap: 18px; align-items: start; margin-top: 18px; }
+.photos > * { min-width: 0; }
+.photos img { display: block; width: 100%; height: auto; }
+.photos figcaption { flex-wrap: wrap; }
+@media (max-width: 720px) { .photos { grid-template-columns: 1fr; } }
 .plate::before, .plate::after { content: "+"; position: absolute; font: 14px/1 var(--mono); color: var(--muted); }
 .plate::before { top: -8px; left: -5px; }
 .plate::after { top: -8px; right: -5px; }
