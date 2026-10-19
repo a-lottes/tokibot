@@ -31,7 +31,12 @@ start() {
 		sleep 1
 	done
 	ip link set wlan0 up 2>/dev/null || { echo "Wi-Fi: no wlan0"; exit 0; }
-	wpa_supplicant -B -i wlan0 -c /run/wpa_supplicant.conf -P /run/wpa_supplicant.pid
+	# Errors (e.g. a config it cannot read) go to a file that /network shows
+	if ! wpa_supplicant -B -i wlan0 -c /run/wpa_supplicant.conf -P /run/wpa_supplicant.pid \
+			>/run/wpa_supplicant.log 2>&1; then
+		echo "Wi-Fi: wpa_supplicant failed: $(tail -n 1 /run/wpa_supplicant.log)"
+		exit 0
+	fi
 	udhcpc -b -i wlan0 -p /run/udhcpc.wlan0.pid -x hostname:"$(hostname)" >/dev/null 2>&1
 	start-stop-daemon -S -q -b -m -p /run/ntpd.pid -x /usr/sbin/ntpd -- -n -p pool.ntp.org
 	echo "Wi-Fi: connecting to $WIFI_SSID"

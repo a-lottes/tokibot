@@ -13,6 +13,7 @@ COMMANDS = (
     ("Interfaces", ["ip", "addr"]),
     ("Routes", ["ip", "route"]),
     ("Kernel messages", ["sh", "-c", "dmesg | grep -iE 'brcm|wlan|cfg80211|ieee80211|firmware' | tail -n 60"]),
+    ("wpa_supplicant start", ["sh", "-c", "cat /run/wpa_supplicant.log 2>/dev/null || echo '(no log)'"]),
     ("Processes", ["sh", "-c", "ps | grep -E 'wpa_supplicant|udhcpc|ntpd' | grep -v grep"]),
 )
 
