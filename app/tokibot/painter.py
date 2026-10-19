@@ -84,6 +84,8 @@ class Painter:
         clock = datetime.now().strftime("%H:%M")
         right = W - 4 - self.f_brand.getlength(clock)
         d.text((right, 1), clock, font=self.f_brand, fill=255)
+        if view.get("wifi"):
+            right = self.wifi_icon(d, int(right) - 4)
         # battery (PiSugar), then gotchis nearby left of it: ♥ for friends, ● for others
         if view.get("battery"):
             right = self.battery_icon(d, int(right) - 6, view["battery"])
@@ -103,6 +105,15 @@ class Painter:
                     x = min(max((W - w) / 2 + 18, left + 5), right - 5 - w)
                     d.text((x, 2), label, font=self.f_small, fill=255)
                     break
+
+    @staticmethod
+    def wifi_icon(d, right):
+        """White Wi-Fi fan in the black header, its right edge at x = right. Returns its left x."""
+        x0, cx, cy = right - 14, right - 7, 12
+        for r in (3, 6, 9):
+            d.arc((cx - r, cy - r, cx + r, cy + r), 225, 315, fill=255, width=2)
+        d.ellipse((cx - 1, cy - 2, cx + 1, cy), fill=255)
+        return x0
 
     @staticmethod
     def battery_icon(d, right, bat):

@@ -40,6 +40,9 @@ BR2_PACKAGE_KMOD=y
 BR2_PACKAGE_KMOD_TOOLS=y
 BR2_PACKAGE_WPA_SUPPLICANT=y
 BR2_PACKAGE_WPA_SUPPLICANT_NL80211=y
+# Control socket: S46wifi writes ctrl_interface, and /network asks it for the status
+BR2_PACKAGE_WPA_SUPPLICANT_CTRL_IFACE=y
+BR2_PACKAGE_WPA_SUPPLICANT_CLI=y
 # Wi-Fi channels allowed per country (e.g. 12 and 13 in Europe)
 BR2_PACKAGE_WIRELESS_REGDB=y
 BR2_PACKAGE_AVAHI=y

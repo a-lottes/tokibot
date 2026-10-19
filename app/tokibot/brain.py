@@ -8,6 +8,7 @@ import threading
 import time
 from datetime import datetime
 
+from . import netdiag
 from .feeling import Feeling
 from .life import Life
 from .mood import (BADGES, CONTEXT_FULL_PCT, DONE_DECAY, ERROR_LABELS, FILL_DEFAULTS,
@@ -36,6 +37,7 @@ class Brain:
         self.shown, self.shown_since = "", 0.0
         self.social = social          # social.Social, or None when Bluetooth social is off
         self.battery = battery        # battery.BatteryMonitor, or None without a battery
+        self.wifi = netdiag.wifi_up   # whether Wi-Fi is connected (header icon)
         self.lock = threading.Lock()
         self.sessions = {}
         self.limits = {}          # {"five_hour": {"pct":.., "reset":..}, ...}
@@ -299,6 +301,7 @@ class Brain:
             "nearby": soc["nearby"], "friends_nearby": len(soc["friends_nearby"]),
             "accessory": self.social.accessory() if self.social else "none",
             "battery": dict(battery) if battery else None,
+            "wifi": self.wifi(),
             "feeling": {"valence": round(valence, 2), "energy": round(energy, 2)},
             "context_pct": context_pct, "food": food,
             "props": (["wrench"] if context_pct is not None and context_pct >= CONTEXT_FULL_PCT

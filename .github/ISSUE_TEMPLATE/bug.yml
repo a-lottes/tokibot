@@ -27,7 +27,7 @@ body:
     id: version
     attributes:
       label: Tokibot version
-      placeholder: e.g. 0.5.2 (settings page)
+      placeholder: e.g. 0.5.3 (settings page)
     validations:
       required: true
   - type: dropdown

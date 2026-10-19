@@ -102,6 +102,15 @@
   },
   {
    "@type": "Question",
+   "name": "How do I put a new image on the card without losing the critter's progress?",
+   "url": "https://tokibot.lottes.dev/faq.html#update-card",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>On macOS or Linux, put the gotchi's card into your computer and run <code>curl -fsSL https://tokibot.lottes.dev/update-card.sh | sh<\/code> in a terminal. A small menu finds the card, lets you pick the version, and asks before it writes anything. It backs up <code>tokibot.toml<\/code> (Wi-Fi, token), the progress partition (XP, friends, keys) and the start of the card into a <code>tokibot-backup-…<\/code> folder in your home folder, writes the image and puts progress and settings back. It needs <code>sudo<\/code> for writing the card. On Windows, flash with Imager and copy <code>tokibot.toml<\/code> over by hand; the progress starts again. For app-only changes there is no need to reflash: upload <code>tokibot-app.tar.gz<\/code> on the settings page.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
    "name": "Can I enter the Wi-Fi in Raspberry Pi Imager?",
    "url": "https://tokibot.lottes.dev/faq.html#imager-wifi",
    "acceptedAnswer": {
@@ -534,7 +543,7 @@
       <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
       <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="highscores.html">Highscores</a><a href="download.html">Download</a><a href="docs.html">Docs</a><a href="faq.html" aria-current="page">FAQ</a></nav>
-      <span class="sys"><span class="dot">●</span> v0.5.2 · 192.168.77.1:8765</span>
+      <span class="sys"><span class="dot">●</span> v0.5.3 · 192.168.77.1:8765</span>
     </div>
   </header>
 
@@ -596,6 +605,10 @@
       <section class="faq-q" id="flash">
         <h3><a class="anchor" href="#flash">How do I flash the card?</a></h3>
         <p>Open the Tokibot list in Raspberry Pi Imager: double-click <code>tokibot.rpi-imager-manifest</code> from <a href="https://tokibot.lottes.dev/download.html#imager">https://tokibot.lottes.dev/download.html#imager</a>, or enter <code>https://tokibot.lottes.dev/downloads/imager.json</code> under <em>App Options</em> → <em>Content Repository</em> → <em>Use custom URL</em>. Pick your board, the Tokibot image and the microSD card, and write. Without the list, <em>Choose OS</em> → <em>Use custom</em> with the downloaded <code>.img.xz</code> works too.</p>
+      </section>
+      <section class="faq-q" id="update-card">
+        <h3><a class="anchor" href="#update-card">How do I put a new image on the card without losing the critter's progress?</a></h3>
+        <p>On macOS or Linux, put the gotchi's card into your computer and run <code>curl -fsSL https://tokibot.lottes.dev/update-card.sh | sh</code> in a terminal. A small menu finds the card, lets you pick the version, and asks before it writes anything. It backs up <code>tokibot.toml</code> (Wi-Fi, token), the progress partition (XP, friends, keys) and the start of the card into a <code>tokibot-backup-…</code> folder in your home folder, writes the image and puts progress and settings back. It needs <code>sudo</code> for writing the card. On Windows, flash with Imager and copy <code>tokibot.toml</code> over by hand; the progress starts again. For app-only changes there is no need to reflash: upload <code>tokibot-app.tar.gz</code> on the settings page.</p>
       </section>
       <section class="faq-q" id="imager-wifi">
         <h3><a class="anchor" href="#imager-wifi">Can I enter the Wi-Fi in Raspberry Pi Imager?</a></h3>

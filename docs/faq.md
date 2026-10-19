@@ -42,6 +42,10 @@ Only metadata: the event name, session ID, project folder name, tool name, error
 
 Open the Tokibot list in Raspberry Pi Imager: double-click `tokibot.rpi-imager-manifest` from https://tokibot.lottes.dev/download.html#imager, or enter `https://tokibot.lottes.dev/downloads/imager.json` under *App Options* → *Content Repository* → *Use custom URL*. Pick your board, the Tokibot image and the microSD card, and write. Without the list, *Choose OS* → *Use custom* with the downloaded `.img.xz` works too.
 
+### How do I put a new image on the card without losing the critter's progress? {#update-card}
+
+On macOS or Linux, put the gotchi's card into your computer and run `curl -fsSL https://tokibot.lottes.dev/update-card.sh | sh` in a terminal. A small menu finds the card, lets you pick the version, and asks before it writes anything. It backs up `tokibot.toml` (Wi-Fi, token), the progress partition (XP, friends, keys) and the start of the card into a `tokibot-backup-…` folder in your home folder, writes the image and puts progress and settings back. It needs `sudo` for writing the card. On Windows, flash with Imager and copy `tokibot.toml` over by hand; the progress starts again. For app-only changes there is no need to reflash: upload `tokibot-app.tar.gz` on the settings page.
+
 ### Can I enter the Wi-Fi in Raspberry Pi Imager? {#imager-wifi}
 
 Yes, with the Tokibot list in Imager (see above): its OS customisation asks for Wi-Fi and time zone, and the gotchi moves both into `tokibot.toml` on first boot and deletes Imager's files. Hostname, user account, SSH and Raspberry Pi Connect are not used; the gotchi keeps its own name `tokibot-xxxx`. With *Use custom* Imager does not offer the customisation, because it cannot tell how the image wants to be customised. Then put the Wi-Fi into `tokibot.toml` on the `TOKIBOT` drive.

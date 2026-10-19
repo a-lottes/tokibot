@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.3
 
 * Open source: the repository is public as `a-lottes/tokibot` (formerly
   `claudegotchi`). New: CONTRIBUTING.md, SECURITY.md and an issue form for bugs.
@@ -10,7 +10,15 @@
 * Wi-Fi works. The image never loaded the Wi-Fi driver (nothing loads kernel modules
   on its own), so `wlan0` did not exist on the Pi Zero W or Zero 2 W. The Wi-Fi start
   script now loads it. The image also carries the regulatory database, so channels
-  12 and 13 are usable where they are allowed.
+  12 and 13 are usable where they are allowed. wpa_supplicant is now built with its
+  control socket; without it, it refused the generated configuration and quit.
+* Card updater for macOS and Linux: `curl -fsSL https://tokibot.lottes.dev/update-card.sh | sh`
+  shows a small menu with the critter, lets you pick the version, backs up the progress
+  and `tokibot.toml`, writes the new image and puts both back (download page, FAQ).
+* A small Wi-Fi icon next to the clock while the gotchi is connected to Wi-Fi.
+* `/network` on the gotchi (e.g. `http://192.168.77.1:8765/network` over USB) shows what
+  the Wi-Fi driver, the interface and wpa_supplicant are doing, for finding out why a
+  gotchi is not on Wi-Fi. It never shows the password.
 
 ## 0.5.2
 

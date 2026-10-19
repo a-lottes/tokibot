@@ -17,7 +17,7 @@
       <a class="brand" href="./"><span class="px">▚</span>tokibot</a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
       <nav class="site-nav" id="site-nav" aria-label="Site"><a href="./">Home</a><a href="parts.html">Parts</a><a href="build.html">Assembly</a><a href="friends.html">Friends</a><a href="highscores.html">Highscores</a><a href="download.html" aria-current="page">Download</a><a href="docs.html">Docs</a><a href="faq.html">FAQ</a></nav>
-      <span class="sys"><span class="dot">●</span> v0.5.2 · 192.168.77.1:8765</span>
+      <span class="sys"><span class="dot">●</span> v0.5.3 · 192.168.77.1:8765</span>
     </div>
   </header>
 
@@ -67,6 +67,14 @@
         <li>Or in Imager: <em>App Options</em> → <em>Content Repository</em> → <em>Edit</em> → <em>Use custom URL</em>, enter <code>https://tokibot.lottes.dev/downloads/imager.json</code> and <em>Apply &amp; Restart</em>.</li>
       </ul>
       <p>Pick your board and the Tokibot image, then fill in Wi-Fi (name, password, country) and the time zone in the customisation step. On first boot the gotchi moves them into <code>tokibot.toml</code> and deletes Imager's files. Skip the other steps: the hostname, user account, SSH and Raspberry Pi Connect are not used, and the gotchi keeps its own name <code>tokibot-xxxx</code>. To get Imager's usual list back, choose <em>Use default</em> under <em>Content Repository</em>.</p>
+    </section>
+
+    <section class="block" id="update-card">
+      <span class="kicker"><b>§ 04</b> / update a card</span>
+      <h2>New image, same critter.</h2>
+      <p>Already have a gotchi? Put its card into your computer and run the card updater (macOS and Linux). A small menu finds the card, lets you pick the version and asks before it writes anything. It backs up the settings in <code>tokibot.toml</code> (Wi-Fi, token), the progress partition (XP, level, friends, keys) and the start of the card into <code>~/tokibot-backup-…</code>, writes the image and puts progress and settings back, checked byte for byte.</p>
+      <pre data-title="terminal"><code><span class="p">$ </span>curl -fsSL https://tokibot.lottes.dev/update-card.sh | sh</code></pre>
+      <p>It asks for your password because writing a card needs <code>sudo</code>, and it needs <code>python3</code> (on macOS: <code>xcode-select --install</code>). You can <a href="update-card.py">read the script</a> first. On Windows, flash with Imager and copy <code>tokibot.toml</code> back by hand. For a new app version alone you do not need to flash at all: upload <code>tokibot-app.tar.gz</code> on the gotchi's <a href="docs.html#updates">settings page</a>.</p>
     </section>
   </main>
 
