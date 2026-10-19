@@ -18,6 +18,15 @@ COMMANDS = (
 )
 
 
+def wifi_up(operstate="/sys/class/net/wlan0/operstate"):
+    """True while wlan0 is associated with a network (for the header icon)."""
+    try:
+        with open(operstate) as f:
+            return f.read().strip() == "up"
+    except OSError:
+        return False
+
+
 def wpa(command, ctrl="/run/wpa_supplicant/wlan0"):
     """Ask wpa_supplicant over its control socket (the image has no wpa_cli)."""
     local = os.path.join(tempfile.gettempdir(), f"tokibot-wpa-{os.getpid()}")

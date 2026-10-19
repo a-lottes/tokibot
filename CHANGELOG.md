@@ -12,6 +12,7 @@
   script now loads it. The image also carries the regulatory database, so channels
   12 and 13 are usable where they are allowed. wpa_supplicant is now built with its
   control socket; without it, it refused the generated configuration and quit.
+* A small Wi-Fi icon next to the clock while the gotchi is connected to Wi-Fi.
 * `/network` on the gotchi (e.g. `http://192.168.77.1:8765/network` over USB) shows what
   the Wi-Fi driver, the interface and wpa_supplicant are doing, for finding out why a
   gotchi is not on Wi-Fi. It never shows the password.
