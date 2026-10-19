@@ -8,6 +8,7 @@
 #   make mockups   render every mood into docs/mockups.png
 #   make figures   redraw the blueprint figures in the website (docs/*.html)
 #   make faq       build docs/faq.html from docs/faq.md
+#   make tui-critters  redraw the critter art in docs/update-card.py
 #   make social-pics  render the critter pictures for docs/friends.html
 #   make bundle    pack the app into output/tokibot-app.tar.gz (update without flashing)
 #   make update    send that bundle to a gotchi: make update GOTCHI=http://tokibot-xxxx.local:8765 TOKEN=…
@@ -29,7 +30,7 @@ OUT        ?= $(CURDIR)/output
 BR_JOBS    ?= $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)
 BR_MAKE     = $(MAKE) -C $(BR_DIR) BR2_EXTERNAL=$(CURDIR)/os O=$(OUT)/$@
 
-.PHONY: test test-site sim mockups figures faq social-pics bundle update zero2w zerow clean
+.PHONY: test test-site sim mockups figures faq tui-critters social-pics bundle update zero2w zerow clean
 
 test:
 	cd app && python3 -m unittest discover -s tests
@@ -52,6 +53,10 @@ figures:
 
 faq:
 	cd app && python3 tools/faq.py ../docs
+
+# The critter as braille art in the card updater (docs/update-card.py)
+tui-critters:
+	cd app && python3 tools/tui_critters.py ../docs/update-card.py
 
 social-pics:
 	cd app && PYTHONPATH=. python3 tools/site_social.py ../docs
