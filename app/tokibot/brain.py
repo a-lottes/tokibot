@@ -28,6 +28,15 @@ TINTS = {"flow", "struggling", "stuck", "juggling", "oops", "proud", "relieved"}
 WINDOW_SLACK = 120
 
 
+def wifi_connected(path="/sys/class/net/wlan0/operstate"):
+    """True once wlan0 has joined a network (wpa_supplicant finished the handshake)."""
+    try:
+        with open(path) as f:
+            return f.read().strip() == "up"
+    except OSError:
+        return False
+
+
 class Brain:
     def __init__(self, life=None, social=None, battery=None):
         self.life = life or Life()
@@ -299,6 +308,7 @@ class Brain:
             "nearby": soc["nearby"], "friends_nearby": len(soc["friends_nearby"]),
             "accessory": self.social.accessory() if self.social else "none",
             "battery": dict(battery) if battery else None,
+            "wifi": wifi_connected(),
             "feeling": {"valence": round(valence, 2), "energy": round(energy, 2)},
             "context_pct": context_pct, "food": food,
             "props": (["wrench"] if context_pct is not None and context_pct >= CONTEXT_FULL_PCT
