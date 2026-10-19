@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.3
 
 * Open source: the repository is public as `a-lottes/tokibot` (formerly
   `claudegotchi`). New: CONTRIBUTING.md, SECURITY.md and an issue form for bugs.
