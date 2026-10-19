@@ -8,6 +8,8 @@ are its food.
 
 ![Every mood of the critter](docs/mockups.png)
 
+![A Tokibot on a desk, showing the evening summary](docs/img/photos/tokibot-desk.jpg)
+
 The idea comes from Pwnagotchi, but the image is its own thing. It is built with
 Buildroot, has no Debian and no Wi-Fi hacking tools, only the Tokibot service
 and the bare minimum around it.
