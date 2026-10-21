@@ -6,8 +6,8 @@
   var root = document.querySelector(".demo");
   if (!root) return;
 
-  // Total XP needed for a level: 0, 50, 150, 300, 500, … (life.py)
-  function xpFor(level) { return 25 * (level - 1) * level; }
+  // Total XP needed for a level: 0, 120, 480, 1080, 1920, … (life.py)
+  function xpFor(level) { return 120 * (level - 1) * (level - 1); }
   function levelFor(xp) { var l = 1; while (xp >= xpFor(l + 1)) l++; return l; }
 
   var log = document.getElementById("demo-log");
@@ -116,6 +116,15 @@
     if (after > before) line(null, null, "LEVEL UP", name + " is level " + after + " now (" + why + ")");
   }
 
+  // A reply with the co-working bonus; fractions carry over like in life.py
+  function reply(name) {
+    var s = state[name];
+    s.carry += 5 * 0.1;
+    var extra = Math.floor(s.carry);
+    s.carry -= extra;
+    return 5 + extra;
+  }
+
   function apply(part) {
     if (part.screen) screen(part.screen);
     (part.log || []).forEach(function (l) { line.apply(null, l); });
@@ -139,9 +148,9 @@
     for (var i = 0; i < (s.ticks || 0); i++) {
       wait += 900;
       later(function () {
-        line(null, null, "REPLY", "both finish a reply: +10 XP, +1 co-working bonus");
-        gain("pixel", 11, "co-working");
-        gain("mochi", 11, "co-working");
+        line(null, null, "REPLY", "both finish a reply: +5 XP, +10 % co-working bonus");
+        gain("pixel", reply("pixel"), "co-working");
+        gain("mochi", reply("mochi"), "co-working");
         show("pixel"); show("mochi");
       }, wait);
     }
@@ -158,7 +167,7 @@
   function start() {
     timers.forEach(clearTimeout);
     timers = [];
-    state = { step: 0, pixel: { xp: 270, badges: [] }, mochi: { xp: 420, badges: [] } };
+    state = { step: 0, pixel: { xp: 1040, carry: 0, badges: [] }, mochi: { xp: 1860, carry: 0, badges: [] } };
     screen("start");
     show("pixel"); show("mochi");
     log.textContent = "";
