@@ -14,8 +14,8 @@
 #   "waveshare_2in7_v1"    Waveshare 2.7" V1 (full refresh only, slow)
 # Pwnagotchi's names work too, e.g. "waveshare_3" or "waveshare_4".
 display = "waveshare_2in13_v4"
-# 180 if the picture is upside down
-rotate = 0
+# 180: right way up with the USB ports at the top. 0 if the picture is upside down.
+rotate = 180
 timezone = "Europe/Berlin"
 
 [server]
@@ -34,6 +34,18 @@ address = "192.168.77.1"
 ssid = ""
 psk = ""
 country = "DE"
+
+# More networks, for example your phone's hotspot for on the go. The gotchi joins
+# whichever is in reach; with several in reach, [wifi] comes first, then [wifi2].
+# Both Pi Zeros only speak 2.4 GHz: on an iPhone, turn on "Maximise Compatibility"
+# in the hotspot settings.
+[wifi2]
+ssid = ""
+psk = ""
+
+[wifi3]
+ssid = ""
+psk = ""
 
 [relay]
 # For Claude Code running in the cloud (e.g. Claude Projects), which cannot reach the

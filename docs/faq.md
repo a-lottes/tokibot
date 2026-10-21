@@ -36,7 +36,15 @@ Only metadata: the event name, session ID, project folder name, tool name, error
 
 ### Which image do I download? {#which-image}
 
-`tokibot-zero2w.img.xz` for the Raspberry Pi Zero 2 W and `tokibot-zerow.img.xz` for the first-generation Pi Zero W. Both are on https://tokibot.lottes.dev/download.html with SHA-256 checksums. Flash the `.img.xz` file as it is; Raspberry Pi Imager unpacks it.
+`tokibot-zero2w.img.xz` for the Raspberry Pi Zero 2 W and `tokibot-zerow.img.xz` for the first-generation Pi Zero W. Both are on https://tokibot.lottes.dev/download.html with SHA-256 checksums. Flash the `.img.xz` file as it is; Raspberry Pi Imager unpacks it. Not sure which Pi you have? See [Zero W or Zero 2 W](#zero-w-or-zero-2-w).
+
+### Is my Pi a Zero W or a Zero 2 W? {#zero-w-or-zero-2-w}
+
+Look at the main chip. The Zero 2 W has a square chip with a **metal lid**, marked **RP3A0**. The Zero W has a black **BCM2835** with a memory chip stacked on top of it (marked Samsung, Micron or Elpida). The name is also printed on the board: "Raspberry Pi Zero W V1.1" is the first generation. Both boards look alike from a distance, and Pwnagotchis were mostly built on the Zero W.
+
+### The display stays blank and HDMI shows only a rainbow square. {#rainbow}
+
+Most likely the image does not fit the Pi: the Zero 2 W image on a Zero W stops right there, without a word. Check [which Pi you have](#zero-w-or-zero-2-w) and flash the other image. A green LED that blinks 7 times, pauses and repeats means the same with other systems: the Pi found no kernel it can run.
 
 ### How do I flash the card? {#flash}
 
@@ -171,6 +179,10 @@ Remove the plugin in `/plugin`, and the status line or full install with `curl -
 
 Either before the first start: put the card into your computer, open `tokibot.toml` on the `TOKIBOT` drive and fill in `ssid`, `psk` and `country` under `[wifi]`. Or later in the browser: open `http://192.168.77.1:8765/settings` over the USB cable. Without Wi-Fi the gotchi works over the USB cable only, which is all you need on your desk.
 
+### Can the gotchi use my phone's hotspot on the go and my Wi-Fi at home? {#several-wifis}
+
+Yes. Besides `[wifi]` there are `[wifi2]` and `[wifi3]` in `tokibot.toml`, and the same fields on the settings page. Put your home Wi-Fi in the first and your phone's hotspot in the second. The gotchi joins whichever is in reach; with both in reach it takes the first. Both Pi Zeros only speak 2.4 GHz: on an iPhone, turn on *Maximise Compatibility* in the hotspot settings, and keep the hotspot page open while the gotchi joins for the first time. On the hotspot your computer cannot reach the gotchi directly unless it is on the same hotspot; for sessions elsewhere, use the [relay](#cloud-relay).
+
 ### Where are the settings? {#settings}
 
 On the settings page at `http://tokibot-xxxx.local:8765/settings`, or `http://192.168.77.1:8765/settings` over USB. It changes Wi-Fi, time zone, rotation, token, relay and Bluetooth and writes `tokibot.toml` on the card. You can also edit that file directly on the `TOKIBOT` drive.
@@ -189,7 +201,7 @@ Yes, as soon as the gotchi is on a Wi-Fi you share with others. Without a token,
 
 ### The picture is upside down. {#upside-down}
 
-Set *Rotate display* to 180 on the settings page, or `rotate = 180` under `[device]` in `tokibot.toml`.
+The default (`rotate = 180`) shows the picture the right way up with the Pi's USB ports at the top. If you mount it the other way round, set *Rotate display* to 0 on the settings page, or `rotate = 0` under `[device]` in `tokibot.toml`.
 
 ### The clock is wrong. {#clock}
 
@@ -234,7 +246,7 @@ On battery, at 15 % the critter asks to be plugged in, and at 5 % it says good n
 
 ### The display stays blank. {#blank-display}
 
-Check that the HAT sits flush on all 40 pins, and that it is the **V4** revision of the 2.13 inch display (printed on the back). Give it a moment: e-paper refreshes slowly and the first boot takes a little while. Faint traces of the previous picture are normal for e-paper.
+Check that the HAT sits flush on all 40 pins, and that it is the **V4** revision of the 2.13 inch display (printed on the back). Give it a moment: e-paper refreshes slowly and the first boot takes a little while. Faint traces of the previous picture are normal for e-paper. If the Pi does not start at all (no gotchi over USB or Wi-Fi), check that the image fits your Pi: [rainbow square](#rainbow).
 
 ## Friends over Bluetooth
 

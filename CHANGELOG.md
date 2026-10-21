@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+* Up to three Wi-Fi networks: `[wifi2]` and `[wifi3]` in `tokibot.toml` or on the
+  settings page, e.g. home Wi-Fi and a phone hotspot. The gotchi joins whichever is
+  in reach, `[wifi]` first, and asks for a new address after every switch.
+* The display is turned 180° by default, so the USB ports are at the top. Set
+  `rotate = 0` if the picture is upside down.
+* FAQ: telling a Pi Zero W from a Zero 2 W, and what a rainbow screen means.
+
 ## 0.5.3
 
 * Open source: the repository is public as `a-lottes/tokibot` (formerly

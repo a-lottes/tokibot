@@ -130,6 +130,18 @@ class ConfigTest(unittest.TestCase):
         self.assertIs(data["usb"]["enabled"], True)
         self.assertEqual(data["wifi"]["ssid"], "")
 
+    def test_more_wifis_reach_the_init_scripts(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".toml", delete=False) as f:
+            f.write('[wifi]\nssid = "Home"\npsk = "a"\n[wifi2]\nssid = "My iPhone"\npsk = "b c"\n')
+        try:
+            lines = shell(load(f.name)).splitlines()
+        finally:
+            os.unlink(f.name)
+        self.assertIn("WIFI_SSID=Home", lines)
+        self.assertIn("WIFI2_SSID='My iPhone'", lines)
+        self.assertIn("WIFI2_PSK='b c'", lines)
+        self.assertIn("WIFI3_SSID=''", lines)        # missing in the file: empty, not an error
+
     def test_fallback_parser_handles_quotes_and_comments(self):
         text = '[wifi]\nssid = "My \\"Wi-Fi\\"" # comment\npsk = \'a#b\'\n'
         data = _parse_simple_toml(text)

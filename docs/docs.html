@@ -138,7 +138,7 @@
       <p>You can also edit the file directly: put the card into your computer and open <code>tokibot.toml</code> on the <code>TOKIBOT</code> drive.</p>
       <pre data-title="tokibot.toml"><code>[device]
 display = "waveshare_2in13_v4"<span class="c">  # see Displays below</span>
-rotate = 0<span class="c">                    # 180 if the picture is upside down</span>
+rotate = 180<span class="c">                  # USB ports at the top; 0 if upside down</span>
 timezone = "Europe/Berlin"
 
 [server]
@@ -154,9 +154,14 @@ ssid = ""<span class="c">                     # empty: USB cable only</span>
 psk = ""
 country = "DE"
 
+[wifi2]<span class="c">                       # optional: e.g. your phone's hotspot</span>
+ssid = ""
+psk = ""
+
 [relay]
 url = ""<span class="c">                      # ntfy topic for agents in the cloud</span>
 auth = ""<span class="c">                     # access token for a protected ntfy server</span></code></pre>
+      <p>Up to three networks: <code>[wifi]</code>, <code>[wifi2]</code> and <code>[wifi3]</code>, for example your Wi-Fi at home and your phone's hotspot for on the go. The gotchi joins whichever is in reach, <code>[wifi]</code> first. Both Pi Zeros only speak 2.4 GHz; on an iPhone, turn on <em>Maximise Compatibility</em> in the hotspot settings.</p>
       <p>Without Wi-Fi the gotchi takes the time from your computer. With Wi-Fi it uses NTP.</p>
       <h3 id="displays">Displays</h3>
       <p>The gotchi drives the Waveshare e-Paper HATs that Pwnagotchi builds use. Pick yours under <em>Display</em> on the settings page, or set <code>display</code> in <code>tokibot.toml</code>. Pwnagotchi's names from <code>ui.display.type</code> work as well. The revision is printed on the back of the board.</p>
@@ -272,7 +277,7 @@ auth = ""<span class="c">                     # access token for a protected ntf
         <li>Start a new Claude Code session after installing; running sessions keep their old settings.</li>
       </ul>
       <h3>The picture is upside down</h3>
-      <p>Set <code>rotate = 180</code> on the settings page.</p>
+      <p>Set <code>rotate = 0</code> on the settings page (the default, 180, has the USB ports at the top).</p>
 
       <h2 id="repository" data-n="13">Repository</h2>
       <pre data-title="tree"><code>app/       the service on the device (Python, Pillow)

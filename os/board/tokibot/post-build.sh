@@ -20,4 +20,4 @@ VERSION=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "${BR2_EXTERNAL_TOKIBOT_PATH}/
 echo "tokibot ${VERSION}" > "${TARGET_DIR}/etc/tokibot-release"
 
 # Make the init scripts executable (in case the checkout lost the permissions)
-chmod 0755 "${TARGET_DIR}"/etc/init.d/S*
+chmod 0755 "${TARGET_DIR}"/etc/init.d/S* "${TARGET_DIR}"/etc/wpa_action.sh

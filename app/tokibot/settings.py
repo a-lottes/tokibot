@@ -21,6 +21,11 @@ FIELDS = [
     ("wifi", "ssid", "Wi-Fi name", "text", "Leave empty to use only the USB cable."),
     ("wifi", "psk", "Wi-Fi password", "secret", ""),
     ("wifi", "country", "Wi-Fi country", "text", "Two letters, e.g. DE."),
+    ("wifi2", "ssid", "Second Wi-Fi name", "text",
+     "e.g. your phone's hotspot. Used when the first Wi-Fi is out of reach."),
+    ("wifi2", "psk", "Second Wi-Fi password", "secret", ""),
+    ("wifi3", "ssid", "Third Wi-Fi name", "text", "Used when neither of the others is in reach."),
+    ("wifi3", "psk", "Third Wi-Fi password", "secret", ""),
     ("usb", "enabled", "USB network", "bool", "The gotchi shows up as a network adapter on the USB data port."),
     ("server", "token", "Token", "secret",
      "Clients send it with every event and these pages ask for it. Pairing a client sets one "
@@ -36,14 +41,14 @@ FIELDS = [
 # (anchor, title, sections shown in it)
 GROUPS = [
     ("device", "Device", ("device",)),
-    ("network", "Network", ("wifi", "usb")),
+    ("network", "Network", ("wifi", "wifi2", "wifi3", "usb")),
     ("connection", "Connection", ("server", "relay")),
     ("community", "Community", ("social", "leaderboard")),
 ]
 
 # Applied by the image's init scripts at boot, so changing them needs a reboot.
 # Everything else only needs the app to start again.
-REBOOT_FOR = ("wifi", "usb", ("device", "timezone"), ("social", "enabled"))
+REBOOT_FOR = ("wifi", "wifi2", "wifi3", "usb", ("device", "timezone"), ("social", "enabled"))
 
 
 def needs_reboot(changes):

@@ -59,7 +59,7 @@ class ServerTest(unittest.TestCase):
             self.assertEqual(resp.headers["X-Tokibot-Gotchi"], "tokibot-aaaa")
 
     def test_saving_settings_applies_them(self):
-        form = "wifi.country=DE&device.timezone=UTC&device.rotate=180&usb.enabled=on&social.enabled=on"
+        form = "wifi.country=DE&device.timezone=UTC&device.rotate=0&usb.enabled=on&social.enabled=on"
         with mock.patch.object(Control, "restart") as restart:
             status, _, body = post(self.g.url + "/settings", form.encode())
         self.assertEqual(status, 200)
@@ -67,7 +67,7 @@ class ServerTest(unittest.TestCase):
         self.assertIn(b"/whoami", body)                   # the page waits for the restart
         restart.assert_called_once_with(reboot=False)      # not on a device: no reboot
         with open(self.g.cfg_path) as f:
-            self.assertIn("rotate = 180", f.read())
+            self.assertIn("rotate = 0", f.read())
         with urllib.request.urlopen(self.g.url + "/settings?applied=1", timeout=3) as resp:
             self.assertIn(b"runs with the new settings", resp.read())
 

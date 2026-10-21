@@ -1,26 +1,36 @@
 #!/bin/sh
-# Wi-Fi from /boot/tokibot.toml. Without an SSID, Wi-Fi stays off.
-# With Wi-Fi, the gotchi gets the time via NTP.
+# Wi-Fi from /boot/tokibot.toml: up to three networks, [wifi], [wifi2] and [wifi3].
+# The gotchi joins whichever is in reach, [wifi] first. Without an SSID, Wi-Fi
+# stays off. With Wi-Fi, the gotchi gets the time via NTP.
 
 . /run/tokibot.env 2>/dev/null
 
+# network SSID PSK PRIORITY: one network block for wpa_supplicant (higher priority wins)
+network() {
+	[ -n "$1" ] || return 0
+	echo "network={"
+	# As hex, so quotes and other special characters in the name work
+	printf '\tssid=%s\n' "$(printf '%s' "$1" | od -An -tx1 | tr -d ' \n')"
+	printf '\tscan_ssid=1\n'
+	if [ -z "$2" ]; then
+		printf '\tkey_mgmt=NONE\n'
+	elif expr "$2" : '[0-9a-fA-F]\{64\}$' >/dev/null; then
+		printf '\tpsk=%s\n' "$2"        # already hashed: 64 hex digits
+	else
+		printf '\tpsk="%s"\n' "$2"
+	fi
+	printf '\tpriority=%s\n' "$3"
+	echo "}"
+}
+
 start() {
-	[ -n "$WIFI_SSID" ] || exit 0
+	[ -n "$WIFI_SSID$WIFI2_SSID$WIFI3_SSID" ] || exit 0
 	{
 		echo "ctrl_interface=/run/wpa_supplicant"
 		echo "country=${WIFI_COUNTRY:-DE}"
-		echo "network={"
-		# As hex, so quotes and other special characters in the name work
-		printf '\tssid=%s\n' "$(printf '%s' "$WIFI_SSID" | od -An -tx1 | tr -d ' \n')"
-		printf '\tscan_ssid=1\n'
-		if [ -z "$WIFI_PSK" ]; then
-			printf '\tkey_mgmt=NONE\n'
-		elif expr "$WIFI_PSK" : '[0-9a-fA-F]\{64\}$' >/dev/null; then
-			printf '\tpsk=%s\n' "$WIFI_PSK"        # already hashed: 64 hex digits
-		else
-			printf '\tpsk="%s"\n' "$WIFI_PSK"
-		fi
-		echo "}"
+		network "$WIFI_SSID" "$WIFI_PSK" 3
+		network "$WIFI2_SSID" "$WIFI2_PSK" 2
+		network "$WIFI3_SSID" "$WIFI3_PSK" 1
 	} > /run/wpa_supplicant.conf
 	chmod 600 /run/wpa_supplicant.conf
 	# Nothing loads drivers on its own (no udev/mdev), so load the Wi-Fi driver here.
@@ -38,12 +48,15 @@ start() {
 		exit 0
 	fi
 	udhcpc -b -i wlan0 -p /run/udhcpc.wlan0.pid -x hostname:"$(hostname)" >/dev/null 2>&1
+	# On every (re)connect, e.g. from home Wi-Fi to the phone hotspot, get a fresh
+	# address: udhcpc would otherwise hold on to the old network's lease.
+	wpa_cli -B -i wlan0 -p /run/wpa_supplicant -P /run/wpa_cli.pid -a /etc/wpa_action.sh
 	start-stop-daemon -S -q -b -m -p /run/ntpd.pid -x /usr/sbin/ntpd -- -n -p pool.ntp.org
-	echo "Wi-Fi: connecting to $WIFI_SSID"
+	echo "Wi-Fi: connecting to the first network in reach"
 }
 
 stop() {
-	for p in ntpd udhcpc.wlan0 wpa_supplicant; do
+	for p in ntpd wpa_cli udhcpc.wlan0 wpa_supplicant; do
 		[ -f /run/$p.pid ] && kill "$(cat /run/$p.pid)" 2>/dev/null
 	done
 }
