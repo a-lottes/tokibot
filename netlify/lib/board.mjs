@@ -19,8 +19,12 @@ export class CardError extends Error {}
 const DAY = 86400;
 const isInt = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 
+// Same curve as the gotchi (XP_LEVEL_STEP in app/tokibot/mood.py, life.py), or every
+// card fails the level check: 0, 120, 480, 1080, 1920, …
+export const XP_LEVEL_STEP = 120;
+
 export function xpForLevel(level) {
-  return 25 * (level - 1) * level;
+  return XP_LEVEL_STEP * (level - 1) ** 2;
 }
 
 export function levelFor(xp) {

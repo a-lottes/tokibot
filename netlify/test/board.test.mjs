@@ -37,6 +37,11 @@ test("a card made by the gotchi (Python) opens", () => {
   assert.equal(gotchiId(JSON.parse(p.card).pub).length, 12);
 });
 
+test("levels follow the gotchi's curve (life.py)", () => {
+  // 120 x (level - 1)^2, else the server rejects every real card
+  assert.deepEqual([0, 119, 120, 479, 480, 4250].map(levelFor), [1, 1, 2, 2, 3, 6]);
+});
+
 test("days merge, xp and food stay plausible", () => {
   const k = keys();
   const a = apply(undefined, openCard(score(k, 60, { "2026-10-06": { food: 100, est: 0, xp: 20 } }, NOW - 100)), NOW);
