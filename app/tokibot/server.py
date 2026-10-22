@@ -447,6 +447,30 @@ def start_social(cfg, brain, data_dir, args, identity=None):
     return social
 
 
+class DualStackServer(ThreadingHTTPServer):
+    """Listens on IPv6 and IPv4 at once. A phone hotspot may hand the computer IPv6 only
+    (a Mac then reaches IPv4 just through its NAT64 translation), and .local then
+    resolves to the gotchi's IPv6 address."""
+    address_family = socket.AF_INET6
+
+    def server_bind(self):
+        self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        super().server_bind()
+
+
+def make_server(host, port, handler):
+    """The default host 0.0.0.0 means every address, so also IPv6; IPv4 alone if the
+    kernel has no IPv6. Any other host is taken as it is."""
+    if host == "0.0.0.0" and socket.has_ipv6:
+        try:
+            return DualStackServer(("::", port), handler)
+        except OSError as e:
+            if e.errno == errno.EADDRINUSE:
+                raise
+            log.warning("No IPv6 (%s), listening on IPv4 only", e)
+    return ThreadingHTTPServer((host, port), handler)
+
+
 def restart_in_place(argv):
     """Run this program again in the same process (and terminal), with the same arguments.
     The device does not need this: tokibot-run starts the app again on exit code 75."""
@@ -516,7 +540,7 @@ def main(argv=None):
     control = Control(cfg_path, cfg, on_device, social=social, data_dir=data_dir)
     handler = make_handler(brain, renderer, srv["token"], dispatch, control, name, scores)
     try:
-        server = ThreadingHTTPServer((srv["host"], port), handler)
+        server = make_server(srv["host"], port, handler)
     except OSError as e:
         if e.errno != errno.EADDRINUSE:
             raise

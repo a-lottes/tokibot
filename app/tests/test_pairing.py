@@ -2,18 +2,19 @@
 to the one it is paired with."""
 import json
 import os
+import socket
 import tempfile
 import threading
 import time
 import unittest
 import urllib.error
 import urllib.request
-from http.server import ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from unittest import mock
 
 from tokibot import config
 from tokibot.brain import Brain
-from tokibot.server import Control, make_dispatch, make_handler
+from tokibot.server import Control, make_dispatch, make_handler, make_server
 from test_relay import load_client
 
 
@@ -112,6 +113,32 @@ class ServerTest(unittest.TestCase):
         status, _, _ = post(self.g.url + "/hook", b'{"hook_event_name": "Stop"}',
                             **{"X-Tokibot-Token": info["token"]})
         self.assertEqual(status, 204)
+
+
+@unittest.skipUnless(socket.has_ipv6, "no IPv6 here")
+class DualStackTest(unittest.TestCase):
+    """On a phone hotspot the computer may have IPv6 only, so the default host answers both."""
+    def test_default_host_answers_ipv4_and_ipv6(self):
+        brain = Brain()
+        handler = make_handler(brain, None, "", make_dispatch(brain, False), None, "tokibot-aaaa")
+        try:
+            server = make_server("0.0.0.0", 0, handler)
+        except OSError as e:
+            self.skipTest(f"no IPv6 socket: {e}")
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        try:
+            for host in ("127.0.0.1", "[::1]"):
+                with urllib.request.urlopen(f"http://{host}:{server.server_port}/whoami",
+                                            timeout=3) as resp:
+                    self.assertEqual(json.load(resp)["gotchi"], "tokibot-aaaa")
+        finally:
+            server.shutdown()
+            server.server_close()
+
+    def test_other_hosts_are_taken_as_they_are(self):
+        server = make_server("127.0.0.1", 0, BaseHTTPRequestHandler)
+        self.assertEqual(server.socket.family, socket.AF_INET)
+        server.server_close()
 
 
 class ClientTest(unittest.TestCase):

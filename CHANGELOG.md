@@ -8,6 +8,9 @@
 * The display is turned 180° by default, so the USB ports are at the top. Set
   `rotate = 0` if the picture is upside down.
 * FAQ: telling a Pi Zero W from a Zero 2 W, and what a rainbow screen means.
+* The gotchi also answers over IPv6. An iPhone hotspot can give a Mac IPv6 only, and
+  `tokibot-xxxx.local` then pointed at an address the gotchi did not listen on, so
+  neither the client nor the settings page got through.
 
 ## 0.5.3
 
