@@ -12,7 +12,8 @@
 
 Transport: straight to the gotchi over HTTP (USB cable or Wi-Fi), and/or through a
 relay (an ntfy topic) when "relay" is set. The relay is for Claude Code running in the
-cloud (e.g. Claude Projects), which cannot reach a gotchi on your local network.
+cloud (e.g. Claude Projects) or a gotchi on another network; it carries the events that
+change the mood and only now and then the rest (see RELAY_BUDGET).
 
 Which gotchi: every gotchi has its own name, tokibot-xxxx. The client sends it
 along, so a gotchi that is not yours (a friend's on the same Wi-Fi) refuses the event.
@@ -34,6 +35,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 from datetime import datetime
@@ -184,16 +186,140 @@ def publish(cfg, path, payload, timeout=5):
     return cfg["relay"]
 
 
-def send(cfg, path, payload, timeout=3):
-    """Relay and direct path; succeeds if at least one of them worked."""
+# --- relay budget ------------------------------------------------------------------
+# ntfy.sh takes 250 messages a day from one address, a bucket that refills one every
+# six minutes. A tool call or a status line update each would empty it before noon,
+# and then nothing gets through for the rest of the day. So the relay carries what
+# changes the critter's mood, and the chatter in between (tool calls, limits) only now
+# and then. Token counts of a message held back ride along with the next one that goes.
+# Others may send from the same address (a second computer, a dashboard), so the client
+# also asks ntfy how many messages are left today and leaves the last ones to them.
+RELAY_STATE = os.path.join(STATE_DIR, "relay.json")
+RELAY_BUDGET = 30            # messages in our own bucket
+RELAY_REFILL = 864           # seconds per message: 100 a day, under half of ntfy.sh's 250
+RELAY_RESERVE = 10           # chatter leaves this many for the events that matter
+RELAY_CHATTER_EVERY = 300    # and goes at most every 5 minutes
+NTFY_CHECK_EVERY = 120       # how often to ask ntfy what is left for this address today
+NTFY_KEEP_FREE = 60          # never take its last messages: they are for the others
+NTFY_CHATTER_FROM = 125      # chatter only while at least half the day's messages are left
+KEY_EVENTS = {"SessionStart", "UserPromptSubmit", "Notification", "Stop", "StopFailure",
+              "SessionEnd"}
+
+
+def relay_key(path, payload):
+    """Events that change the mood; a commit, push or test run counts too."""
+    return path == "/hook" and bool(payload.get("hook_event_name") in KEY_EVENTS
+                                    or payload.get("signals"))
+
+
+def _relay_state(state_path):
+    try:
+        with open(state_path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def _relay_save(state, state_path):
+    tmp = state_path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(state, f)
+    os.replace(tmp, state_path)
+
+
+def ntfy_remaining(relay, timeout=3):
+    """Messages the relay's server still takes from this address today, counting
+    everyone who sends from it; None if it does not say (e.g. a server of your own)."""
+    parts = urllib.parse.urlsplit(relay)
+    try:
+        with urllib.request.urlopen(f"{parts.scheme}://{parts.netloc}/v1/account",
+                                    timeout=timeout) as resp:
+            n = json.loads(resp.read())["stats"]["messages_remaining"]
+        return int(n)
+    except Exception:
+        return None
+
+
+def relay_take(path, payload, key=None, relay="", state_path=None, now=None):
+    """Takes one message from the budget (True), or holds this one back (False). A
+    message that goes carries the food that never reached the gotchi before."""
+    state_path = state_path or RELAY_STATE
+    now = now or time.time()
+    key = relay_key(path, payload) if key is None else key
+    os.makedirs(os.path.dirname(state_path) or ".", exist_ok=True)
+    lock = _locked(state_path)
+    try:
+        st = _relay_state(state_path)
+        left = min(RELAY_BUDGET, st.get("left", RELAY_BUDGET)
+                   + max(0, now - st.get("at", now)) / RELAY_REFILL)
+        if relay and now - st.get("ntfy_at", 0) >= NTFY_CHECK_EVERY:
+            st["ntfy_left"], st["ntfy_at"] = ntfy_remaining(relay), now
+        shared = st.get("ntfy_left")
+        if key:
+            ok = left >= 1 and (shared is None or shared > NTFY_KEEP_FREE)
+        else:
+            ok = (left >= RELAY_RESERVE + 1 and now - st.get("chatter_at", 0) >= RELAY_CHATTER_EVERY
+                  and (shared is None or shared > NTFY_CHATTER_FROM))
+        if ok:
+            left -= 1
+            if shared is not None:
+                st["ntfy_left"] = shared - 1
+            if not key:
+                st["chatter_at"] = now
+            food = st.pop("food", None) if path == "/hook" else None
+            if food:
+                mine = payload.get("tokens") if isinstance(payload.get("tokens"), dict) else {}
+                payload["tokens"] = {k: food.get(k, 0) + mine.get(k, 0) for k in TOKEN_KINDS}
+        st.update(left=left, at=now)
+        _relay_save(st, state_path)
+    finally:
+        lock.close()
+    return ok
+
+
+def relay_keep(payload, blocked=False, state_path=None):
+    """The message reached the gotchi on no path: keep its token counts for the next one
+    that goes. `blocked`: ntfy said we sent too much (429), so empty the bucket."""
+    state_path = state_path or RELAY_STATE
+    tokens = payload.get("tokens")
+    if not blocked and not isinstance(tokens, dict):
+        return
+    lock = _locked(state_path)
+    try:
+        st = _relay_state(state_path)
+        if isinstance(tokens, dict):
+            food = st.get("food") or {}
+            st["food"] = {k: food.get(k, 0) + tokens.get(k, 0) for k in TOKEN_KINDS}
+        if blocked:
+            st["left"] = 0                       # empty, like ntfy's: wait for it to refill
+        _relay_save(st, state_path)
+    finally:
+        lock.close()
+
+
+def send(cfg, path, payload, timeout=3, key=None):
+    """Relay (within its budget) and direct path; succeeds if at least one of them
+    worked or the relay held the message back. Returns where it went ("" if nowhere)."""
     payload.setdefault("id", uuid.uuid4().hex[:12])    # lets the gotchi drop duplicates
-    done, err = [], None
-    for fn in ((publish,) if cfg["relay"] else ()) + ((post,) if candidates(cfg) else ()):
+    done, held, err = [], False, None
+    if cfg["relay"]:
+        if relay_take(path, payload, key, cfg["relay"]):
+            try:
+                done.append(publish(cfg, path, payload, timeout))
+            except Exception as e:
+                err = e
+                if isinstance(e, urllib.error.HTTPError) and e.code == 429:
+                    relay_keep({}, blocked=True)
+        else:
+            held = True
+    if candidates(cfg):
         try:
-            done.append(fn(cfg, path, payload, timeout))
+            done.append(post(cfg, path, payload, timeout))
         except Exception as e:
             err = e
-    if not done:
+    if not done and path == "/hook" and cfg["relay"]:
+        relay_keep(payload)
+    if not done and not held:
         raise err or OSError("neither url nor relay is configured")
     return ", ".join(done)
 
@@ -708,7 +834,10 @@ def cmd_test(cfg):
     for ev, label in steps:
         ev.update(session_id=sid, project="tokibot-test", ts=time.time())
         try:
-            url = send(cfg, "/hook", ev)
+            url = send(cfg, "/hook", ev, key=True)
+            if not url:
+                print(f"✗ {label}: the relay budget is used up, try again in a few minutes")
+                return 1
             print(f"✓ {label}  ({url})")
         except Exception as e:
             print(f"✗ {label}: {e} (is it reachable at {', '.join(candidates(cfg) + [cfg['relay']]).strip(', ')}?)")

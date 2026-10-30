@@ -462,6 +462,15 @@
   },
   {
    "@type": "Question",
+   "name": "Why does the gotchi miss some tool calls over the relay?",
+   "url": "https://tokibot.lottes.dev/faq.html#relay-budget",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "<p>ntfy.sh takes 250 messages a day from one address. A busy session calls hundreds of tools, so the client spends its relay messages on what changes the mood: a prompt, a permission request, waiting, done, an error, a commit or test run. Tool calls and limits in between go at most every 5 minutes, about 100 messages a day in all. Everyone sending from your address shares those 250, for example a second computer, so the client asks ntfy every 2 minutes how many are left today: below half it sends mood changes only, and it leaves the last 60 to the others. Token counts of a held-back message go along with the next one, so the food is complete. When the gotchi answers directly (same network or USB cable), it gets everything that way anyway.<\/p>"
+   }
+  },
+  {
+   "@type": "Question",
    "name": "Is the relay secure?",
    "url": "https://tokibot.lottes.dev/faq.html#relay-security",
    "acceptedAnswer": {
@@ -799,6 +808,10 @@
         <h3><a class="anchor" href="#cloud-not-working">Cloud sessions do not reach the gotchi.</a></h3>
         <p>Check these in order:</p>
 <ul><li>The gotchi is on Wi-Fi with internet. The relay does not work over the USB cable alone.</li><li>The token and relay URL on the gotchi's settings page match what <code>--new-relay</code> printed.</li><li>The cloud environment allows <code>ntfy.sh</code> under Network access. The built-in environment of a Claude Project blocks it and has no settings, so you need your own environment (Project settings → Cloud environment → Add cloud environment).</li><li>The setup script is pasted in that environment, and the project uses that environment. Only sessions started after the change use it.</li></ul>
+      </section>
+      <section class="faq-q" id="relay-budget">
+        <h3><a class="anchor" href="#relay-budget">Why does the gotchi miss some tool calls over the relay?</a></h3>
+        <p>ntfy.sh takes 250 messages a day from one address. A busy session calls hundreds of tools, so the client spends its relay messages on what changes the mood: a prompt, a permission request, waiting, done, an error, a commit or test run. Tool calls and limits in between go at most every 5 minutes, about 100 messages a day in all. Everyone sending from your address shares those 250, for example a second computer, so the client asks ntfy every 2 minutes how many are left today: below half it sends mood changes only, and it leaves the last 60 to the others. Token counts of a held-back message go along with the next one, so the food is complete. When the gotchi answers directly (same network or USB cable), it gets everything that way anyway.</p>
       </section>
       <section class="faq-q" id="relay-security">
         <h3><a class="anchor" href="#relay-security">Is the relay secure?</a></h3>

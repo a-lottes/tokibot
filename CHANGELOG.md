@@ -8,6 +8,16 @@
 * The display is turned 180° by default, so the USB ports are at the top. Set
   `rotate = 0` if the picture is upside down.
 * FAQ: telling a Pi Zero W from a Zero 2 W, and what a rainbow screen means.
+* The relay no longer runs out. ntfy.sh takes 250 messages a day from one address,
+  and a message for every tool call and status line update used them up before noon,
+  so nothing got through for the rest of the day. The client now sends what changes
+  the mood (prompt, permission, waiting, done, error, commit, test run) through the
+  relay and the rest at most every 5 minutes, about 100 messages a day at most. It
+  also asks ntfy how many messages are left for the address today, which counts
+  everyone sending from it, and leaves the last 60 to the others; below half it sends
+  mood changes only. The direct path to the gotchi still gets everything. Token
+  counts of a message that reached the gotchi on no path go along with the next one,
+  so it still gets all its food.
 
 ## 0.5.3
 
