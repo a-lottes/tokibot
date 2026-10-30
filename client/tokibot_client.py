@@ -10,10 +10,10 @@
   tokibot_client.py pair [NAME]  pair with your gotchi: over the USB cable, or by the
                                      name it shows on screen (tokibot-xxxx)
 
-Transport: straight to the gotchi over HTTP (USB cable or Wi-Fi), or, when it does not
-answer and "relay" is set, through a relay (an ntfy topic). The relay is for Claude Code
-running in the cloud (e.g. Claude Projects) or a gotchi on another network; it carries
-the events that change the mood and only now and then the rest (see RELAY_BUDGET).
+Transport: straight to the gotchi over HTTP (USB cable or Wi-Fi), and/or through a
+relay (an ntfy topic) when "relay" is set. The relay is for Claude Code running in the
+cloud (e.g. Claude Projects) or a gotchi on another network; it carries the events that
+change the mood and only now and then the rest (see RELAY_BUDGET).
 
 Which gotchi: every gotchi has its own name, tokibot-xxxx. The client sends it
 along, so a gotchi that is not yours (a friend's on the same Wi-Fi) refuses the event.
@@ -222,7 +222,8 @@ def _relay_save(state, state_path):
 
 
 def relay_take(path, payload, key=None, state_path=None, now=None):
-    """Takes one message from the budget, or holds this one back (False)."""
+    """Takes one message from the budget (True), or holds this one back (False). A
+    message that goes carries the food that never reached the gotchi before."""
     state_path = state_path or RELAY_STATE
     now = now or time.time()
     key = relay_key(path, payload) if key is None else key
@@ -236,17 +237,14 @@ def relay_take(path, payload, key=None, state_path=None, now=None):
             ok = left >= 1
         else:
             ok = left >= RELAY_RESERVE + 1 and now - st.get("chatter_at", 0) >= RELAY_CHATTER_EVERY
-        food = st.pop("food", None) or {}
-        if isinstance(payload.get("tokens"), dict):
-            food = {k: food.get(k, 0) + payload["tokens"].get(k, 0) for k in TOKEN_KINDS}
         if ok:
             left -= 1
             if not key:
                 st["chatter_at"] = now
-            if path == "/hook" and any(food.values()):
-                payload["tokens"] = food
-        elif any(food.values()):
-            st["food"] = food
+            food = st.pop("food", None) if path == "/hook" else None
+            if food:
+                mine = payload.get("tokens") if isinstance(payload.get("tokens"), dict) else {}
+                payload["tokens"] = {k: food.get(k, 0) + mine.get(k, 0) for k in TOKEN_KINDS}
         st.update(left=left, at=now)
         _relay_save(st, state_path)
     finally:
@@ -254,18 +252,20 @@ def relay_take(path, payload, key=None, state_path=None, now=None):
     return ok
 
 
-def relay_failed(payload, err, state_path=None):
-    """The message did not go: keep its token counts, and stop for a while if ntfy said
-    we sent too much (429)."""
+def relay_keep(payload, blocked=False, state_path=None):
+    """The message reached the gotchi on no path: keep its token counts for the next one
+    that goes. `blocked`: ntfy said we sent too much (429), so empty the bucket."""
     state_path = state_path or RELAY_STATE
+    tokens = payload.get("tokens")
+    if not blocked and not isinstance(tokens, dict):
+        return
     lock = _locked(state_path)
     try:
         st = _relay_state(state_path)
-        tokens = payload.get("tokens")
         if isinstance(tokens, dict):
             food = st.get("food") or {}
             st["food"] = {k: food.get(k, 0) + tokens.get(k, 0) for k in TOKEN_KINDS}
-        if isinstance(err, urllib.error.HTTPError) and err.code == 429:
+        if blocked:
             st["left"] = 0                       # empty, like ntfy's: wait for it to refill
         _relay_save(st, state_path)
     finally:
@@ -273,24 +273,30 @@ def relay_failed(payload, err, state_path=None):
 
 
 def send(cfg, path, payload, timeout=3, key=None):
-    """Straight to the gotchi when it answers; otherwise through the relay, within its
-    budget. Returns where it went, or "" when the relay held it back."""
+    """Relay (within its budget) and direct path; succeeds if at least one of them
+    worked or the relay held the message back. Returns where it went ("" if nowhere)."""
     payload.setdefault("id", uuid.uuid4().hex[:12])    # lets the gotchi drop duplicates
-    err = None
+    done, held, err = [], False, None
+    if cfg["relay"]:
+        if relay_take(path, payload, key):
+            try:
+                done.append(publish(cfg, path, payload, timeout))
+            except Exception as e:
+                err = e
+                if isinstance(e, urllib.error.HTTPError) and e.code == 429:
+                    relay_keep({}, blocked=True)
+        else:
+            held = True
     if candidates(cfg):
         try:
-            return post(cfg, path, payload, timeout)
+            done.append(post(cfg, path, payload, timeout))
         except Exception as e:
             err = e
-    if cfg["relay"]:
-        if not relay_take(path, payload, key):
-            return ""
-        try:
-            return publish(cfg, path, payload, timeout)
-        except Exception as e:
-            relay_failed(payload, e)
-            err = e
-    raise err or OSError("neither url nor relay is configured")
+    if not done and path == "/hook" and cfg["relay"]:
+        relay_keep(payload)
+    if not done and not held:
+        raise err or OSError("neither url nor relay is configured")
+    return ", ".join(done)
 
 
 def post_detached(cfg, path, payload, prepare=None):

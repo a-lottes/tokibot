@@ -228,7 +228,7 @@ Check these in order:
 
 ### Why does the gotchi miss some tool calls over the relay? {#relay-budget}
 
-ntfy.sh takes 250 messages a day from one address. A busy session calls hundreds of tools, so the client spends its relay messages on what changes the mood: a prompt, a permission request, waiting, done, an error, a commit or test run. Tool calls and limits in between go at most every 5 minutes, about 200 messages a day in all. Token counts of a held-back message go along with the next one, so the food is complete. When the gotchi answers directly (same network or USB cable), the client sends everything there and the relay is not used.
+ntfy.sh takes 250 messages a day from one address. A busy session calls hundreds of tools, so the client spends its relay messages on what changes the mood: a prompt, a permission request, waiting, done, an error, a commit or test run. Tool calls and limits in between go at most every 5 minutes, about 200 messages a day in all. Token counts of a held-back message go along with the next one, so the food is complete. When the gotchi answers directly (same network or USB cable), it gets everything that way anyway.
 
 ### Is the relay secure? {#relay-security}
 

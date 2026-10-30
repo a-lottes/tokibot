@@ -133,38 +133,53 @@ class RelayBudgetTest(unittest.TestCase):
         self.assertFalse(self.take("PreToolUse", t))
         self.assertTrue(self.take("Stop", t))
 
-    def test_food_of_held_back_messages_rides_along(self):
-        t = 1_000_000
-        food = {"input": 10, "output": 5, "cache_write": 0, "cache_read": 100}
-        self.take("PreToolUse", t)
-        self.assertFalse(self.take("SubagentStop", t + 1, tokens=food))
-        stop = {"hook_event_name": "Stop", "tokens": food}
-        self.assertTrue(self.client.relay_take("/hook", stop, now=t + 2))
-        self.assertEqual(stop["tokens"], {"input": 20, "output": 10, "cache_write": 0, "cache_read": 200})
-        stop2 = {"hook_event_name": "Stop"}
-        self.client.relay_take("/hook", stop2, now=t + 3)
-        self.assertNotIn("tokens", stop2)                            # handed over once only
+    def send(self, cfg, ev, gotchi_answers):
+        with mock.patch.object(self.client, "post", return_value="direct") as post:
+            if not gotchi_answers:
+                post.side_effect = OSError("no route")
+            return self.client.send(cfg, "/hook", ev)
 
-    def test_429_empties_the_bucket_and_keeps_the_food(self):
-        c, t = self.client, 1_000_000
-        food = {"input": 1, "output": 2, "cache_write": 3, "cache_read": 4}
-        err = urllib.error.HTTPError("https://ntfy.sh/x", 429, "Too Many Requests", {}, None)
-        c.relay_failed({"tokens": food}, err)
-        st = json.load(open(self.state))
-        self.assertEqual((st["food"], st["left"]), (food, 0))
-
-    def test_direct_first_relay_only_when_the_gotchi_does_not_answer(self):
+    def test_relay_gets_its_share_also_when_the_gotchi_answers(self):
         ntfy = FakeNtfy()
         try:
             cfg = {"url": "http://127.0.0.1:9", "token": "", "relay": ntfy.url + "/t",
                    "statusline_chain": ""}
-            with mock.patch.object(self.client, "post", return_value="direct") as post:
-                self.assertEqual(self.client.send(cfg, "/hook", {"hook_event_name": "Stop"}), "direct")
-                post.side_effect = OSError("no route")
-                self.assertEqual(self.client.send(cfg, "/hook", {"hook_event_name": "Stop"}), ntfy.url + "/t")
-            self.assertEqual(len(ntfy.messages), 1)
+            self.assertEqual(self.send(cfg, {"hook_event_name": "Stop"}, True),
+                             ntfy.url + "/t, direct")
+            self.send(cfg, {"hook_event_name": "PreToolUse"}, True)
+            self.assertEqual(self.send(cfg, {"hook_event_name": "PostToolUse"}, True), "direct")
+            self.assertEqual(self.send(cfg, {"hook_event_name": "PostToolUse"}, False), "")
+            self.assertEqual(len(ntfy.messages), 2)
         finally:
             ntfy.close()
+
+    def test_food_that_reached_no_one_rides_along_once(self):
+        ntfy = FakeNtfy()
+        try:
+            cfg = {"url": "http://127.0.0.1:9", "token": "", "relay": ntfy.url + "/t",
+                   "statusline_chain": ""}
+            food = {"input": 10, "output": 5, "cache_write": 0, "cache_read": 100}
+            self.send(cfg, {"hook_event_name": "PreToolUse"}, False)          # uses the chatter slot
+            self.send(cfg, {"hook_event_name": "SubagentStop", "tokens": food}, True)  # gotchi has it
+            self.send(cfg, {"hook_event_name": "SubagentStop", "tokens": food}, False)  # lost: kept
+            stop = {"hook_event_name": "Stop", "tokens": food}
+            self.send(cfg, stop, False)
+            self.assertEqual(stop["tokens"], {"input": 20, "output": 10, "cache_write": 0, "cache_read": 200})
+            stop2 = {"hook_event_name": "Stop"}
+            self.send(cfg, stop2, False)
+            self.assertNotIn("tokens", stop2)                               # handed over once only
+        finally:
+            ntfy.close()
+
+    def test_429_empties_the_bucket(self):
+        c = self.client
+        err = urllib.error.HTTPError("https://ntfy.sh/x", 429, "Too Many Requests", {}, None)
+        cfg = {"url": "none", "token": "", "relay": "https://ntfy.sh/x", "statusline_chain": ""}
+        with mock.patch.object(c, "publish", side_effect=err):
+            with self.assertRaises(urllib.error.HTTPError):
+                c.send(cfg, "/hook", {"hook_event_name": "Stop"})
+        self.assertEqual(c._relay_state(self.state)["left"], 0)
+        self.assertFalse(self.take("Stop", time.time() + 1))
 
 
 class LegacyEnvelopeTest(unittest.TestCase):
