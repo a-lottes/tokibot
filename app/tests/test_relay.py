@@ -71,6 +71,7 @@ class EndToEndTest(unittest.TestCase):
             time.sleep(0.3)                              # let the subscription open
             client = load_client()
             client.RELAY_STATE = os.path.join(tempfile.mkdtemp(), "relay.json")
+            client.ntfy_remaining = lambda relay: None
             cfg = {"url": "none", "token": "secret", "relay": topic, "statusline_chain": ""}
             client.send(cfg, "/hook", {"hook_event_name": "UserPromptSubmit",
                                        "session_id": "cloud", "project": "web", "ts": time.time()})
@@ -97,6 +98,7 @@ class RelayBudgetTest(unittest.TestCase):
         self.dir = tempfile.mkdtemp()
         self.state = os.path.join(self.dir, "relay.json")
         self.client.RELAY_STATE = self.state
+        self.client.ntfy_remaining = lambda relay: None
 
     def take(self, name, now, **ev):
         return self.client.relay_take("/hook", dict(ev, hook_event_name=name), now=now)
@@ -132,6 +134,24 @@ class RelayBudgetTest(unittest.TestCase):
             self.take("UserPromptSubmit", t)
         self.assertFalse(self.take("PreToolUse", t))
         self.assertTrue(self.take("Stop", t))
+
+    def test_leaves_the_last_messages_to_others_on_the_same_address(self):
+        c, t, asked = self.client, 1_000_000, []
+        left = {"n": 200}
+        c.ntfy_remaining = lambda relay: asked.append(relay) or left["n"]
+        take = lambda name, now: c.relay_take("/hook", {"hook_event_name": name},
+                                              relay="https://ntfy.sh/x", now=now)
+        self.assertTrue(take("PreToolUse", t))                     # plenty left: chatter too
+        self.assertTrue(take("Stop", t + 10))
+        self.assertEqual(len(asked), 1)                            # asked once per 2 minutes
+        left["n"] = 100                                            # the dashboard was busy
+        t += c.NTFY_CHECK_EVERY + c.RELAY_CHATTER_EVERY
+        self.assertFalse(take("PostToolUse", t))                   # under half: no chatter
+        self.assertTrue(take("Stop", t + 1))
+        left["n"] = c.NTFY_KEEP_FREE
+        self.assertFalse(take("Stop", t + c.NTFY_CHECK_EVERY))     # the rest is theirs
+        left["n"] = None                                           # server says nothing
+        self.assertTrue(take("Stop", t + 2 * c.NTFY_CHECK_EVERY))
 
     def send(self, cfg, ev, gotchi_answers):
         with mock.patch.object(self.client, "post", return_value="direct") as post:

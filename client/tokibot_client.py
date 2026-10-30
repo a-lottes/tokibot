@@ -35,6 +35,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 from datetime import datetime
@@ -191,11 +192,16 @@ def publish(cfg, path, payload, timeout=5):
 # and then nothing gets through for the rest of the day. So the relay carries what
 # changes the critter's mood, and the chatter in between (tool calls, limits) only now
 # and then. Token counts of a message held back ride along with the next one that goes.
+# Others may send from the same address (a second computer, a dashboard), so the client
+# also asks ntfy how many messages are left today and leaves the last ones to them.
 RELAY_STATE = os.path.join(STATE_DIR, "relay.json")
-RELAY_BUDGET = 60            # messages in our own bucket
-RELAY_REFILL = 432           # seconds per message: 200 a day, under ntfy.sh's 250
-RELAY_RESERVE = 20           # chatter leaves this many for the events that matter
+RELAY_BUDGET = 30            # messages in our own bucket
+RELAY_REFILL = 864           # seconds per message: 100 a day, under half of ntfy.sh's 250
+RELAY_RESERVE = 10           # chatter leaves this many for the events that matter
 RELAY_CHATTER_EVERY = 300    # and goes at most every 5 minutes
+NTFY_CHECK_EVERY = 120       # how often to ask ntfy what is left for this address today
+NTFY_KEEP_FREE = 60          # never take its last messages: they are for the others
+NTFY_CHATTER_FROM = 125      # chatter only while at least half the day's messages are left
 KEY_EVENTS = {"SessionStart", "UserPromptSubmit", "Notification", "Stop", "StopFailure",
               "SessionEnd"}
 
@@ -221,7 +227,20 @@ def _relay_save(state, state_path):
     os.replace(tmp, state_path)
 
 
-def relay_take(path, payload, key=None, state_path=None, now=None):
+def ntfy_remaining(relay, timeout=3):
+    """Messages the relay's server still takes from this address today, counting
+    everyone who sends from it; None if it does not say (e.g. a server of your own)."""
+    parts = urllib.parse.urlsplit(relay)
+    try:
+        with urllib.request.urlopen(f"{parts.scheme}://{parts.netloc}/v1/account",
+                                    timeout=timeout) as resp:
+            n = json.loads(resp.read())["stats"]["messages_remaining"]
+        return int(n)
+    except Exception:
+        return None
+
+
+def relay_take(path, payload, key=None, relay="", state_path=None, now=None):
     """Takes one message from the budget (True), or holds this one back (False). A
     message that goes carries the food that never reached the gotchi before."""
     state_path = state_path or RELAY_STATE
@@ -233,12 +252,18 @@ def relay_take(path, payload, key=None, state_path=None, now=None):
         st = _relay_state(state_path)
         left = min(RELAY_BUDGET, st.get("left", RELAY_BUDGET)
                    + max(0, now - st.get("at", now)) / RELAY_REFILL)
+        if relay and now - st.get("ntfy_at", 0) >= NTFY_CHECK_EVERY:
+            st["ntfy_left"], st["ntfy_at"] = ntfy_remaining(relay), now
+        shared = st.get("ntfy_left")
         if key:
-            ok = left >= 1
+            ok = left >= 1 and (shared is None or shared > NTFY_KEEP_FREE)
         else:
-            ok = left >= RELAY_RESERVE + 1 and now - st.get("chatter_at", 0) >= RELAY_CHATTER_EVERY
+            ok = (left >= RELAY_RESERVE + 1 and now - st.get("chatter_at", 0) >= RELAY_CHATTER_EVERY
+                  and (shared is None or shared > NTFY_CHATTER_FROM))
         if ok:
             left -= 1
+            if shared is not None:
+                st["ntfy_left"] = shared - 1
             if not key:
                 st["chatter_at"] = now
             food = st.pop("food", None) if path == "/hook" else None
@@ -278,7 +303,7 @@ def send(cfg, path, payload, timeout=3, key=None):
     payload.setdefault("id", uuid.uuid4().hex[:12])    # lets the gotchi drop duplicates
     done, held, err = [], False, None
     if cfg["relay"]:
-        if relay_take(path, payload, key):
+        if relay_take(path, payload, key, cfg["relay"]):
             try:
                 done.append(publish(cfg, path, payload, timeout))
             except Exception as e:
